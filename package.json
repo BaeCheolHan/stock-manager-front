@@ -1,20 +1,56 @@
 {
   "name": "stock-manager-front",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build"
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "dev": "webpack serve"
   },
   "dependencies": {
-    "vue": "^3.2.13",
-    "vue-router": "^4.0.3",
-    "vuex": "^4.0.0"
+    "@mdi/font": "5.9.55",
+    "apexcharts": "^3.41.0",
+    "axios": "^1.4.0",
+    "core-js": "^3.8.3",
+    "mitt": "^3.0.1",
+    "roboto-fontface": "*",
+    "vue": "^3.2.36",
+    "vue-axios": "^3.4.1",
+    "vue-router": "^4.2.1",
+    "vue3-apexcharts": "^1.4.1",
+    "vuetify": "^3.3.8",
+    "vuex": "^4.1.0",
+    "webfontloader": "^1.0.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-router": "~5.0.0",
-    "@vue/cli-plugin-vuex": "~5.0.0",
-    "@vue/cli-service": "~5.0.0"
+    "@vuepic/vue-datepicker": "^3.5.2",
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "css-loader": "^6.8.1",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^8.0.3",
+    "vue-cli-plugin-vuetify": "~2.5.8",
+    "vue-style-loader": "^4.1.3",
+    "webpack-cli": "^5.1.1",
+    "webpack-plugin-vuetify": "^2.0.0-alpha.0"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/vue3-essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "@babel/eslint-parser"
+    },
+    "rules": {}
   },
   "browserslist": [
     "> 1%",
