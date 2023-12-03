@@ -12,7 +12,19 @@
           <v-divider class="mg-t-30 mg-b-30"></v-divider>
 
           <h2 class="mg-t-20  mg-l-10">배당 현황</h2>
-          <DividendHistoryBox :dividends="dividends" class="mg-t-10"/>
+
+          <div>
+            <v-tabs v-model="dividendBoxType" color="#e00000" align-tabs="end">
+              <v-tab :key="'history'" :value="'history'">
+                배당 수령 기록
+              </v-tab>
+              <v-tab :key="'by-item'" :value="'by-item'">
+                종목별 수령 배당금
+              </v-tab>
+            </v-tabs>
+          </div>
+          <DividendHistoryBox :dividends="dividends" class="mg-t-10" v-if="dividends"/>
+          <DividendByStockBox :dividends="dividendByItem" class="mg-t-10" v-if="dividendByItem"/>
         </v-container>
       </v-window-item>
     </v-window>
@@ -30,18 +42,31 @@ import DividendIcon from "@/components/etc/button/DividendIcon.vue";
 import DividendHistoryBox from "@/components/my/board/dividend/DividendBoard/DividendHistoryBox.vue";
 import SaveDividend from "@/components/my/popup/dividend/SaveDividend.vue";
 import Modal from "@/components/modal/Modal.vue";
+import DividendByStockBox from "@/components/my/board/dividend/DividendBoard/DividendByStockBox.vue";
 
 export default {
   name: "DividendBoard",
   components: {
     Modal,
     DividendHistoryBox,
+    DividendByStockBox,
     DividendIcon,
     DividendMonthlyChart,
     SaveDividend,
   },
   mounted() {
     this.emitter.on('reloadDividend', this.reloadDividend)
+  },
+  watch: {
+    'dividendBoxType': async function() {
+      this.dividends = null;
+      this.dividendByItem = null;
+      if(this.dividendBoxType === 'history') {
+        await this.getDividends();
+      } else {
+        await this.getDividendsByItems();
+      }
+    }
   },
   created() {
     this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
@@ -52,9 +77,8 @@ export default {
     } else {
       location.replace("/");
     }
-
     this.getDividendChartData();
-    this.getDividends();
+    this.dividendBoxType = 'history';
   },
   data() {
     return {
@@ -81,6 +105,8 @@ export default {
       ],
       desserts: [],
       dividends: null,
+      dividendBoxType: '',
+      dividendByItem: null,
     }
   },
   methods: {
@@ -114,6 +140,11 @@ export default {
     async getDividends() {
       let res = await this.axios.get("/api/dividend/member/".concat(this.userInfo.memberId));
       this.dividends = res.data.data;
+    },
+    async getDividendsByItems() {
+      let res = await this.axios.get("/api/dividend/by-item/".concat(this.userInfo.memberId));
+      this.dividendByItem = res.data.data;
+      console.log(this.dividendByItem)
     },
     openDividendPop() {
       this.isSnowDividendRegPop = true;
