@@ -49,8 +49,6 @@ export default {
           show: true,
           labels: {
             formatter: function(val) {
-              console.log("!!")
-              console.log(val)
               if(val === 0) {
                 return val
               }
