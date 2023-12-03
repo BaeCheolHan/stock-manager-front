@@ -45,6 +45,24 @@ export default {
         xaxis: {
           categories: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
         },
+        yaxis: {
+          show: true,
+          labels: {
+            formatter: function(val) {
+              console.log("!!")
+              console.log(val)
+              if(val === 0) {
+                return val
+              }
+
+              if(val > 1000) {
+                return  (val / 10000) + ('만원')
+              }
+
+              return val
+            },
+          }
+        },
         fill: {
           opacity: 1
         },

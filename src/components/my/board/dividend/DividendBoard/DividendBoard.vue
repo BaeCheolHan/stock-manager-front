@@ -4,7 +4,7 @@
   <v-card>
     <v-window>
       <v-window-item>
-        <v-container fluid="true">
+        <v-container :fluid="true">
           <!-- 배당금 추가 버튼 -->
           <DividendIcon class="mg-l-10" @click="openDividendPop"/>
           <v-data-table-virtual :headers="headers" :items="desserts" class="elevation-1 mg-t-10 dividend-year-table" item-value="name" v-if="desserts"/>
@@ -144,7 +144,6 @@ export default {
     async getDividendsByItems() {
       let res = await this.axios.get("/api/dividend/by-item/".concat(this.userInfo.memberId));
       this.dividendByItem = res.data.data;
-      console.log(this.dividendByItem)
     },
     openDividendPop() {
       this.isSnowDividendRegPop = true;

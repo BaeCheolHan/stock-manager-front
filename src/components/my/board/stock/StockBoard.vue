@@ -90,9 +90,6 @@ export default {
       } else {
         this.stocks = [];
       }
-
-      console.log(this.treemapChartData)
-
     },
   },
   methods: {
