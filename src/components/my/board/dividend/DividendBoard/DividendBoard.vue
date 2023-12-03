@@ -15,11 +15,11 @@
 
           <div>
             <v-tabs v-model="dividendBoxType" color="#e00000" align-tabs="end">
-              <v-tab :key="'history'" :value="'history'">
-                배당 수령 기록
-              </v-tab>
               <v-tab :key="'by-item'" :value="'by-item'">
                 종목별 수령 배당금
+              </v-tab>
+              <v-tab :key="'history'" :value="'history'">
+                배당 수령 기록
               </v-tab>
             </v-tabs>
           </div>
@@ -78,7 +78,7 @@ export default {
       location.replace("/");
     }
     this.getDividendChartData();
-    this.dividendBoxType = 'history';
+    this.dividendBoxType = 'by-item';
   },
   data() {
     return {
