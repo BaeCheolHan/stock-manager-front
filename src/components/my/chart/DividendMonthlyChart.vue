@@ -8,8 +8,14 @@
 <script>
 
 export default {
-  name: "DashboardTreemapChart",
+  name: "DividendMonthlyChart",
   components: {
+  },
+  props: {
+    chartData: {
+      type: Array,
+      required: true
+    },
   },
   data() {
     return {

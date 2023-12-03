@@ -1,6 +1,6 @@
 <template>
   <div>
-    <apexchart type="area" height="350" :options="assetChartOptions" :series="chartData"></apexchart>
+    <apexchart type="area" height="350" :options="chartOptions" :series="chartData"></apexchart>
   </div>
 </template>
 
@@ -10,36 +10,25 @@
 export default {
   name: "AssetChart",
   components: {},
-  data() {
-    return {
-      assetChartOptions: {
-        chart: {
-          height: 350,
-          type: 'area',
-          toolbar: {
-            show: false
-          }
-        },
-        dataLabels: {
-          enabled: false
-        },
-        stroke: {
-          curve: 'smooth'
-        },
-        xaxis: {
-          type: 'date',
-          categories: res.data.assetCharts.xaxisCategories
-        },
-        tooltip: {
-          x: {
-            format: 'yy-MM-dd '
-          },
-        },
+  props: {
+    chartData: {
+      type: Array,
+      required: true
+    },
+    chartOptions: {
+      type: Object,
+      default: () => {
       }
     }
   },
+  data() {
+    return {}
+  }
+  ,
   async created() {
-  },
+  }
+  ,
   methods: {}
-};
+}
+;
 </script>
