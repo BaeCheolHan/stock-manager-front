@@ -50,14 +50,14 @@ export default {
           labels: {
             formatter: function(val) {
               if(val === 0) {
-                return val
+                return val.toLocaleString('ko-KR')
               }
 
               if(val > 1000) {
-                return  (val / 10000) + ('만원')
+                return  (val / 10000).toLocaleString('ko-KR') + ('만원')
               }
 
-              return val
+              return val.toLocaleString('ko-KR')
             },
           }
         },

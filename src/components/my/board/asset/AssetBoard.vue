@@ -64,10 +64,31 @@ export default {
             type: 'date',
             categories: res.data.assetCharts.xaxisCategories
           },
+          yaxis: {
+            show: true,
+            labels: {
+              formatter: function(val) {
+                if(val === 0) {
+                  return val.toLocaleString('ko-KR')
+                }
+
+                if(val > 1000) {
+                  return  (val / 10000).toLocaleString('ko-KR') + '만원'
+                }
+
+                return val.toLocaleString('ko-KR')
+              },
+            }
+          },
           tooltip: {
             x: {
               format: 'yy-MM-dd '
             },
+            y: {
+              formatter: function (val) {
+                return "" + Number(val).toLocaleString('ko-KR') + " 원"
+              }
+            }
           },
         }
       }
