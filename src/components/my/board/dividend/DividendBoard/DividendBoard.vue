@@ -6,14 +6,14 @@
       <v-window-item>
         <v-container :fluid="true">
           <!-- 배당금 추가 버튼 -->
-          <DividendIcon class="mg-l-10" @click="openDividendPop"/>
-          <v-data-table-virtual :headers="headers" :items="desserts" class="elevation-1 mg-t-10 dividend-year-table" item-value="name" v-if="desserts"/>
+          <DividendIcon @click="openDividendPop"/>
+          <v-data-table-virtual :headers="headers" :items="desserts" class="elevation-1 mg-t-10 dividend-year-table" item-value="name" v-if="desserts" style="font-size: 12px;"/>
 
           <v-divider class="mg-t-30 mg-b-30"></v-divider>
 
           <h2 class="mg-t-20  mg-l-10">배당 현황</h2>
 
-          <div>
+          <div class="mg-b-20">
             <v-tabs v-model="dividendBoxType" color="#e00000" align-tabs="end">
               <v-tab :key="'by-item'" :value="'by-item'">
                 종목별 수령 배당금
@@ -23,8 +23,8 @@
               </v-tab>
             </v-tabs>
           </div>
-          <DividendHistoryBox :dividends="dividends" class="mg-t-10" v-if="dividends"/>
-          <DividendByStockBox :dividends="dividendByItem" class="mg-t-10" v-if="dividendByItem"/>
+          <DividendHistoryBox :dividends="dividends" v-if="dividends"/>
+          <DividendByStockBox :dividends="dividendByItem" v-if="dividendByItem"/>
         </v-container>
       </v-window-item>
     </v-window>
