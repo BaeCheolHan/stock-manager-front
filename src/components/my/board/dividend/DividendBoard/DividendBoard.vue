@@ -114,7 +114,6 @@ export default {
       this.desserts = [];
       let res = await this.axios.get("/api/dividend/".concat(this.userInfo.memberId).concat("/chart"))
       this.dividendChartSeries = res.data.series;
-      console.log(this.dividendChartSeries)
       for (let i = 0; i < res.data.series.length; i++) {
         let data = {
           name: res.data.series[i].name,

@@ -5,7 +5,10 @@
         <div>
           <div style=" font-size: 12px;">
             <div>
-              <p class="mg-r-10">{{dividend.year}}년 {{dividend.month}}월 {{dividend.day}}일</p>
+              <div class="flex mg-b-5" style="justify-content: space-between">
+                <p class="mg-r-10">{{dividend.year}}년 {{dividend.month}}월 {{dividend.day}}일</p>
+                <i class="ti-trash" @click="removeHistory(dividend.id)"></i>
+              </div>
               <div class="flex" style="justify-content: space-between">
                 <div>
                   <p style="width: 200px;
@@ -36,5 +39,13 @@ export default {
   props: {
     dividends: Array,
   },
+  methods: {
+    async removeHistory(id) {
+      if(confirm('삭제 하시겠습니까?')) {
+        await this.axios.delete('/api/dividend/'.concat(id));
+        this.emitter.emit('reloadDividend');
+      }
+    }
+  }
 }
 </script>
