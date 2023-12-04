@@ -1,4 +1,12 @@
-# stock-manager-front
+# stock_manager_front V 2.0
+
+management your stocks and dividends
+
+
+## home-page url
+```
+stock.hws.pe.kr
+```
 
 ## Project setup
 ```
@@ -9,11 +17,3 @@ npm install
 ```
 npm run serve
 ```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
