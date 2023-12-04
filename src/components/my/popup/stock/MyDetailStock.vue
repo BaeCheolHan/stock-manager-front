@@ -1,6 +1,14 @@
 <template>
   <div class="content" v-if="detail">
-    <h2>{{ $parent.$parent.selectedStock.name }}({{ $parent.$parent.selectedStock.symbol }})</h2>
+    <div class="flex" style="justify-content: left">
+      <h2>{{ $parent.$parent.selectedStock.name }}({{ $parent.$parent.selectedStock.symbol }})
+        <span>(</span>
+        <span :class="UiService.setUpDownArrowClass(detail.compareToYesterdaySign)" :style="UiService.setColorStyle(detail.compareToYesterdaySign)">
+          {{ Math.floor(((detail.compareToYesterday / detail.nowPrice) * 100) * 100) / 100 }}%
+        </span>
+        <span>)</span>
+      </h2>
+    </div>
     <div class="popup-wrap" style="padding: 10px 0 0;!important;">
 
       <div v-if="series" id="chart">
