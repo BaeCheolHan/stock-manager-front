@@ -24,7 +24,6 @@
                         :style="setPriceColor(stock)">{{ (Math.floor(Number(stock.avgPrice) * 100) / 100).toLocaleString('ko-KR') }}</span>
                   <span :style="setPriceColor(stock)">{{ stock.national == 'KR' ? '원' : '' }})</span>
                 </div>
-                <p></p>
                 <p>투자비중</p>
                 <p class="bold">수익률</p>
                 <p>총 수령 배당금</p>

@@ -26,12 +26,14 @@
           <div>
             <p class="bold">시가 : {{ detail.startPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">최고가 : {{ detail.highPrice.toLocaleString("ko-KR") }}</p>
+            <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{ detail.dividendInfo.dividendRate.toLocaleString("ko-KR") }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
             <p>PER : {{ detail.per }}</p>
             <p>EPS : {{ detail.eps }}</p>
             <p class="bold" :style="setPlusMinusColor(detail.nowPrice - Math.floor(totalPrice / totalQuantity))" v-if="$parent.$parent.selectedStock.national == 'KR'">
               평균가 : {{ Math.floor(totalPrice / totalQuantity).toLocaleString("ko-KR") }}원
             </p>
             <p class="bold" v-else>평균가 : ${{ Math.floor(totalPrice / totalQuantity).toLocaleString("ko-KR") }}</p>
+
           </div>
           <div>
             <div>
@@ -39,9 +41,12 @@
               <span class="bold" :style="UiService.setColorStyle(detail.compareToYesterdaySign)" :class="UiService.setUpDownArrowClass(detail.compareToYesterdaySign)">{{ detail.compareToYesterday.toLocaleString("ko-KR") }})</span>
             </div>
             <p class="bold">최저가 : {{ detail.lowPrice.toLocaleString("ko-KR") }}</p>
+            <p class="bold">배당율 : {{ detail.dividendInfo.annualDividend }}%</p>
             <p>PBR : {{ detail.pbr }}</p>
             <p>BPS : {{ detail.bps }}</p>
             <p class="bold">총 수량 : {{ totalQuantity }} 주</p>
+
+
           </div>
         </div>
         <v-divider class="mg-t-10 mg-b-10"></v-divider>

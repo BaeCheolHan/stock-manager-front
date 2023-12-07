@@ -28,6 +28,7 @@
             <p class="bold">최고가 : {{ detail.stck_hgpr.toLocaleString("ko-KR") }}</p>
             <p>PER : {{ detail.per }}</p>
             <p>EPS : {{ detail.eps }}</p>
+            <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{ detail.dividendInfo.dividendRate.toLocaleString("ko-KR") }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
           </div>
           <div>
             <p class="bold" :style="UiService.setColorStyle(detail.prdy_vrss_sign)">
@@ -39,6 +40,7 @@
             <p class="bold">최저가 : {{ detail.stck_lwpr.toLocaleString("ko-KR") }}</p>
             <p>PBR : {{ detail.pbr }}</p>
             <p>BPS : {{ detail.bps }}</p>
+            <p class="bold">배당율 : {{ detail.dividendInfo.annualDividend }}%</p>
           </div>
         </div>
         <v-divider class="mg-t-10 mg-b-10"></v-divider>
