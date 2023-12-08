@@ -10,8 +10,17 @@
       </h2>
     </div>
     <div class="popup-wrap" style="padding: 10px 0 0;!important;">
-      <h3 class="mg-l-5 mg-b-5">주가 차트</h3>
-      <div class="price-chart">
+      <div class="mg-b-20">
+        <v-tabs v-model="mainChartType" color="#e00000" align-tabs="end">
+          <v-tab :key="'stock'" :value="'stock'">
+            주가 차트
+          </v-tab>
+          <v-tab :key="'history'" :value="'history'">
+            배당 내역 차트
+          </v-tab>
+        </v-tabs>
+      </div>
+      <div class="price-chart" v-if="mainChartType == 'stock'">
         <div v-if="series" id="chart">
           <div class="flex mg-l-5">
             <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}" @click="changeChartType('D')">일별</button>
@@ -22,8 +31,7 @@
           <apexchart type="candlestick" :options="chartOptions" :series="series"></apexchart>
         </div>
       </div>
-      <div class="dividend-history-chart">
-        <h3 class="mg-l-5 mg-b-5">배당 이력</h3>
+      <div class="dividend-history-chart" v-if="mainChartType == 'history'">
         <apexchart height="350" type="bar" :options="dividendChartOptions" :series="dividendSeries"></apexchart>
       </div>
       <div>
@@ -107,15 +115,20 @@
 
 <script>
 
+import DividendByStockBox from "@/components/my/board/dividend/DividendBoard/DividendByStockBox.vue";
+import DividendHistoryBox from "@/components/my/board/dividend/DividendBoard/DividendHistoryBox.vue";
+
 export default {
   name: "MyDetailStock",
   components: {
+    DividendHistoryBox, DividendByStockBox
   },
   props: {
     msg: String,
   },
   data() {
     return {
+      mainChartType: 'stock',
       detail: null,
       totalPrice: 0,
       totalQuantity: 0,
@@ -165,6 +178,7 @@ export default {
       },
       dividendChartOptions: {
         chart: {
+          height: 350,
           id: 'basic-bar',
           toolbar: {
             show: false
