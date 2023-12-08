@@ -16,7 +16,7 @@
             주가 차트
           </v-tab>
           <v-tab :key="'history'" :value="'history'">
-            배당 내역 차트
+            배당 차트
           </v-tab>
         </v-tabs>
       </div>
@@ -195,10 +195,21 @@ export default {
               return val
             }
           }
+        },
+        yaxis: {
+          labels: {
+            show: true,
+            formatter: function(val) {
+              return val.toLocaleString('ko-KR')
+            }
+          },
+          tooltip: {
+            enabled: true
+          }
         }
       },
       dividendSeries: [{
-        name: 'series-1',
+        name: '',
         data: []
       }]
 
