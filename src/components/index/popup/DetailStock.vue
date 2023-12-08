@@ -2,24 +2,30 @@
   <div class="content" v-if="detail">
     <h2>{{ $parent.$parent.selectedStock.hts_kor_isnm }}({{ $parent.$parent.selectedStock.mksc_shrn_iscd }})</h2>
     <div class="popup-wrap" style="padding: 10px 0 0;!important;">
-
-      <div v-if="series" id="chart">
-        <div class="flex">
-          <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}"
-                  @click="changeChartType('D')">일별
-          </button>
-          <button class="mg-r-10" :class="{'redBtn' : chartType === 'W', 'border-radius-8' : chartType !== 'W'}"
-                  @click="changeChartType('W')">주별
-          </button>
-          <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}"
-                  @click="changeChartType('M')">월별
-          </button>
-          <button v-if="$parent.$parent.selectedStock.national == 'KR'"
-                  :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}"
-                  @click="changeChartType('Y')">년별
-          </button>
+      <h3 class="mg-l-5 mg-b-5">주가 차트</h3>
+      <div class="price-chart">
+        <div v-if="series" id="chart">
+          <div class="flex mg-l-5">
+            <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}"
+                    @click="changeChartType('D')">일별
+            </button>
+            <button class="mg-r-10" :class="{'redBtn' : chartType === 'W', 'border-radius-8' : chartType !== 'W'}"
+                    @click="changeChartType('W')">주별
+            </button>
+            <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}"
+                    @click="changeChartType('M')">월별
+            </button>
+            <button v-if="$parent.$parent.selectedStock.national == 'KR'"
+                    :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}"
+                    @click="changeChartType('Y')">년별
+            </button>
+          </div>
+          <apexchart type="candlestick" :options="chartOptions" :series="series"></apexchart>
         </div>
-        <apexchart type="candlestick" :options="chartOptions" :series="series"></apexchart>
+      </div>
+      <div class="dividend-history-chart" v-if="dividendSeries[0].data.length > 0">
+        <h3 class="mg-l-5 mg-b-5">배당 이력</h3>
+        <apexchart height="350" type="bar" :options="dividendChartOptions" :series="dividendSeries"></apexchart>
       </div>
       <div class="pd-10 border">
         <div class="flex" style="justify-content: space-between;">
@@ -28,13 +34,17 @@
             <p class="bold">최고가 : {{ detail.stck_hgpr.toLocaleString("ko-KR") }}</p>
             <p>PER : {{ detail.per }}</p>
             <p>EPS : {{ detail.eps }}</p>
-            <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{ detail.dividendInfo.dividendRate.toLocaleString("ko-KR") }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
+            <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{
+                detail.dividendInfo.dividendRate.toLocaleString("ko-KR")
+              }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
           </div>
           <div>
             <p class="bold" :style="UiService.setColorStyle(detail.prdy_vrss_sign)">
               현재가 : {{ detail.stck_prpr.toLocaleString("ko-KR") }}
               <span :style="UiService.setColorStyle(detail.prdy_vrss_sign)">
-                (<span :class="UiService.setUpDownArrowClass(detail.prdy_vrss_sign)"></span> {{ detail.prdy_vrss.toLocaleString("ko-KR") }}원)
+                (<span :class="UiService.setUpDownArrowClass(detail.prdy_vrss_sign)"></span> {{
+                  detail.prdy_vrss.toLocaleString("ko-KR")
+                }}원)
               </span>
             </p>
             <p class="bold">최저가 : {{ detail.stck_lwpr.toLocaleString("ko-KR") }}</p>
@@ -43,7 +53,6 @@
             <p class="bold">배당율 : {{ detail.dividendInfo.annualDividend }}%</p>
           </div>
         </div>
-        <v-divider class="mg-t-10 mg-b-10"></v-divider>
       </div>
     </div>
   </div>
@@ -109,6 +118,25 @@ export default {
         }
       },
 
+      dividendChartOptions: {
+        chart: {
+          id: 'basic-bar',
+          toolbar: {
+            show: false
+          }
+        },
+        dataLabels: {
+          enabled: false
+        },
+        xaxis: {
+          categories: []
+        }
+      },
+      dividendSeries: [{
+        name: 'series-1',
+        data: []
+      }]
+
 
     }
   },
@@ -137,6 +165,11 @@ export default {
         x: item.date,
         y: [item.open, item.high, item.low, item.close]
       }))
+
+      for (let data of res.data.detail.dividendInfo.dividendHistories) {
+        this.dividendChartOptions.xaxis.categories.push(data.date);
+        this.dividendSeries[0].data.push(data.dividend)
+      }
     },
 
     changeChartType: function (chartType) {

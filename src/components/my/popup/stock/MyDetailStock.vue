@@ -10,15 +10,23 @@
       </h2>
     </div>
     <div class="popup-wrap" style="padding: 10px 0 0;!important;">
-
-      <div v-if="series" id="chart">
-        <div class="flex">
-          <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}" @click="changeChartType('D')">일별</button>
-          <button class="mg-r-10" :class="{'redBtn' : chartType === 'W', 'border-radius-8' : chartType !== 'W'}" @click="changeChartType('W')">주별</button>
-          <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}" @click="changeChartType('M')">월별</button>
-          <button v-if="$parent.$parent.selectedStock.national == 'KR'" :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}" @click="changeChartType('Y')">년별</button>
+      <h3 class="mg-l-5 mg-b-5">주가 차트</h3>
+      <div class="price-chart">
+        <div v-if="series" id="chart">
+          <div class="flex mg-l-5">
+            <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}" @click="changeChartType('D')">일별</button>
+            <button class="mg-r-10" :class="{'redBtn' : chartType === 'W', 'border-radius-8' : chartType !== 'W'}" @click="changeChartType('W')">주별</button>
+            <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}" @click="changeChartType('M')">월별</button>
+            <button v-if="$parent.$parent.selectedStock.national == 'KR'" :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}" @click="changeChartType('Y')">년별</button>
+          </div>
+          <apexchart type="candlestick" :options="chartOptions" :series="series"></apexchart>
         </div>
-        <apexchart type="candlestick" :options="chartOptions" :series="series"></apexchart>
+      </div>
+      <div class="dividend-history-chart">
+        <h3 class="mg-l-5 mg-b-5">배당 이력</h3>
+        <apexchart height="350" type="bar" :options="dividendChartOptions" :series="dividendSeries"></apexchart>
+      </div>
+      <div>
 
       </div>
       <div class="pd-10 border">
@@ -29,11 +37,6 @@
             <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{ detail.dividendInfo.dividendRate.toLocaleString("ko-KR") }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
             <p>PER : {{ detail.per }}</p>
             <p>EPS : {{ detail.eps }}</p>
-            <p class="bold" :style="setPlusMinusColor(detail.nowPrice - Math.floor(totalPrice / totalQuantity))" v-if="$parent.$parent.selectedStock.national == 'KR'">
-              평균가 : {{ Math.floor(totalPrice / totalQuantity).toLocaleString("ko-KR") }}원
-            </p>
-            <p class="bold" v-else>평균가 : ${{ Math.floor(totalPrice / totalQuantity).toLocaleString("ko-KR") }}</p>
-
           </div>
           <div>
             <div>
@@ -44,19 +47,21 @@
             <p class="bold">배당율 : {{ detail.dividendInfo.annualDividend }}%</p>
             <p>PBR : {{ detail.pbr }}</p>
             <p>BPS : {{ detail.bps }}</p>
-            <p class="bold">총 수량 : {{ totalQuantity }} 주</p>
-
-
           </div>
         </div>
         <v-divider class="mg-t-10 mg-b-10"></v-divider>
         <div class="flex" style="justify-content: space-between">
           <div>
+            <p class="bold" :style="setPlusMinusColor(detail.nowPrice - Math.floor(totalPrice / totalQuantity))" v-if="$parent.$parent.selectedStock.national == 'KR'">
+              평균가 : {{ Math.floor(totalPrice / totalQuantity).toLocaleString("ko-KR") }}원
+            </p>
+            <p class="bold" v-else>평균가 : ${{ Math.floor(totalPrice / totalQuantity).toLocaleString("ko-KR") }}</p>
             <p class="bold">총 구매 가격 : </p>
             <p class="bold red">총 수령 배당금 : </p>
             <p class="bold" :style="setPlusMinusColor(rateOfReturn)">현재 자산 가치 : </p>
           </div>
           <div class="t-a-r">
+            <p class="bold">수량 : {{ totalQuantity }} 주</p>
             <p class="bold" v-if="$parent.$parent.selectedStock.national == 'KR'">
               {{ totalPrice.toLocaleString("ko-KR") }}원
             </p>
@@ -158,6 +163,30 @@ export default {
           }
         }
       },
+      dividendChartOptions: {
+        chart: {
+          id: 'basic-bar',
+          toolbar: {
+            show: false
+          }
+        },
+        dataLabels: {
+          enabled: false
+        },
+        xaxis: {
+          categories: [],
+          labels: {
+            show: !this.UiService.isMobile(),
+            formatter: function(val) {
+              return val
+            }
+          }
+        }
+      },
+      dividendSeries: [{
+        name: 'series-1',
+        data: []
+      }]
 
 
     }
@@ -187,6 +216,12 @@ export default {
       this.rateOfReturn = Math.floor((this.detail.nowPrice * this.totalQuantity) - this.totalPrice);
       this.series[0].name = this.$parent.$parent.selectedStock.name
       res.data.detail.chartData.forEach(item => this.series[0].data.push({x: item.date, y: [item.open, item.high, item.low, item.close]}))
+
+
+      for (let data of res.data.detail.dividendInfo.dividendHistories) {
+        this.dividendChartOptions.xaxis.categories.push(data.date);
+        this.dividendSeries[0].data.push(data.dividend)
+      }
     },
     yyyyMMdd(value) {
       if (value === '') return '';
