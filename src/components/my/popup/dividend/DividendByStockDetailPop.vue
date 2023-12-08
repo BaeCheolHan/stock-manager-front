@@ -25,7 +25,7 @@
                             ">{{ $parent.$parent.selectedStock.name }}({{ dividend.symbol }})</p>
               </div>
               <div>
-                <p class="t-a-r">{{dividend.national !== 'KR' ? '$' : ''}}{{ dividend.dividend.toLocaleString('ko-KR')}} {{dividend.national == 'KR' ? '원' : ''}}</p>
+                <p class="t-a-r">{{$parent.$parent.selectedStock.national !== 'KR' ? '$' : ''}}{{ dividend.dividend.toLocaleString('ko-KR')}} {{$parent.$parent.selectedStock.national == 'KR' ? '원' : ''}}</p>
               </div>
             </div>
           </div>
