@@ -28,7 +28,7 @@
             <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}" @click="changeChartType('M')">월별</button>
             <button v-if="$parent.$parent.selectedStock.national == 'KR'" :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}" @click="changeChartType('Y')">년별</button>
           </div>
-          <apexchart type="candlestick" :options="chartOptions" :series="series"></apexchart>
+          <apexchart height="350" type="candlestick" :options="chartOptions" :series="series"></apexchart>
         </div>
       </div>
       <div class="dividend-history-chart" v-if="mainChartType == 'history'">

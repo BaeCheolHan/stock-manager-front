@@ -31,7 +31,7 @@
                     @click="changeChartType('Y')">년별
             </button>
           </div>
-          <apexchart type="candlestick" :options="chartOptions" :series="series"></apexchart>
+          <apexchart height="350" type="candlestick" :options="chartOptions" :series="series"></apexchart>
         </div>
       </div>
       <div class="dividend-history-chart" v-if="mainChartType == 'history'">
