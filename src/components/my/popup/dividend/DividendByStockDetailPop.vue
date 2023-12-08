@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>{{ $parent.$parent.selectedStock.name }}({{ $parent.$parent.selectedStock.symbol }}) 배당</h2>
+    <h2>{{ $parent.$parent.selectedStock.name }}({{ $parent.$parent.selectedStock.symbol }}) 배당 수령 기록</h2>
   </div>
   <div>
     <apexchart height="350" type="bar" :options="chartOptions" :series="series"></apexchart>
