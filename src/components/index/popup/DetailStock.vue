@@ -164,10 +164,20 @@ export default {
   },
   watch: {
     chartType: async function () {
+      let symbol;
+      if(this.$parent.$parent.selectedStock.symbol) {
+        symbol = this.$parent.$parent.selectedStock.symbol;
+      }
+
+      if(this.$parent.$parent.selectedStock.mksc_shrn_iscd) {
+        symbol = this.$parent.$parent.selectedStock.mksc_shrn_iscd;
+      }
+
       let res = await this.axios.get('/api/stock/chart/'.concat(this.chartType)
           .concat('/KR')
-          .concat('/').concat(this.$parent.$parent.selectedStock.mksc_shrn_iscd));
+          .concat('/').concat(symbol));
       this.series[0].data = [];
+
       res.data.chartData.forEach(item => this.series[0].data.push({
         x: item.date,
         y: [item.open, item.high, item.low, item.close]
