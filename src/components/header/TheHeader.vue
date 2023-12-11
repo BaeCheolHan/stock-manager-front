@@ -86,7 +86,6 @@ export default {
   },
   mounted() {
     this.emitter.on('searchStock', (stock) => {
-      console.log(stock)
       this.selectedStock = stock;
       this.isSearch = true;
     })
