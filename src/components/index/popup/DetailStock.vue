@@ -14,7 +14,7 @@
         </v-tabs>
       </div>
 
-      <div class="price-chart" v-if="mainChartType == 'stock'">
+      <div class="price-chart" v-if="mainChartType === 'stock'">
         <div v-if="series" id="chart">
           <div class="flex mg-l-5">
             <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}"
@@ -26,7 +26,7 @@
             <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}"
                     @click="changeChartType('M')">월별
             </button>
-            <button v-if="$parent.$parent.selectedStock.national == 'KR'"
+            <button v-if="$parent.$parent.selectedStock.national === 'KR'"
                     :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}"
                     @click="changeChartType('Y')">년별
             </button>
@@ -34,7 +34,7 @@
           <apexchart :height="UiService.isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions" :series="series"></apexchart>
         </div>
       </div>
-      <div class="dividend-history-chart" v-if="mainChartType == 'history'">
+      <div class="dividend-history-chart" v-if="mainChartType === 'history'">
         <apexchart :height="UiService.isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions" :series="dividendSeries"></apexchart>
       </div>
       <div class="pd-10 border">
@@ -46,7 +46,7 @@
             <p>EPS : {{ detail.eps }}</p>
             <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{
                 detail.dividendInfo.dividendRate.toLocaleString("ko-KR")
-              }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
+              }}<span v-if="$parent.$parent.selectedStock.national === 'KR'">원</span></p>
           </div>
           <div>
             <p class="bold" :style="UiService.setColorStyle(detail.compareToYesterdaySign)">
