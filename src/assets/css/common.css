@@ -873,3 +873,11 @@ select::-ms-expand {
 .icon-down:before {
     content: "\25BC";
 }
+
+.search-btn {
+    background: url(/public/icons/ic_search.png) no-repeat center;
+    background-size: 17px 17px;
+    width: 50px;
+    height: 100%;
+    font-size: 0;
+}

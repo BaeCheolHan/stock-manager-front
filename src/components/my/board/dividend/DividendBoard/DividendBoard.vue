@@ -110,7 +110,7 @@ export default {
     }
   },
   methods: {
-    getDividendChartData: async function () {
+    async getDividendChartData() {
       this.desserts = [];
       let res = await this.axios.get("/api/dividend/".concat(this.userInfo.memberId).concat("/chart"))
       this.dividendChartSeries = res.data.series;

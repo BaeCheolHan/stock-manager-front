@@ -52,7 +52,7 @@ export default {
       }
     }
   },
-  async created() {
+  created() {
   },
   methods: {}
 };

@@ -37,6 +37,7 @@
         <span>&nbsp;icon by&nbsp;</span>
         <a target="_blank" style="font-size: 12px" class="pd-0" href="https://icons8.com">Icons8</a>
       </div>
+      <a href="https://www.flaticon.com/kr/free-icons/" title="확대경 아이콘">확대경 아이콘  제작자: zero_wing - Flaticon</a>
     </div>
   </div>
 </template>

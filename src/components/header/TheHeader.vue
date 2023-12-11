@@ -10,7 +10,15 @@
       <button class="kakao-login-small mg-l-15" v-on:click="snsLoginBtn('kakao')"></button>
       <button class="google-login-small mg-l-15" v-on:click="snsLoginBtn('google')"></button>
     </div>
-    <ExchangeRate/>
+    <div class="flex">
+      <div v-if="!UiService.isMobile()">
+        <button class="search-btn" @click="searchStockPop">검색</button>
+      </div>
+      <ExchangeRate/>
+      <div v-if="UiService.isMobile()">
+        <button class="search-btn" @click="searchStockPop">검색</button>
+      </div>
+    </div>
   </div>
 
   <div class="overlay-lnb" @click="closeNav" style="display:none;"></div>
@@ -45,54 +53,81 @@
     <refferencesArea/>
   </div>
 
+  <Modal v-if="searchPop" @close-modal="closeSearchPop">
+    <SearchStock v-if="!isSearch"/>
+    <DetailStock v-if="isSearch"/>
+  </Modal>
 
 </template>
 
 <script>
 import refferencesArea from "@/components/etc/refferencesArea.vue";
 import ExchangeRate from "@/components/header/ExchangeRate.vue";
+import Modal from "@/components/modal/Modal.vue";
+import SearchStock from "@/components/header/popup/SearchStock.vue";
+import DetailStock from "@/components/index/popup/DetailStock.vue";
 
 export default {
   components: {
+    DetailStock,
+    SearchStock,
+    Modal,
     refferencesArea,
     ExchangeRate,
   },
-  data: function () {
+  data() {
     return {
       userInfo: null,
       exchangeRate: null,
+      searchPop: false,
+      isSearch: false,
+      selectedStock: null,
     }
   },
-  created: async function () {
+  mounted() {
+    this.emitter.on('searchStock', (stock) => {
+      console.log(stock)
+      this.selectedStock = stock;
+      this.isSearch = true;
+    })
+  },
+  async created() {
     if (sessionStorage.getItem('userInfo')) {
       this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
     }
-
     this.exchangeRate = sessionStorage.getItem('exchangeRate');
   },
   methods: {
-    openNav: function () {
+    closeSearchPop() {
+      this.searchPop = false;
+      this.isSearch = false;
+      this.selectedStock = null;
+    },
+    openNav() {
       document.getElementById("sidenav-lnb").style.width = "250px";
       document.getElementsByClassName('overlay-lnb')[0].style.display = "";
     },
-    closeNav: function () {
+    closeNav() {
       document.getElementById("sidenav-lnb").style.width = "0px";
       document.getElementsByClassName('overlay-lnb')[0].style.display = "none";
     },
-    goSettings: function () {
+    goSettings() {
       location.replace('/settings')
     },
-    goDashboard: function () {
+    goDashboard() {
       location.replace('/')
     },
-    goMyStockManage: function () {
+    goMyStockManage() {
       location.replace('/my')
     },
-    snsLoginBtn: async function (snsType) {
+    searchStockPop() {
+      this.searchPop = true;
+    },
+    async snsLoginBtn(snsType) {
       let res = await this.axios.get('/login/'.concat(snsType))
       location.replace(res.data.loginUri)
     },
-    logout: function () {
+    logout() {
       sessionStorage.removeItem('userInfo')
       this.$store.commit('removeUserInfo')
       location.replace('/')

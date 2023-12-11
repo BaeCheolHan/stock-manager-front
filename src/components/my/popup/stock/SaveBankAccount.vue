@@ -40,7 +40,7 @@ export default {
   props: {
     msg: String,
   },
-  data: function () {
+  data() {
     return {
       banks: null,
       copiedBanks: null,
@@ -50,7 +50,7 @@ export default {
       isUpdating: false,
     }
   },
-  beforeMount: async function () {
+  async beforeMount() {
     let res = await this.axios.get("/api/banks");
     this.banks = JSON.parse(JSON.stringify(res.data));
     this.copiedBanks = this.banks.slice();
@@ -69,25 +69,25 @@ export default {
     replaceBankDefaultImg(e) {
       e.target.src = './bank-icons/default-bank.png';
     },
-    closeDropDown: function () {
+    closeDropDown() {
       document.getElementsByClassName('searchSelectBox')[0].style.display = "none";
     },
-    bankSelectFocus: function () {
+    bankSelectFocus() {
       document.getElementsByClassName('searchSelectBox')[0].style.display = "";
     },
-    searchBank: function (event) {
+    searchBank(event) {
       this.copiedBanks = this.banks.filter(item => {
         return item.bankName.includes(event.target.value)
       });
     },
-    selectBank: function (bank) {
+    selectBank(bank) {
       document.getElementsByClassName('searchSelectBox')[0].style.display = "none";
       this.selectedBank = bank;
     },
-    cancelSelectBank: function () {
+    cancelSelectBank() {
       this.selectedBank = null;
     },
-    saveBank: async function () {
+    async saveBank() {
       if (!this.selectedBank) {
         alert("증권사를 선택해주세요")
         return;
@@ -110,7 +110,7 @@ export default {
         this.$parent.$parent.isShowRegAccountPop = false;
       }
     },
-    getBankAccount: async function () {
+    async getBankAccount() {
       let res = await this.axios.get("/api/bank/member/".concat(JSON.parse(sessionStorage.getItem('userInfo')).memberId));
       let userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
       userInfo.bankAccounts = res.data.accounts;

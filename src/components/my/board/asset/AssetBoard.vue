@@ -32,7 +32,7 @@ export default {
     }
   },
   methods: {
-    getAssetChartData: async function () {
+    async getAssetChartData() {
       let res = await this.axios.get("/api/asset/member/".concat(this.userInfo.memberId).concat("/chart"));
       if (res.data.assetCharts) {
         this.assetChartSeries = [

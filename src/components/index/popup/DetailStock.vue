@@ -1,6 +1,6 @@
 <template>
   <div class="content" v-if="detail">
-    <h2>{{ $parent.$parent.selectedStock.hts_kor_isnm }}({{ $parent.$parent.selectedStock.mksc_shrn_iscd }})</h2>
+    <h2>{{ $parent.$parent.selectedStock.hts_kor_isnm ? $parent.$parent.selectedStock.hts_kor_isnm : $parent.$parent.selectedStock.name}}({{ $parent.$parent.selectedStock.mksc_shrn_iscd ? $parent.$parent.selectedStock.mksc_shrn_iscd : $parent.$parent.selectedStock.symbol }})</h2>
     <div class="popup-wrap" style="padding: 10px 0 0;!important;">
 
       <div class="mg-b-20">
@@ -40,8 +40,8 @@
       <div class="pd-10 border">
         <div class="flex" style="justify-content: space-between;">
           <div>
-            <p class="bold">시가 : {{ detail.stck_oprc.toLocaleString("ko-KR") }}</p>
-            <p class="bold">최고가 : {{ detail.stck_hgpr.toLocaleString("ko-KR") }}</p>
+            <p class="bold">시가 : {{ detail.startPrice.toLocaleString("ko-KR") }}</p>
+            <p class="bold">최고가 : {{ detail.highPrice.toLocaleString("ko-KR") }}</p>
             <p>PER : {{ detail.per }}</p>
             <p>EPS : {{ detail.eps }}</p>
             <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{
@@ -49,15 +49,15 @@
               }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
           </div>
           <div>
-            <p class="bold" :style="UiService.setColorStyle(detail.prdy_vrss_sign)">
-              현재가 : {{ detail.stck_prpr.toLocaleString("ko-KR") }}
-              <span :style="UiService.setColorStyle(detail.prdy_vrss_sign)">
-                (<span :class="UiService.setUpDownArrowClass(detail.prdy_vrss_sign)"></span> {{
-                  detail.prdy_vrss.toLocaleString("ko-KR")
+            <p class="bold" :style="UiService.setColorStyle(detail.compareToYesterdaySign)">
+              현재가 : {{ detail.nowPrice.toLocaleString("ko-KR") }}
+              <span :style="UiService.setColorStyle(detail.compareToYesterdaySign)">
+                (<span :class="UiService.setUpDownArrowClass(detail.compareToYesterdaySign)"></span> {{
+                  detail.compareToYesterday.toLocaleString("ko-KR")
                 }}원)
               </span>
             </p>
-            <p class="bold">최저가 : {{ detail.stck_lwpr.toLocaleString("ko-KR") }}</p>
+            <p class="bold">최저가 : {{ detail.lowPrice.toLocaleString("ko-KR") }}</p>
             <p>PBR : {{ detail.pbr }}</p>
             <p>BPS : {{ detail.bps }}</p>
             <p class="bold">배당율 : {{ detail.dividendInfo.annualDividend }}%</p>
@@ -174,13 +174,21 @@ export default {
       }))
     }
   },
-  created: async function () {
+  async created() {
     await this.init();
   },
   methods: {
-    init: async function () {
+    async init() {
+      let symbol;
+      if(this.$parent.$parent.selectedStock.symbol) {
+        symbol = this.$parent.$parent.selectedStock.symbol;
+      }
+
+      if(this.$parent.$parent.selectedStock.mksc_shrn_iscd) {
+        symbol = this.$parent.$parent.selectedStock.mksc_shrn_iscd;
+      }
       let res = await this.axios.get("/api/stock"
-          .concat("?symbol=").concat(this.$parent.$parent.selectedStock.mksc_shrn_iscd))
+          .concat("?symbol=").concat(symbol))
       this.detail = res.data.detail;
       this.series[0].name = this.$parent.$parent.selectedStock.name
       res.data.chartData.forEach(item => this.series[0].data.push({
@@ -193,8 +201,7 @@ export default {
         this.dividendSeries[0].data.push(data.dividend)
       }
     },
-
-    changeChartType: function (chartType) {
+    changeChartType(chartType) {
       this.chartType = chartType;
     },
   }

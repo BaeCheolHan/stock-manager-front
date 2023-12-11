@@ -23,11 +23,9 @@ export default {
   },
   data() {
     return {}
-  }
-  ,
-  async created() {
-  }
-  ,
+  },
+  created() {
+  },
   methods: {}
 }
 ;
