@@ -31,11 +31,11 @@
                     @click="changeChartType('Y')">년별
             </button>
           </div>
-          <apexchart height="350" type="candlestick" :options="chartOptions" :series="series"></apexchart>
+          <apexchart :height="UiService.isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions" :series="series"></apexchart>
         </div>
       </div>
       <div class="dividend-history-chart" v-if="mainChartType == 'history'">
-        <apexchart height="350" type="bar" :options="dividendChartOptions" :series="dividendSeries"></apexchart>
+        <apexchart :height="UiService.isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions" :series="dividendSeries"></apexchart>
       </div>
       <div class="pd-10 border">
         <div class="flex" style="justify-content: space-between;">
