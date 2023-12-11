@@ -42,25 +42,19 @@
           <div>
             <p class="bold">시가 : {{ detail.startPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">최고가 : {{ detail.highPrice.toLocaleString("ko-KR") }}</p>
+            <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{ detail.dividendInfo.dividendRate.toLocaleString("ko-KR") }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
             <p>PER : {{ detail.per }}</p>
             <p>EPS : {{ detail.eps }}</p>
-            <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{
-                detail.dividendInfo.dividendRate.toLocaleString("ko-KR")
-              }}<span v-if="$parent.$parent.selectedStock.national === 'KR'">원</span></p>
           </div>
           <div>
-            <p class="bold" :style="UiService.setColorStyle(detail.compareToYesterdaySign)">
-              현재가 : {{ detail.nowPrice.toLocaleString("ko-KR") }}
-              <span :style="UiService.setColorStyle(detail.compareToYesterdaySign)">
-                (<span :class="UiService.setUpDownArrowClass(detail.compareToYesterdaySign)"></span> {{
-                  detail.compareToYesterday.toLocaleString("ko-KR")
-                }}원)
-              </span>
-            </p>
+            <div>
+              <span class="bold" :style="UiService.setColorStyle(detail.compareToYesterdaySign)">현재가 : {{ detail.nowPrice.toLocaleString("ko-KR") }}(</span>
+              <span class="bold" :style="UiService.setColorStyle(detail.compareToYesterdaySign)" :class="UiService.setUpDownArrowClass(detail.compareToYesterdaySign)">{{ detail.compareToYesterday.toLocaleString("ko-KR") }})</span>
+            </div>
             <p class="bold">최저가 : {{ detail.lowPrice.toLocaleString("ko-KR") }}</p>
+            <p class="bold">배당율 : {{ detail.dividendInfo.annualDividend }}%</p>
             <p>PBR : {{ detail.pbr }}</p>
             <p>BPS : {{ detail.bps }}</p>
-            <p class="bold">배당율 : {{ detail.dividendInfo.annualDividend }}%</p>
           </div>
         </div>
       </div>
@@ -178,6 +172,8 @@ export default {
       if(this.$parent.$parent.selectedStock.mksc_shrn_iscd) {
         symbol = this.$parent.$parent.selectedStock.mksc_shrn_iscd;
       }
+
+      console.log(this.$parent.$parent.selectedStock)
 
       let national = 'KR';
       if(this.$parent.$parent.selectedStock.national && this.$parent.$parent.selectedStock.national !== 'KR') {
