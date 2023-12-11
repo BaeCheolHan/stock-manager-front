@@ -115,22 +115,22 @@ export default {
         xaxis: {
           type: 'category',
           labels: {
-            show: UiService.isMobile(),
+            show: !UiService.isMobile(),
             formatter: function (val) {
               return val
             }
           }
         },
         yaxis: {
-          show: UiService.isMobile(),
+          show: !UiService.isMobile(),
           tooltip: {
             enabled: true
           }
         }
       },
-
       dividendChartOptions: {
         chart: {
+          height: 350,
           id: 'basic-bar',
           toolbar: {
             show: false
@@ -138,6 +138,15 @@ export default {
         },
         dataLabels: {
           enabled: false
+        },
+        xaxis: {
+          categories: [],
+          labels: {
+            show: !this.UiService.isMobile(),
+            formatter: function(val) {
+              return val
+            }
+          }
         },
         yaxis: {
           labels: {
@@ -149,13 +158,10 @@ export default {
           tooltip: {
             enabled: true
           }
-        },
-        xaxis: {
-          categories: []
         }
       },
       dividendSeries: [{
-        name: 'series-1',
+        name: '',
         data: []
       }]
 
