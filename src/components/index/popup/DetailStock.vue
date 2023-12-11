@@ -173,9 +173,21 @@ export default {
         symbol = this.$parent.$parent.selectedStock.mksc_shrn_iscd;
       }
 
+      console.log(symbol)
+      console.log(this.$parent.$parent.selectedStock)
+
+      let national = 'KR';
+      if(this.$parent.$parent.selectedStock.national && this.$parent.$parent.selectedStock.national !== 'KR') {
+        national = this.$parent.$parent.selectedStock.national;
+      }
+
+
       let res = await this.axios.get('/api/stock/chart/'.concat(this.chartType)
-          .concat('/KR')
+          .concat('/')
+          .concat(national)
           .concat('/').concat(symbol));
+
+      console.log(res)
       this.series[0].data = [];
 
       res.data.chartData.forEach(item => this.series[0].data.push({
