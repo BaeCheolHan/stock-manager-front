@@ -1,6 +1,16 @@
 <template>
+  <div class="flex" style="align-items: center">
+    <img
+        :src="'https://financialmodelingprep.com/image-stock/'.concat($parent.$parent.selectedStock.national === 'KR' ? $parent.$parent.selectedStock.symbol.concat('.KS') : $parent.$parent.selectedStock.symbol).concat('.png')"
+        :style="UiService.isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
+        style="border: 1px solid white; border-radius: 5px;"
+        class="mg-r-5"
+        @error="UiService.replaceStockImg($event)"
+    >
+    <h2>{{ $parent.$parent.selectedStock.name }}({{ $parent.$parent.selectedStock.symbol }})</h2>
+  </div>
   <div>
-    <h2>{{ $parent.$parent.selectedStock.name }}({{ $parent.$parent.selectedStock.symbol }}) 배당 수령 기록</h2>
+    <h2>배당 수령 내역</h2>
   </div>
   <div>
     <apexchart height="350" type="bar" :options="chartOptions" :series="series"></apexchart>

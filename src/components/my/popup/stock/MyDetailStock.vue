@@ -1,7 +1,14 @@
 <template>
   <div class="content" v-if="detail">
-    <div class="flex" style="justify-content: left">
-      <h2>{{ $parent.$parent.selectedStock.name }}({{ $parent.$parent.selectedStock.symbol }})
+    <div class="flex" style="justify-content: left; align-items: center">
+      <img
+          :src="'https://financialmodelingprep.com/image-stock/'.concat($parent.$parent.selectedStock.national === 'KR' ? $parent.$parent.selectedStock.symbol.concat('.KS') : $parent.$parent.selectedStock.symbol).concat('.png')"
+          :style="UiService.isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
+          style="border: 1px solid white; border-radius: 5px;"
+          class="mg-r-5"
+          @error="UiService.replaceStockImg($event)"
+      >
+      <h2>{{ $parent.$parent.selectedStock.name }}
         <span>(</span>
         <span :class="UiService.setUpDownArrowClass(detail.compareToYesterdaySign)" :style="UiService.setColorStyle(detail.compareToYesterdaySign)">
           {{ Math.floor(((detail.compareToYesterday / detail.nowPrice) * 100) * 100) / 100 }}%

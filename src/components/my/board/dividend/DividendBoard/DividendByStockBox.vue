@@ -3,9 +3,19 @@
     <v-card class="mg-b-5" v-for="dividend in dividends" :key="dividend.id" @click="openDividendByStockDetailPop(dividend)">
       <v-card-text>
         <div class="flex" style="justify-content: space-between">
-          <div>
-            <p style="font-size: 12px;"> {{ dividend.name }}({{ dividend.symbol }})</p>
-            <p style="font-size: 12px;">총 수령 배당금</p>
+          <div class="flex bold mg-b-10" style="justify-content: left; align-items: center; max-width: 60%;">
+            <img
+                :src="'https://financialmodelingprep.com/image-stock/'.concat(dividend.national === 'KR' ? dividend.symbol.concat('.KS') : dividend.symbol).concat('.png')"
+                :style="UiService.isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
+                style="border: 1px solid white; border-radius: 5px;"
+                class="mg-r-5"
+                @error="UiService.replaceStockImg($event)"
+            >
+            <p style="overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        max-width: 70%;
+                        word-break: break-all;">{{ dividend.name }}</p>
           </div>
           <div style="text-align: right">
             <p style="font-size: 12px;">{{ dividend.code }}({{ dividend.national }})</p>

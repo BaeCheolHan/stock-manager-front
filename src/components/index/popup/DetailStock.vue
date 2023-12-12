@@ -1,6 +1,20 @@
 <template>
   <div class="content" v-if="detail">
-    <h2>{{ $parent.$parent.selectedStock.hts_kor_isnm ? $parent.$parent.selectedStock.hts_kor_isnm : $parent.$parent.selectedStock.name}}({{ $parent.$parent.selectedStock.mksc_shrn_iscd ? $parent.$parent.selectedStock.mksc_shrn_iscd : $parent.$parent.selectedStock.symbol }})</h2>
+    <div class="flex" style="align-items: center">
+      <img
+          :src="'https://financialmodelingprep.com/image-stock/'.concat($parent.$parent.selectedStock.national === 'KR' ?
+          symbol.concat('.KS') : symbol).concat('.png')"
+          :style="UiService.isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
+          style="border: 1px solid white; border-radius: 5px;"
+          class="mg-r-5"
+          @error="UiService.replaceStockImg($event)"
+      >
+      <h2>{{ $parent.$parent.selectedStock.hts_kor_isnm ? $parent.$parent.selectedStock.hts_kor_isnm : $parent.$parent.selectedStock.name}}
+        ({{ symbol }})</h2>
+    </div>
+
+
+
     <div class="popup-wrap" style="padding: 10px 0 0;!important;">
 
       <div class="mg-b-20">
@@ -74,6 +88,7 @@ export default {
   },
   data: function () {
     return {
+      symbol: null,
       mainChartType: 'stock',
       detail: null,
       totalPrice: 0,
@@ -199,16 +214,9 @@ export default {
   },
   methods: {
     async init() {
-      let symbol;
-      if(this.$parent.$parent.selectedStock.symbol) {
-        symbol = this.$parent.$parent.selectedStock.symbol;
-      }
-
-      if(this.$parent.$parent.selectedStock.mksc_shrn_iscd) {
-        symbol = this.$parent.$parent.selectedStock.mksc_shrn_iscd;
-      }
+      this.symbol = this.$parent.$parent.selectedStock.mksc_shrn_iscd ? this.$parent.$parent.selectedStock.mksc_shrn_iscd : this.$parent.$parent.selectedStock.symbol;
       let res = await this.axios.get("/api/stock"
-          .concat("?symbol=").concat(symbol))
+          .concat("?symbol=").concat(this.symbol))
       this.detail = res.data.detail;
       this.series[0].name = this.$parent.$parent.selectedStock.name
       res.data.chartData.forEach(item => this.series[0].data.push({
