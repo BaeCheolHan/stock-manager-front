@@ -13,10 +13,7 @@
         ({{ symbol }})</h2>
     </div>
 
-
-
     <div class="popup-wrap" style="padding: 10px 0 0;!important;">
-
       <div class="mg-b-20">
         <v-tabs v-model="mainChartType" color="#e00000" align-tabs="end">
           <v-tab :key="'stock'" :value="'stock'">

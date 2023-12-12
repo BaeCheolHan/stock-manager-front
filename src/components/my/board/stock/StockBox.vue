@@ -18,7 +18,7 @@
                         white-space: nowrap;
                         max-width: 40%;
                         word-break: break-all;">{{ stock.name }}</p>
-              <p>({{ stock.symbol }}, <span :class="UiService.setUpDownArrowClass(stock.compareToYesterdaySign)"
+              <p>({{ stock.symbol }} <span :class="UiService.setUpDownArrowClass(stock.compareToYesterdaySign)"
                                                             :style="UiService.setColorStyle(stock.compareToYesterdaySign)">
                 {{ Math.floor(((stock.compareToYesterday / stock.nowPrice) * 100) * 100) / 100 }}%</span>)</p>
             </div>

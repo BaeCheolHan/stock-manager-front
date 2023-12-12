@@ -13,7 +13,7 @@
     <h2>배당 수령 내역</h2>
   </div>
   <div>
-    <apexchart height="350" type="bar" :options="chartOptions" :series="series"></apexchart>
+    <apexchart height="350" type="bar" :options="chartOptions" :series="series" />
   </div>
 
   <v-card class="mg-b-5" v-for="dividend in dividends" :key="dividend.id">
