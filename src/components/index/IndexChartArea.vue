@@ -184,7 +184,7 @@ export default {
         x: item.stck_bsop_date,
         y: [item.ovrs_nmix_oprc, item.ovrs_nmix_hgpr, item.ovrs_nmix_lwpr, item.ovrs_nmix_prpr]
       }))
-      this.snp.output2.forEach(item => this.nasdaqSeries[0].data.push({
+      this.nasdaq.output2.forEach(item => this.nasdaqSeries[0].data.push({
         x: item.stck_bsop_date,
         y: [item.ovrs_nmix_oprc, item.ovrs_nmix_hgpr, item.ovrs_nmix_lwpr, item.ovrs_nmix_prpr]
       }))
