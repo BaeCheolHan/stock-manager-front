@@ -18,8 +18,10 @@
       </v-tabs>
     </div>
   </div>
-
-  <div class="pd-5">
+  <div v-show="checkSpin" class="t-a-c mg-t-30">
+    <v-progress-circular color="primary" indeterminate :size="128"></v-progress-circular>
+  </div>
+  <div class="pd-5" v-show="!checkSpin">
     <!-- 주식 종목 item 영역 -->
     <StockBox :stocks="stocks"/>
   </div>
@@ -46,6 +48,7 @@ export default {
     return {
       bankAccountTab: null,
       accounts: [],
+      checkSpin: false,
       isShowRegAccountPop: false,
       treemapChartData: [
         {
@@ -80,6 +83,8 @@ export default {
       } else {
         url = "/api/stock/".concat(memberId);
       }
+      console.log(this.checkSpin)
+      this.checkSpin = true
       let res = await this.axios.get(url);
       if (res.data.stocks) {
         this.stocks = res.data.stocks;
@@ -90,6 +95,7 @@ export default {
       } else {
         this.stocks = [];
       }
+      this.checkSpin = false;
     },
   },
   methods: {
