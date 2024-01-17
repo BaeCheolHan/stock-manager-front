@@ -150,7 +150,12 @@ export default {
     reloadDividend: async function () {
       this.isSnowDividendRegPop = false;
       await this.getDividendChartData();
-      await this.getDividends();
+
+      if(this.dividendBoxType === 'history') {
+        await this.getDividends();
+      } else {
+        await this.getDividendsByItems();
+      }
     },
   }
 }
