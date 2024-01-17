@@ -11,11 +11,11 @@
       <button class="google-login-small mg-l-15" v-on:click="snsLoginBtn('google')"></button>
     </div>
     <div class="flex">
-      <div v-if="!UiService.isMobile()">
+      <div v-if="!UiService().isMobile()">
         <button class="search-btn" @click="searchStockPop">검색</button>
       </div>
       <ExchangeRate/>
-      <div v-if="UiService.isMobile()">
+      <div v-if="UiService().isMobile()">
         <button class="search-btn" @click="searchStockPop">검색</button>
       </div>
     </div>
@@ -66,6 +66,7 @@ import ExchangeRate from "@/components/header/ExchangeRate.vue";
 import Modal from "@/components/modal/Modal.vue";
 import SearchStock from "@/components/header/popup/SearchStock.vue";
 import DetailStock from "@/components/index/popup/DetailStock.vue";
+import UiService from "@/service/UiService";
 
 export default {
   components: {
@@ -97,6 +98,9 @@ export default {
     this.exchangeRate = sessionStorage.getItem('exchangeRate');
   },
   methods: {
+    UiService() {
+      return UiService
+    },
     closeSearchPop() {
       this.searchPop = false;
       this.isSearch = false;

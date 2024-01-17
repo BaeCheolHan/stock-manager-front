@@ -3,14 +3,15 @@
     <div class="flex" style="justify-content: left; align-items: center">
       <img
           :src="'https://financialmodelingprep.com/image-stock/'.concat($parent.$parent.selectedStock.national === 'KR' ? $parent.$parent.selectedStock.symbol.concat('.KS') : $parent.$parent.selectedStock.symbol).concat('.png')"
-          :style="UiService.isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
+          :style="UiService().isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
           style="border: 1px solid white; border-radius: 5px;"
           class="mg-r-5"
-          @error="UiService.replaceStockImg($event)"
+          @error="UiService().replaceStockImg($event)"
       >
       <h2>{{ $parent.$parent.selectedStock.name }}
         <span>(</span>
-        <span :class="UiService.setUpDownArrowClass(detail.compareToYesterdaySign)" :style="UiService.setColorStyle(detail.compareToYesterdaySign)">
+        <span :class="UiService().setUpDownArrowClass(detail.compareToYesterdaySign)"
+              :style="UiService().setColorStyle(detail.compareToYesterdaySign)">
           {{ Math.floor(((detail.compareToYesterday / detail.nowPrice) * 100) * 100) / 100 }}%
         </span>
         <span>)</span>
@@ -30,16 +31,27 @@
       <div class="price-chart" v-if="mainChartType == 'stock'">
         <div v-if="series" id="chart">
           <div class="flex mg-l-5">
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}" @click="changeChartType('D')">일별</button>
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'W', 'border-radius-8' : chartType !== 'W'}" @click="changeChartType('W')">주별</button>
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}" @click="changeChartType('M')">월별</button>
-            <button v-if="$parent.$parent.selectedStock.national == 'KR'" :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}" @click="changeChartType('Y')">년별</button>
+            <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}"
+                    @click="changeChartType('D')">일별
+            </button>
+            <button class="mg-r-10" :class="{'redBtn' : chartType === 'W', 'border-radius-8' : chartType !== 'W'}"
+                    @click="changeChartType('W')">주별
+            </button>
+            <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}"
+                    @click="changeChartType('M')">월별
+            </button>
+            <button v-if="$parent.$parent.selectedStock.national == 'KR'"
+                    :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}"
+                    @click="changeChartType('Y')">년별
+            </button>
           </div>
-          <apexchart :height="UiService.isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions" :series="series"></apexchart>
+          <apexchart :height="UiService().isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions"
+                     :series="series"></apexchart>
         </div>
       </div>
       <div class="dividend-history-chart" v-if="mainChartType == 'history'">
-        <apexchart :height="UiService.isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions" :series="dividendSeries"></apexchart>
+        <apexchart :height="UiService().isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions"
+                   :series="dividendSeries"></apexchart>
       </div>
       <div>
 
@@ -49,14 +61,21 @@
           <div>
             <p class="bold">시가 : {{ detail.startPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">최고가 : {{ detail.highPrice.toLocaleString("ko-KR") }}</p>
-            <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{ detail.dividendInfo.dividendRate.toLocaleString("ko-KR") }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
+            <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{
+                detail.dividendInfo.dividendRate.toLocaleString("ko-KR")
+              }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
             <p>PER : {{ detail.per }}</p>
             <p>EPS : {{ detail.eps }}</p>
           </div>
           <div>
             <div>
-              <span class="bold" :style="UiService.setColorStyle(detail.compareToYesterdaySign)">현재가 : {{ detail.nowPrice.toLocaleString("ko-KR") }}(</span>
-              <span class="bold" :style="UiService.setColorStyle(detail.compareToYesterdaySign)" :class="UiService.setUpDownArrowClass(detail.compareToYesterdaySign)">{{ detail.compareToYesterday.toLocaleString("ko-KR") }})</span>
+              <span class="bold" :style="UiService().setColorStyle(detail.compareToYesterdaySign)">현재가 : {{
+                  detail.nowPrice.toLocaleString("ko-KR")
+                }}(</span>
+              <span class="bold" :style="UiService().setColorStyle(detail.compareToYesterdaySign)"
+                    :class="UiService().setUpDownArrowClass(detail.compareToYesterdaySign)">{{
+                  detail.compareToYesterday.toLocaleString("ko-KR")
+                }})</span>
             </div>
             <p class="bold">최저가 : {{ detail.lowPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">배당율 : {{ detail.dividendInfo.annualDividend }}%</p>
@@ -67,7 +86,8 @@
         <v-divider class="mg-t-10 mg-b-10"></v-divider>
         <div class="flex" style="justify-content: space-between">
           <div>
-            <p class="bold" :style="setPlusMinusColor(detail.nowPrice - Math.floor(totalPrice / totalQuantity))" v-if="$parent.$parent.selectedStock.national == 'KR'">
+            <p class="bold" :style="setPlusMinusColor(detail.nowPrice - Math.floor(totalPrice / totalQuantity))"
+               v-if="$parent.$parent.selectedStock.national == 'KR'">
               평균가 : {{ Math.floor(totalPrice / totalQuantity).toLocaleString("ko-KR") }}원
             </p>
             <p class="bold" v-else>평균가 : ${{ Math.floor(totalPrice / totalQuantity).toLocaleString("ko-KR") }}</p>
@@ -82,14 +102,18 @@
             </p>
             <p class="bold" v-else>$ {{ Math.floor(totalPrice).toLocaleString("ko-KR") }}</p>
 
-            <p class="bold red" v-if="$parent.$parent.selectedStock.national == 'KR'"> {{ detail.totalDividend.toLocaleString('ko-KR') }}원</p>
+            <p class="bold red" v-if="$parent.$parent.selectedStock.national == 'KR'">
+              {{ detail.totalDividend.toLocaleString('ko-KR') }}원</p>
             <p class="bold red" v-else> ${{ detail.totalDividend.toLocaleString('ko-KR') }}</p>
 
-            <p class="bold" v-if="$parent.$parent.selectedStock.national == 'KR'" :style="setPlusMinusColor(rateOfReturn)">
-              {{ Math.floor((this.detail.nowPrice * this.totalQuantity)).toLocaleString('ko-KR') }}원 ({{ rateOfReturn.toLocaleString("ko-KR") }}원)
+            <p class="bold" v-if="$parent.$parent.selectedStock.national == 'KR'"
+               :style="setPlusMinusColor(rateOfReturn)">
+              {{ Math.floor((this.detail.nowPrice * this.totalQuantity)).toLocaleString('ko-KR') }}원
+              ({{ rateOfReturn.toLocaleString("ko-KR") }}원)
             </p>
             <p class="bold" v-else :style="setPlusMinusColor(rateOfReturn)">
-              ${{ Math.floor((this.detail.nowPrice * this.totalQuantity)).toLocaleString('ko-KR') }} (${{ rateOfReturn.toLocaleString("ko-KR") }})
+              ${{ Math.floor((this.detail.nowPrice * this.totalQuantity)).toLocaleString('ko-KR') }}
+              (${{ rateOfReturn.toLocaleString("ko-KR") }})
             </p>
           </div>
 
@@ -124,6 +148,7 @@
 
 import DividendByStockBox from "@/components/my/board/dividend/DividendBoard/DividendByStockBox.vue";
 import DividendHistoryBox from "@/components/my/board/dividend/DividendBoard/DividendHistoryBox.vue";
+import UiService from "@/service/UiService";
 
 export default {
   name: "MyDetailStock",
@@ -140,7 +165,7 @@ export default {
       totalPrice: 0,
       totalQuantity: 0,
       rateOfReturn: 0,
-      chartType:'D',
+      chartType: 'D',
       series: [{
         data: []
       }],
@@ -170,14 +195,14 @@ export default {
         xaxis: {
           type: 'category',
           labels: {
-            show: !this.UiService.isMobile(),
-            formatter: function(val) {
+            show: !this.UiService().isMobile(),
+            formatter: function (val) {
               return val
             }
           }
         },
         yaxis: {
-          show: !this.UiService.isMobile(),
+          show: !this.UiService().isMobile(),
           tooltip: {
             enabled: true
           }
@@ -197,8 +222,8 @@ export default {
         xaxis: {
           categories: [],
           labels: {
-            show: !this.UiService.isMobile(),
-            formatter: function(val) {
+            show: !this.UiService().isMobile(),
+            formatter: function (val) {
               return val
             }
           }
@@ -206,7 +231,7 @@ export default {
         yaxis: {
           labels: {
             show: true,
-            formatter: function(val) {
+            formatter: function (val) {
               return val.toLocaleString('ko-KR')
             }
           },
@@ -229,13 +254,19 @@ export default {
           .concat('/').concat(this.$parent.$parent.selectedStock.national)
           .concat('/').concat(this.$parent.$parent.selectedStock.symbol));
       this.series[0].data = [];
-      res.data.chartData.forEach(item => this.series[0].data.push({x: item.date, y: [item.open, item.high, item.low, item.close]}))
+      res.data.chartData.forEach(item => this.series[0].data.push({
+        x: item.date,
+        y: [item.open, item.high, item.low, item.close]
+      }))
     }
   },
   async created() {
     await this.init();
   },
   methods: {
+    UiService() {
+      return UiService
+    },
     async init() {
       let res = await this.axios.get("/api/stock/"
           .concat(JSON.parse(sessionStorage.getItem('userInfo')).memberId)
@@ -247,7 +278,10 @@ export default {
       this.detail.stocks.forEach(item => this.totalQuantity += item.quantity)
       this.rateOfReturn = Math.floor((this.detail.nowPrice * this.totalQuantity) - this.totalPrice);
       this.series[0].name = this.$parent.$parent.selectedStock.name
-      res.data.detail.chartData.forEach(item => this.series[0].data.push({x: item.date, y: [item.open, item.high, item.low, item.close]}))
+      res.data.detail.chartData.forEach(item => this.series[0].data.push({
+        x: item.date,
+        y: [item.open, item.high, item.low, item.close]
+      }))
 
 
       for (let data of res.data.detail.dividendInfo.dividendHistories) {

@@ -4,14 +4,14 @@
     <v-card class="mg-b-5 mg-t-10" v-for="stock in data" :key="stock.data_rank" @click="showStockDetail(stock)">
       <v-card-text>
         <div>
-          <div class="flex" :style="UiService.isMobileFont()">
+          <div class="flex" :style="UiService().isMobileFont()">
             <div>
               <div class="flex" style="justify-content: left;">
                 <span class="bold">{{ stock.data_rank }}. </span>
                 <span class="bold">{{ stock.hts_kor_isnm }}</span>
-                <div :style="UiService.setColorStyle(stock.prdy_vrss_sign)">
+                <div :style="UiService().setColorStyle(stock.prdy_vrss_sign)">
                   <span class="mg-l-5">
-                    (<span :class="UiService.setUpDownArrowClass(stock.prdy_vrss_sign)"></span>{{
+                    (<span :class="UiService().setUpDownArrowClass(stock.prdy_vrss_sign)"></span>{{
                       Number(stock.prdy_ctrt).toLocaleString('ko-KR')
                     }}%)
                   </span>
@@ -20,14 +20,14 @@
               <div class="flex">
                 <div>
                   <span class="bold">현재가 : </span>
-                  <span :style="UiService.setColorStyle(stock.prdy_vrss_sign)">{{
+                  <span :style="UiService().setColorStyle(stock.prdy_vrss_sign)">{{
                       Number(stock.stck_prpr).toLocaleString('ko-KR')
                     }} 원</span>
                 </div>
                 <div>
                   <span class="mg-l-20 bold">전일 대비 : </span>
-                  <span :style="UiService.setColorStyle(stock.prdy_vrss_sign)">
-                    <span :class="UiService.setUpDownArrowClass(stock.prdy_vrss_sign)"></span>
+                  <span :style="UiService().setColorStyle(stock.prdy_vrss_sign)">
+                    <span :class="UiService().setUpDownArrowClass(stock.prdy_vrss_sign)"></span>
                     {{ Number(stock.prdy_vrss).toLocaleString('ko-KR') }} 원
                 </span>
                 </div>
@@ -51,6 +51,7 @@
 
 import DetailStock from "@/components/index/popup/DetailStock";
 import Modal from "@/components/modal/Modal.vue";
+import UiService from "@/service/UiService";
 
 export default {
   name: "KrVolumeRankBox",
@@ -70,6 +71,9 @@ export default {
     this.data = res.data.data;
   },
   methods: {
+    UiService() {
+      return UiService
+    },
     showStockDetail(stock) {
       this.selectedStock = stock;
       this.isShowStockDetailPop = true

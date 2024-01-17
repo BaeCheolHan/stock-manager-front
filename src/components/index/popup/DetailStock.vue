@@ -4,10 +4,10 @@
       <img
           :src="'https://financialmodelingprep.com/image-stock/'.concat($parent.$parent.selectedStock.national === 'KR' ?
           symbol.concat('.KS') : symbol).concat('.png')"
-          :style="UiService.isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
+          :style="UiService().isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
           style="border: 1px solid white; border-radius: 5px;"
           class="mg-r-5"
-          @error="UiService.replaceStockImg($event)"
+          @error="UiService().replaceStockImg($event)"
       >
       <h2>{{ $parent.$parent.selectedStock.hts_kor_isnm ? $parent.$parent.selectedStock.hts_kor_isnm : $parent.$parent.selectedStock.name}}
         ({{ symbol }})</h2>
@@ -42,11 +42,11 @@
                     @click="changeChartType('Y')">년별
             </button>
           </div>
-          <apexchart :height="UiService.isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions" :series="series"></apexchart>
+          <apexchart :height="UiService().isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions" :series="series"></apexchart>
         </div>
       </div>
       <div class="dividend-history-chart" v-if="mainChartType === 'history'">
-        <apexchart :height="UiService.isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions" :series="dividendSeries"></apexchart>
+        <apexchart :height="UiService().isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions" :series="dividendSeries"></apexchart>
       </div>
       <div class="pd-10 border">
         <div class="flex" style="justify-content: space-between;">
@@ -59,8 +59,8 @@
           </div>
           <div>
             <div>
-              <span class="bold" :style="UiService.setColorStyle(detail.compareToYesterdaySign)">현재가 : {{ detail.nowPrice.toLocaleString("ko-KR") }}(</span>
-              <span class="bold" :style="UiService.setColorStyle(detail.compareToYesterdaySign)" :class="UiService.setUpDownArrowClass(detail.compareToYesterdaySign)">{{ detail.compareToYesterday.toLocaleString("ko-KR") }})</span>
+              <span class="bold" :style="UiService().setColorStyle(detail.compareToYesterdaySign)">현재가 : {{ detail.nowPrice.toLocaleString("ko-KR") }}(</span>
+              <span class="bold" :style="UiService().setColorStyle(detail.compareToYesterdaySign)" :class="UiService().setUpDownArrowClass(detail.compareToYesterdaySign)">{{ detail.compareToYesterday.toLocaleString("ko-KR") }})</span>
             </div>
             <p class="bold">최저가 : {{ detail.lowPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">배당율 : {{ detail.dividendInfo.annualDividend }}%</p>
@@ -121,14 +121,14 @@ export default {
         xaxis: {
           type: 'category',
           labels: {
-            show: !UiService.isMobile(),
+            show: !this.UiService().isMobile(),
             formatter: function (val) {
               return val
             }
           }
         },
         yaxis: {
-          show: !UiService.isMobile(),
+          show: !this.UiService().isMobile(),
           tooltip: {
             enabled: true
           }
@@ -148,7 +148,7 @@ export default {
         xaxis: {
           categories: [],
           labels: {
-            show: !this.UiService.isMobile(),
+            show: !this.UiService().isMobile(),
             formatter: function(val) {
               return val
             }
@@ -210,6 +210,9 @@ export default {
     await this.init();
   },
   methods: {
+    UiService() {
+      return UiService
+    },
     async init() {
       this.symbol = this.$parent.$parent.selectedStock.mksc_shrn_iscd ? this.$parent.$parent.selectedStock.mksc_shrn_iscd : this.$parent.$parent.selectedStock.symbol;
       let res = await this.axios.get("/api/stock"

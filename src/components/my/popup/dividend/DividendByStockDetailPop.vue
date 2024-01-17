@@ -2,10 +2,10 @@
   <div class="flex" style="align-items: center">
     <img
         :src="'https://financialmodelingprep.com/image-stock/'.concat($parent.$parent.selectedStock.national === 'KR' ? $parent.$parent.selectedStock.symbol.concat('.KS') : $parent.$parent.selectedStock.symbol).concat('.png')"
-        :style="UiService.isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
+        :style="UiService().isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
         style="border: 1px solid white; border-radius: 5px;"
         class="mg-r-5"
-        @error="UiService.replaceStockImg($event)"
+        @error="UiService().replaceStockImg($event)"
     >
     <h2>{{ $parent.$parent.selectedStock.name }}({{ $parent.$parent.selectedStock.symbol }})</h2>
   </div>
@@ -45,6 +45,8 @@
   </v-card>
 </template>
 <script>
+import UiService from "@/service/UiService";
+
 export default {
   name: "DividendByStockDetailPop",
   props: {},
@@ -76,6 +78,9 @@ export default {
     await this.init();
   },
   methods: {
+    UiService() {
+      return UiService
+    },
     async init() {
       this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
       if (this.userInfo) {

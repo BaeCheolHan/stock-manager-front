@@ -1,5 +1,5 @@
 <template>
-  <div class="content" :style="UiService.isMobileFont()">
+  <div class="content" :style="UiService().isMobileFont()">
     <StockIcon class="mg-b-10" @click="showRegStockPop"/>
     <div v-if="stocks">
       <v-card class="mg-b-5" v-for="stock in stocks" :key="stock.id" @click="showStockDetail(stock)">
@@ -8,18 +8,18 @@
             <div class="flex bold mg-b-10" style="justify-content: left; align-items: center;">
               <img
                   :src="'https://financialmodelingprep.com/image-stock/'.concat(stock.national === 'KR' ? stock.symbol.concat('.KS') : stock.symbol).concat('.png')"
-                  :style="UiService.isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
+                  :style="UiService().isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
                   style="border: 1px solid white; border-radius: 5px;"
                   class="mg-r-5"
-                  @error="UiService.replaceStockImg($event)"
+                  @error="UiService().replaceStockImg($event)"
               >
               <p style="overflow: hidden;
                         text-overflow: ellipsis;
                         white-space: nowrap;
                         max-width: 40%;
                         word-break: break-all;">{{ stock.name }}</p>
-              <p>({{ stock.symbol }} <span :class="UiService.setUpDownArrowClass(stock.compareToYesterdaySign)"
-                                                            :style="UiService.setColorStyle(stock.compareToYesterdaySign)">
+              <p>({{ stock.symbol }} <span :class="UiService().setUpDownArrowClass(stock.compareToYesterdaySign)"
+                                                            :style="UiService().setColorStyle(stock.compareToYesterdaySign)">
                 {{ Math.floor(((stock.compareToYesterday / stock.nowPrice) * 100) * 100) / 100 }}%</span>)</p>
             </div>
             <div class="flex" style="justify-content: space-between; font-size: 12px;">
@@ -45,17 +45,17 @@
               <div class="t-a-r w-55">
                 <div class="flex" style="justify-content: right">
                   <span>현재가 : </span>
-                  <span :style="UiService.setColorStyle(stock.compareToYesterdaySign)"></span>
-                  <span :style="UiService.setColorStyle(stock.compareToYesterdaySign)">{{
+                  <span :style="UiService().setColorStyle(stock.compareToYesterdaySign)"></span>
+                  <span :style="UiService().setColorStyle(stock.compareToYesterdaySign)">{{
                       stock.nowPrice.toLocaleString()
                     }}</span>
                   <div v-if="stock.compareToYesterdaySign != 3">
-                    <span :style="UiService.setColorStyle(stock.compareToYesterdaySign)">(</span>
-                    <span :style="UiService.setColorStyle(stock.compareToYesterdaySign)"
-                          :class="UiService.setUpDownArrowClass(stock.compareToYesterdaySign)"> {{
+                    <span :style="UiService().setColorStyle(stock.compareToYesterdaySign)">(</span>
+                    <span :style="UiService().setColorStyle(stock.compareToYesterdaySign)"
+                          :class="UiService().setUpDownArrowClass(stock.compareToYesterdaySign)"> {{
                         stock.compareToYesterday.toLocaleString("ko-KR")
                       }}</span>
-                    <span :style="UiService.setColorStyle(stock.compareToYesterdaySign)">)</span>
+                    <span :style="UiService().setColorStyle(stock.compareToYesterdaySign)">)</span>
                   </div>
                 </div>
                 <p>
@@ -109,6 +109,8 @@ import Modal from "@/components/modal/Modal.vue";
 import SaveStock from "@/components/my/popup/stock/SaveStock.vue";
 import MyDetailStock from "@/components/my/popup/stock/MyDetailStock.vue";
 import StockIcon from "@/components/etc/button/StockIcon.vue";
+import UiService from "@/service/UiService";
+
 
 export default {
   name: "StockBox",
@@ -131,6 +133,9 @@ export default {
   },
   watch: {},
   methods: {
+    UiService() {
+      return UiService;
+    },
     showRegStockPop() {
       this.isShowRegStockPop = true;
     },

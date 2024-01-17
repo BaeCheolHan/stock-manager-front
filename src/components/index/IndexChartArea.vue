@@ -1,9 +1,9 @@
 <template>
-  <div class="flex mg-t-5" style="justify-content: right;" :style="UiService.isMobileFont()">
+  <div class="flex mg-t-5" style="justify-content: right;" :style="UiService().isMobileFont()">
     <span>* 각 지수는 3분 주기로 갱신합니다.</span>
   </div>
   <div class="flex mg-t-5" style="justify-content: right;">
-    <div class="flex" :style="UiService.isMobileFont()">
+    <div class="flex" :style="UiService().isMobileFont()">
       <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}"
               @click="changeChartType('D')">일별
       </button>
@@ -23,11 +23,11 @@
       <div style="min-width: 165px; width: 40%" v-if="kospi">
         <div class="flex" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">KOSPI</h4>
-          <div :class="UiService.setColorClass(kospi.output1.prdy_vrss_sign)"
-               :style="UiService.isMobileFont()">
+          <div :class="UiService().setColorClass(kospi.output1.prdy_vrss_sign)"
+               :style="UiService().isMobileFont()">
             <span>{{ kospi.output1.bstp_nmix_prpr }}</span>
             <span>
-              (<span :class="UiService.setUpDownArrowClass(kospi.output1.prdy_vrss_sign)"></span>
+              (<span :class="UiService().setUpDownArrowClass(kospi.output1.prdy_vrss_sign)"></span>
             </span>
             <span>{{ kospi.output1.bstp_nmix_prdy_vrss }})</span>
           </div>
@@ -37,11 +37,11 @@
       <div style="min-width: 165px; width: 40%" v-if="kosdaq">
         <div class="flex" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">KOSDAQ</h4>
-          <div :class="UiService.setColorClass(kosdaq.output1.prdy_vrss_sign)"
-               :style="UiService.isMobileFont()">
+          <div :class="UiService().setColorClass(kosdaq.output1.prdy_vrss_sign)"
+               :style="UiService().isMobileFont()">
             <span>{{ kosdaq.output1.bstp_nmix_prpr }}</span>
             <span>
-              (<span :class="UiService.setUpDownArrowClass(kosdaq.output1.prdy_vrss_sign)"></span>
+              (<span :class="UiService().setUpDownArrowClass(kosdaq.output1.prdy_vrss_sign)"></span>
             </span>
             <span>{{ kosdaq.output1.bstp_nmix_prdy_vrss }})</span>
           </div>
@@ -54,10 +54,10 @@
       <div style="min-width: 165px; width: 40%" v-if="snp">
         <div class="flex" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">S&P500</h4>
-          <div :class="UiService.setColorClass(snp.output1.prdy_vrss_sign)" :style="UiService.isMobileFont()">
+          <div :class="UiService().setColorClass(snp.output1.prdy_vrss_sign)" :style="UiService().isMobileFont()">
             <span>{{ snp.output1.ovrs_nmix_prpr }}</span>
             <span>
-              (<span :class="UiService.setUpDownArrowClass(snp.output1.prdy_vrss_sign)"></span>
+              (<span :class="UiService().setUpDownArrowClass(snp.output1.prdy_vrss_sign)"></span>
             </span>
             <span>{{ snp.output1.ovrs_nmix_prdy_vrss }})</span>
           </div>
@@ -67,11 +67,11 @@
       <div style="min-width: 165px; width: 40%" v-if="nasdaq">
         <div class="flex" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">NASDAQ</h4>
-          <div :class="UiService.setColorClass(nasdaq.output1.prdy_vrss_sign)"
-               :style="UiService.isMobileFont()">
+          <div :class="UiService().setColorClass(nasdaq.output1.prdy_vrss_sign)"
+               :style="UiService().isMobileFont()">
             <span>{{ nasdaq.output1.ovrs_nmix_prpr }}</span>
             <span>
-              (<span :class="UiService.setUpDownArrowClass(nasdaq.output1.prdy_vrss_sign)"></span>
+              (<span :class="UiService().setUpDownArrowClass(nasdaq.output1.prdy_vrss_sign)"></span>
             </span>
             <span>{{ nasdaq.output1.ovrs_nmix_prdy_vrss }})</span>
           </div>
@@ -85,6 +85,8 @@
 
 
 <script>
+import UiService from "@/service/UiService";
+
 export default {
   name: "IndexChartArea",
   data: function () {
@@ -138,14 +140,14 @@ export default {
         xaxis: {
           type: 'category',
           labels: {
-            show: !this.UiService.isMobile(),
+            show: !this.UiService().isMobile(),
             formatter: function (val) {
               return val
             }
           }
         },
         yaxis: {
-          show: !this.UiService.isMobile(),
+          show: !this.UiService().isMobile(),
           tooltip: {
             enabled: false
           }
@@ -162,6 +164,9 @@ export default {
     await this.getIndexChartData();
   },
   methods: {
+    UiService() {
+      return UiService
+    },
     async getIndexChartData() {
       let res = await this.axios.get('/api/dashboard/index-chart/'.concat(this.chartType));
       this.kospi = res.data.kospi;
