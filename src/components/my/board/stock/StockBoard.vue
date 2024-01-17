@@ -83,7 +83,6 @@ export default {
       } else {
         url = "/api/stock/".concat(memberId);
       }
-      console.log(this.checkSpin)
       this.checkSpin = true
       let res = await this.axios.get(url);
       if (res.data.stocks) {

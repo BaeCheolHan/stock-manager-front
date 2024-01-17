@@ -1,5 +1,8 @@
 <template>
-  <div class="content">
+  <div v-show="checkSpin" class="t-a-c mg-t-30">
+    <v-progress-circular color="primary" indeterminate :size="128"></v-progress-circular>
+  </div>
+  <div class="content" v-show="!checkSpin">
     <h2>배당금 입력</h2>
     <div class="popup-wrap">
       <div class="mg-t-10" v-if="!this.selectedStock">
@@ -59,6 +62,7 @@ export default {
   },
   data() {
     return {
+      checkSpin: false,
       processing: false,
       userInfo: null,
       stocks: null,
@@ -124,6 +128,7 @@ export default {
       }
 
       this.startProcessing();
+      this.checkSpin = true;
 
       let param = {
         memberId: JSON.parse(sessionStorage.getItem('userInfo')).memberId,
@@ -134,7 +139,7 @@ export default {
 
       try {
         let res = await this.axios.post("/api/dividend", param);
-
+        this.checkSpin = false;
         if (res.data.code === 'SUCCESS') {
           alert("등록 되었습니다.");
           this.endProcessing();

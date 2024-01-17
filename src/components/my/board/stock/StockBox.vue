@@ -147,22 +147,6 @@ export default {
       this.selectedStock = stock
       this.isShowStockDetailPop = true
     },
-    // replaceStockImg(e) {
-    //   let arr = e.target.src.split('/');
-    //   let fileName = arr[arr.length -1];
-    //   let logo = new Image();
-    //   logo.onload = function () {
-    //     e.target.src = 'https://stock.hws.pe.kr/logo/'.concat(fileName);
-    //   };
-    //
-    //   logo.onerror = function() {
-    //     e.target.src = './bank-icons/default-bank.png';
-    //   }
-    //
-    //   logo.src = 'https://stock.hws.pe.kr/logo/'.concat(fileName);
-    //
-    // }
-
   }
 };
 </script>

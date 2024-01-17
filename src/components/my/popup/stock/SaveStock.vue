@@ -1,5 +1,8 @@
 <template>
-  <div class="content">
+  <div v-show="checkSpin" class="t-a-c mg-t-30">
+    <v-progress-circular color="primary" indeterminate :size="128"></v-progress-circular>
+  </div>
+  <div class="content" v-show="!checkSpin">
     <h2>주식 등록</h2>
     <div class="popup-wrap">
 
@@ -87,6 +90,7 @@ export default {
   },
   data: function () {
     return {
+      checkSpin:false,
       processing: false,
       userInfo: null,
       bankAccounts: null,
@@ -167,16 +171,16 @@ export default {
         quantity: this.quantity,
         price: this.price
       }
+      this.checkSpin = true;
       this.startProcessing();
       let res = await this.axios.post('/api/stock', param);
-
+      this.checkSpin = false;
       if (res.data.code === 'SUCCESS') {
         alert("등록되었습니다.");
         this.endProcessing();
         this.$parent.$parent.isShowRegStockPop = false;
         await this.emitter.emit('reloadStock');
       }
-
     },
     searchBank: function (event) {
       this.copiedBankAccounts = this.bankAccounts.filter(item => {

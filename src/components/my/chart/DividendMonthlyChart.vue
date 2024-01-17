@@ -27,6 +27,19 @@ export default {
             show: false
           }
         },
+        // fill: {
+        //   type: 'gradient',
+        //   gradient: {
+        //     shadeIntensity: 1,
+        //     type: "vertical",
+        //     opacityFrom: 0.7,
+        //     opacityTo: 0.9,
+        //     colorStops: [
+        //       {offset: 0, color: "#fbc2eb", opacity: 1},
+        //       {offset: 100, color: "#a18cd1", opacity: 1}
+        //     ]
+        //   }
+        // },
         plotOptions: {
           bar: {
             horizontal: false,
