@@ -79,6 +79,36 @@
         <apexchart type="candlestick" :options="chartOptions" :series="nasdaqSeries"></apexchart>
       </div>
     </div>
+
+    <div class="flex" style="flex-wrap: wrap; max-width: 90%; margin: 0 auto; justify-content: space-around">
+      <div style="min-width: 165px; width: 40%" v-if="daw">
+        <div class="flex" style="justify-content: flex-start; align-items: center">
+          <h4 class="t-a-c mg-r-15">다우존스</h4>
+          <div :class="UiService().setColorClass(daw.output1.prdy_vrss_sign)" :style="UiService().isMobileFont()">
+            <span>{{ daw.output1.ovrs_nmix_prpr }}</span>
+            <span>
+              (<span :class="UiService().setUpDownArrowClass(daw.output1.prdy_vrss_sign)"></span>
+            </span>
+            <span>{{ daw.output1.ovrs_nmix_prdy_vrss }})</span>
+          </div>
+        </div>
+        <apexchart type="candlestick" :options="chartOptions" :series="dawSeries"></apexchart>
+      </div>
+      <div style="min-width: 165px; width: 40%" v-if="philadelphia">
+        <div class="flex" style="justify-content: flex-start; align-items: center">
+          <h4 class="t-a-c mg-r-15">필라델피아 반도체 지수</h4>
+          <div :class="UiService().setColorClass(philadelphia.output1.prdy_vrss_sign)"
+               :style="UiService().isMobileFont()">
+            <span>{{ philadelphia.output1.ovrs_nmix_prpr }}</span>
+            <span>
+              (<span :class="UiService().setUpDownArrowClass(philadelphia.output1.prdy_vrss_sign)"></span>
+            </span>
+            <span>{{ philadelphia.output1.ovrs_nmix_prdy_vrss }})</span>
+          </div>
+        </div>
+        <apexchart type="candlestick" :options="chartOptions" :series="philadelphiaSeries"></apexchart>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -114,6 +144,17 @@ export default {
           data: []
         }
       ],
+      dawSeries: [
+        {
+          data: []
+        }
+      ],
+      philadelphiaSeries: [
+        {
+          data: []
+        }
+      ],
+
       chartOptions: {
         chart: {
           height: 350,
@@ -173,10 +214,14 @@ export default {
       this.kosdaq = res.data.kosdaq;
       this.snp = res.data.snp;
       this.nasdaq = res.data.nasdaq;
+      this.daw = res.data.daw;
+      this.philadelphia = res.data.philadelphia;
       this.kospiSeries[0].data = [];
       this.kosdaqSeries[0].data = [];
       this.snpSeries[0].data = [];
       this.nasdaqSeries[0].data = [];
+      this.dawSeries[0].data = [];
+      this.philadelphiaSeries[0].data = [];
       this.kospi.output2.forEach(item => this.kospiSeries[0].data.push({
         x: item.stck_bsop_date,
         y: [item.bstp_nmix_oprc, item.bstp_nmix_hgpr, item.bstp_nmix_lwpr, item.bstp_nmix_prpr]
@@ -193,6 +238,17 @@ export default {
         x: item.stck_bsop_date,
         y: [item.ovrs_nmix_oprc, item.ovrs_nmix_hgpr, item.ovrs_nmix_lwpr, item.ovrs_nmix_prpr]
       }))
+
+      this.daw.output2.forEach(item => this.dawSeries[0].data.push({
+        x: item.stck_bsop_date,
+        y: [item.ovrs_nmix_oprc, item.ovrs_nmix_hgpr, item.ovrs_nmix_lwpr, item.ovrs_nmix_prpr]
+      }))
+      this.philadelphia.output2.forEach(item => this.philadelphiaSeries[0].data.push({
+        x: item.stck_bsop_date,
+        y: [item.ovrs_nmix_oprc, item.ovrs_nmix_hgpr, item.ovrs_nmix_lwpr, item.ovrs_nmix_prpr]
+      }))
+
+
     },
     changeChartType(val) {
       this.chartType = val;
