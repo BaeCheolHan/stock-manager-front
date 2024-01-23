@@ -1,11 +1,10 @@
-
 class UiService {
     setUpDownArrowClass(prdy_vrss_sign) {
-        if(prdy_vrss_sign == 1 || prdy_vrss_sign == 2) {
+        if (prdy_vrss_sign == 1 || prdy_vrss_sign == 2) {
             return 'icon-up'
         }
 
-        if(prdy_vrss_sign == 4 || prdy_vrss_sign == 5) {
+        if (prdy_vrss_sign == 4 || prdy_vrss_sign == 5) {
             return 'icon-down'
         }
 
@@ -13,11 +12,11 @@ class UiService {
     }
 
     setColorClass(prdy_vrss_sign) {
-        if(prdy_vrss_sign == 1 || prdy_vrss_sign == 2) {
+        if (prdy_vrss_sign == 1 || prdy_vrss_sign == 2) {
             return 'red'
         }
 
-        if(prdy_vrss_sign == 4 || prdy_vrss_sign == 5) {
+        if (prdy_vrss_sign == 4 || prdy_vrss_sign == 5) {
             return 'blue'
         }
 
@@ -25,11 +24,11 @@ class UiService {
     }
 
     setColorStyle(prdy_vrss_sign) {
-        if(prdy_vrss_sign == 1 || prdy_vrss_sign == 2) {
+        if (prdy_vrss_sign == 1 || prdy_vrss_sign == 2) {
             return 'color : red;'
         }
 
-        if(prdy_vrss_sign == 4 || prdy_vrss_sign == 5) {
+        if (prdy_vrss_sign == 4 || prdy_vrss_sign == 5) {
             return 'color: blue'
         }
 
@@ -58,15 +57,22 @@ class UiService {
         }
     }
 
+    getStockLogo(stock) {
+        let symbol = stock.symbol;
+        if (stock.national === 'KR') symbol = symbol.concat('.KS')
+        if (stock.national === 'JP') symbol = symbol.concat('.T')
+        return symbol;
+    }
+
     replaceStockImg(e) {
         let arr = e.target.src.split('/');
-        let fileName = arr[arr.length -1];
+        let fileName = arr[arr.length - 1];
         let logo = new Image();
         logo.onload = function () {
             e.target.src = 'https://stock.hws.pe.kr/logo/'.concat(fileName);
         };
 
-        logo.onerror = function() {
+        logo.onerror = function () {
             e.target.src = './bank-icons/default-bank.png';
         }
 
@@ -74,4 +80,5 @@ class UiService {
 
     }
 }
+
 export default new UiService();

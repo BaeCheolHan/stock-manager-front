@@ -2,8 +2,7 @@
   <div class="content" v-if="detail">
     <div class="flex" style="align-items: center">
       <img
-          :src="'https://financialmodelingprep.com/image-stock/'.concat($parent.$parent.selectedStock.national === 'KR' ?
-          symbol.concat('.KS') : symbol).concat('.png')"
+          :src="'https://financialmodelingprep.com/image-stock/'.concat(UiService().getStockLogo($parent.$parent.selectedStock)).concat('.png')"
           :style="UiService().isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
           style="border: 1px solid white; border-radius: 5px;"
           class="mg-r-5"

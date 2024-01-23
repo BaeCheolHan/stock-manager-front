@@ -96,7 +96,7 @@
       </div>
       <div style="min-width: 165px; width: 40%" v-if="philadelphia">
         <div class="flex" style="justify-content: flex-start; align-items: center">
-          <h4 class="t-a-c mg-r-15">필라델피아 반도체 지수</h4>
+          <h4 class="t-a-c mg-r-15">필라델피아 <br/>반도체 지수</h4>
           <div :class="UiService().setColorClass(philadelphia.output1.prdy_vrss_sign)"
                :style="UiService().isMobileFont()">
             <span>{{ philadelphia.output1.ovrs_nmix_prpr }}</span>
