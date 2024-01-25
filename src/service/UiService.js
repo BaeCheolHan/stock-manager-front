@@ -58,7 +58,7 @@ class UiService {
     }
 
     getStockLogo(stock) {
-        let symbol = stock.symbol;
+        let symbol = stock.symbol ? stock.symbol : stock.mksc_shrn_iscd;
         if (stock.national === 'KR') symbol = symbol.concat('.KS')
         if (stock.national === 'JP') symbol = symbol.concat('.T')
         return symbol;
