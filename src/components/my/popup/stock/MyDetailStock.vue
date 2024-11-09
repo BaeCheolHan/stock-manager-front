@@ -62,7 +62,7 @@
             <p class="bold">시가 : {{ detail.startPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">최고가 : {{ detail.highPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{
-                detail.dividendInfo.dividendRate.toLocaleString("ko-KR")
+                dividendRate.toLocaleString("ko-KR")
               }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
             <p>PER : {{ detail.per }}</p>
             <p>EPS : {{ detail.eps }}</p>
@@ -78,7 +78,7 @@
                 }})</span>
             </div>
             <p class="bold">최저가 : {{ detail.lowPrice.toLocaleString("ko-KR") }}</p>
-            <p class="bold">배당율 : {{ detail.dividendInfo.annualDividend }}%</p>
+            <p class="bold">배당율 : {{ annualDividend }}%</p>
             <p>PBR : {{ detail.pbr }}</p>
             <p>BPS : {{ detail.bps }}</p>
           </div>
@@ -240,6 +240,8 @@ export default {
           }
         }
       },
+      dividendRate: 0,
+      annualDividend: 0,
       dividendSeries: [{
         name: '',
         data: []
@@ -274,6 +276,8 @@ export default {
           .concat("/").concat(this.$parent.$parent.selectedStock.code)
           .concat("?symbol=").concat(this.$parent.$parent.selectedStock.symbol))
       this.detail = res.data.detail;
+      this.dividendRate = this.detail.dividendInfo != null ? this.detail.dividendInfo.dividendRate : 0
+      this.annualDividend = this.detail.dividendInfo != null ? this.detail.dividendInfo.annualDividend: 0
       this.detail.stocks.forEach(item => this.totalPrice += (item.quantity * item.price))
       this.detail.stocks.forEach(item => this.totalQuantity += item.quantity)
       this.rateOfReturn = Math.floor((this.detail.nowPrice * this.totalQuantity) - this.totalPrice);
@@ -283,11 +287,13 @@ export default {
         y: [item.open, item.high, item.low, item.close]
       }))
 
-
-      for (let data of res.data.detail.dividendInfo.dividendHistories) {
-        this.dividendChartOptions.xaxis.categories.push(data.date);
-        this.dividendSeries[0].data.push(data.dividend)
+      if(this.detail.dividendInfo) {
+        for (let data of this.detail.dividendInfo.dividendHistories) {
+          this.dividendChartOptions.xaxis.categories.push(data.date);
+          this.dividendSeries[0].data.push(data.dividend)
+        }
       }
+
     },
     yyyyMMdd(value) {
       if (value === '') return '';
