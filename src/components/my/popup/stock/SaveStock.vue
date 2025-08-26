@@ -8,12 +8,11 @@
 
       <div class="mg-t-10" v-if="!this.selectedBank">
         <div class="searchSelect searchBankSelect">
-          <input class="form-control" placeholder="계좌 별칭" @focus="bankSelectFocus"
-                 @keyup="searchBank($event)">
-          <i class="ti-angle-down"></i>
+          <input class="form-control" placeholder="계좌 별칭" @focus="isBankOpen = true" v-model="bankKeyword" @input="searchBank">
+          <i class="ti-angle-down" @click="isBankOpen = !isBankOpen"></i>
         </div>
-        <ul class="searchSelectBox searchBankSelectBox" @blur="closeBankDropDown" @focus="bankSelectFocus">
-          <li v-for="bank in copiedBankAccounts" :key="bank" @click="selectBank(bank)">
+        <ul class="searchSelectBox" v-show="isBankOpen">
+          <li v-for="bank in copiedBankAccounts" :key="bank.id" @click="selectBank(bank)">
             <img class="bank-icon" :src="'./bank-icons/'.concat(bank.bankInfo.bankCode).concat('.jpg')"
                  @error="replaceBankDefaultImg">
             <span>{{ bank.alias }}</span>
@@ -48,13 +47,12 @@
         </div>
         <div class="mg-t-10" v-if="!this.selectedStock">
           <div class="searchSelect searchStockSelect">
-            <input class="form-control" placeholder="종목명" @focus="stockSelectFocus"
-                   @keyup="searchStock($event)">
-            <i class="ti-angle-down"></i>
+            <input class="form-control" placeholder="종목명" @focus="isStockOpen = true"
+                   v-model="stockKeyword" @input="searchStock">
+            <i class="ti-angle-down" @click="isStockOpen = !isStockOpen"></i>
           </div>
-          <ul class="searchSelectBox searchStockSelectBox" @blur="closeStockDropDown"
-              @focus="stockSelectFocus">
-            <li v-for="stock in copyStocks" :key="stock" @click="selectStock(stock)">
+          <ul class="searchSelectBox" v-show="isStockOpen">
+            <li v-for="stock in copyStocks" :key="stock.symbol" @click="selectStock(stock)">
               <span>{{ stock.name }} ({{ stock.symbol }})</span>
             </li>
           </ul>
@@ -105,6 +103,10 @@ export default {
       selectedCode: "KOSPI",
       quantity: null,
       price: null,
+      isBankOpen: false,
+      bankKeyword: '',
+      isStockOpen: false,
+      stockKeyword: '',
     }
   },
   watch: {
@@ -181,40 +183,28 @@ export default {
         this.$emit('saved')
       }
     },
-    searchBank: function (event) {
-      this.copiedBankAccounts = this.bankAccounts.filter(item => {
-        return item.alias.replace(' ', '').includes(event.target.value)
-      });
+    searchBank: function () {
+      const v = (this.bankKeyword || '').replace(' ', '')
+      this.copiedBankAccounts = this.bankAccounts.filter(item => item.alias.replace(' ', '').includes(v))
     },
-    searchStock: function (event) {
-      this.copyStocks = this.stocks.filter(item => {
-        return (item.name.toString().toLowerCase().replace(' ', '').includes(event.target.value.toLowerCase().replace(' ', '')) ||
-            item.symbol.toString().toLowerCase().replace(' ', '').includes(event.target.value.toLowerCase().replace(' ', '')))
-      });
+    searchStock: function () {
+      const v = (this.stockKeyword || '').toLowerCase().replace(' ', '')
+      this.copyStocks = this.stocks.filter(item => (
+          item.name.toString().toLowerCase().replace(' ', '').includes(v) ||
+          item.symbol.toString().toLowerCase().replace(' ', '').includes(v)
+      ));
     },
     replaceBankDefaultImg(e) {
       e.target.src = './bank-icons/default-bank.png';
     },
-    closeBankDropDown: function () {
-      document.getElementsByClassName('searchBankSelectBox')[0].style.display = "none";
-    },
-    closeStockDropDown: function () {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "none";
-    },
-    bankSelectFocus: function () {
-      document.getElementsByClassName('searchBankSelectBox')[0].style.display = "";
-    },
-    stockSelectFocus: function () {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "";
-    },
     selectBank: function (bank) {
-      document.getElementsByClassName('searchBankSelectBox')[0].style.display = "none";
+      this.isBankOpen = false;
       this.selectedBank = bank;
       this.national = this.selectedBank.personalBankAccountSetting.defaultNational;
       this.selectedCode = this.selectedBank.personalBankAccountSetting.defaultCode;
     },
     selectStock: function (stock) {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "none";
+      this.isStockOpen = false;
       this.selectedStock = stock;
     },
     cancelSelectBank: function () {

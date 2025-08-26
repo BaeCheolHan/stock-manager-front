@@ -7,12 +7,12 @@
     <div class="popup-wrap">
       <div class="mg-t-10" v-if="!this.selectedStock">
         <div class="searchSelect searchStockSelect">
-          <input class="form-control" placeholder="종목이 나오지 않을 경우 티커를 입력" @focus="stockSelectFocus"
-                 @keyup="searchStock($event)">
-          <i class="ti-angle-down"></i>
+          <input class="form-control" placeholder="종목이 나오지 않을 경우 티커를 입력" @focus="isDropdownOpen = true"
+                 v-model="keyword" @input="searchStock">
+          <i class="ti-angle-down" @click="isDropdownOpen = !isDropdownOpen"></i>
         </div>
-        <ul class="searchSelectBox searchStockSelectBox" @blur="closeStockDropDown" @focus="stockSelectFocus">
-          <li v-for="stock in copyStocks" :key="stock" @click="selectStock(stock)">
+        <ul class="searchSelectBox" v-show="isDropdownOpen">
+          <li v-for="stock in copyStocks" :key="stock.symbol" @click="selectStock(stock)">
             <span>{{ stock.name }} ({{ stock.symbol }})</span>
           </li>
         </ul>
@@ -71,6 +71,8 @@ export default {
       dividend: null,
       date: null,
       symbol: null,
+      isDropdownOpen: false,
+      keyword: '',
     }
   },
   watch: {},
@@ -89,24 +91,17 @@ export default {
     endProcessing() {
       this.processing = false
     },
-    stockSelectFocus() {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "";
-    },
     selectStock(stock) {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "none";
+      this.isDropdownOpen = false;
       this.selectedStock = stock;
     },
     cancelSelectStock() {
       this.selectedStock = null;
     },
-    searchStock(event) {
-      this.copyStocks = this.stocks.filter(item => {
-        return item.name.toString().replace(' ', '').includes(event.target.value)
-      });
-      this.symbol = event.target.value;
-    },
-    closeStockDropDown() {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "none";
+    searchStock() {
+      const v = (this.keyword || '').toString().toLowerCase().replace(' ', '')
+      this.copyStocks = this.stocks.filter(item => item.name.toString().toLowerCase().replace(' ', '').includes(v))
+      this.symbol = this.keyword
     },
     async saveDividend() {
       if (!this.selectedStock) {
