@@ -32,6 +32,7 @@
 
 
 <script>
+import { useNotify } from '@/composables/useNotify'
 
 export default {
   name: "DividendBox",
@@ -41,10 +42,16 @@ export default {
   },
   methods: {
     async removeHistory(id) {
+      const { success, error } = useNotify()
       if(confirm('삭제 하시겠습니까?')) {
         const { DividendsService } = await import('@/service/dividends')
-        await DividendsService.removeDividend(id)
-        this.$emit('reload');
+        try {
+          await DividendsService.removeDividend(id)
+          success('삭제되었습니다.')
+          this.$emit('reload');
+        } catch (e) {
+          error('삭제 중 오류가 발생했습니다.')
+        }
       }
     }
   }

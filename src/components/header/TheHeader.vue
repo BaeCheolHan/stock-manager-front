@@ -4,11 +4,11 @@
   </header>
   <div class="flex header">
     <div class="profile-wrap" style="font-size: 15px;" v-if="userInfo">
-      <li class="ti-angle-double-right mg-l-10 mg-r-15" @click="openNav" style="cursor:pointer"></li>
+      <button class="ti-angle-double-right mg-l-10 mg-r-15" @click="openNav" style="cursor:pointer" aria-label="메뉴 열기"></button>
     </div>
     <div class="profile-wrap" v-if="!userInfo">
-      <button class="kakao-login-small mg-l-15" v-on:click="snsLoginBtn('kakao')"></button>
-      <button class="google-login-small mg-l-15" v-on:click="snsLoginBtn('google')"></button>
+      <button class="kakao-login-small mg-l-15" v-on:click="snsLoginBtn('kakao')" aria-label="카카오 로그인"></button>
+      <button class="google-login-small mg-l-15" v-on:click="snsLoginBtn('google')" aria-label="구글 로그인"></button>
     </div>
     <div class="flex">
       <div v-if="!UiService().isMobile()">

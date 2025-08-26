@@ -320,10 +320,16 @@ export default {
       return jsDate.toISOString().replace('T', ' ').substring(0, 10);
     },
     async removeHistory(id) {
+      const { success, error } = await import('@/composables/useNotify').then(m => m.useNotify())
       if (confirm("삭제하시겠습니까?")) {
-        await this.axios.delete("/api/stock/".concat(id));
-        await this.init();
-        this.$emit('deleted')
+        try {
+          await this.axios.delete("/api/stock/".concat(id));
+          await this.init();
+          success('삭제되었습니다.')
+          this.$emit('deleted')
+        } catch (e) {
+          error('삭제 중 오류가 발생했습니다.')
+        }
       }
     },
     setPlusMinusColor(amount) {
