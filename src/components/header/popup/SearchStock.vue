@@ -18,13 +18,13 @@
           </select>
         </div>
         <div class="mg-t-10" v-if="!this.selectedStock">
-          <div class="searchSelect searchStockSelect">
-            <input class="form-control" placeholder="종목명" @focus="stockSelectFocus"
-                   @keyup="searchStock($event)">
-            <i class="ti-angle-down"></i>
+          <div class="searchSelect">
+            <input class="form-control" placeholder="종목명" @focus="isDropdownOpen = true"
+                   v-model="searchKeyword" @input="searchStock">
+            <i class="ti-angle-down" @click="isDropdownOpen = !isDropdownOpen"></i>
           </div>
-          <ul class="searchSelectBox searchStockSelectBox" @blur="closeStockDropDown" @focus="stockSelectFocus">
-            <li v-for="stock in copyStocks" :key="stock" @click="selectStock(stock)">
+          <ul class="searchSelectBox" v-show="isDropdownOpen">
+            <li v-for="stock in copyStocks" :key="stock.symbol" @click="selectStock(stock)">
               <span>{{ stock.name }} ({{ stock.symbol }})</span>
             </li>
           </ul>
@@ -57,6 +57,8 @@ export default {
       codes: [],
       selectedCode: "KOSPI",
       processing: false,
+      isDropdownOpen: false,
+      searchKeyword: '',
     }
   },
   watch: {
@@ -78,20 +80,15 @@ export default {
     this.copyStocks = this.stocks.slice();
   },
   methods: {
-    searchStock(event) {
+    searchStock() {
+      const keyword = this.searchKeyword.toLowerCase().replace(' ', '');
       this.copyStocks = this.stocks.filter(item => {
-        return (item.name.toString().toLowerCase().replace(' ', '').includes(event.target.value.toLowerCase().replace(' ', '')) ||
-            item.symbol.toString().toLowerCase().replace(' ', '').includes(event.target.value.toLowerCase().replace(' ', '')))
+        return (item.name.toString().toLowerCase().replace(' ', '').includes(keyword) ||
+            item.symbol.toString().toLowerCase().replace(' ', '').includes(keyword))
       });
     },
-    stockSelectFocus() {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "";
-    },
-    closeStockDropDown() {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "none";
-    },
     selectStock(stock) {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "none";
+      this.isDropdownOpen = false;
       this.selectedStock = stock;
     },
     cancelSelectStock() {

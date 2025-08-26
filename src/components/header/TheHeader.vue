@@ -21,9 +21,9 @@
     </div>
   </div>
 
-  <div class="overlay-lnb" @click="closeNav" style="display:none;"></div>
+  <div class="overlay-lnb" @click="closeNav" v-show="isSidenavOpen"></div>
 
-  <div id="sidenav-lnb" class="sidenav">
+  <div id="sidenav-lnb" class="sidenav" :style="{ width: isSidenavOpen ? '250px' : '0px' }">
     <div v-if="userInfo">
       <div>
         <div class="flex">
@@ -55,7 +55,7 @@
 
   <Modal v-if="searchPop" @close-modal="closeSearchPop">
     <SearchStock v-if="!isSearch"/>
-    <DetailStock v-if="isSearch"/>
+    <DetailStock v-if="isSearch" :stock="selectedStock"/>
   </Modal>
 
 </template>
@@ -83,6 +83,7 @@ export default {
       searchPop: false,
       isSearch: false,
       selectedStock: null,
+      isSidenavOpen: false,
     }
   },
   mounted() {
@@ -107,12 +108,10 @@ export default {
       this.selectedStock = null;
     },
     openNav() {
-      document.getElementById("sidenav-lnb").style.width = "250px";
-      document.getElementsByClassName('overlay-lnb')[0].style.display = "";
+      this.isSidenavOpen = true;
     },
     closeNav() {
-      document.getElementById("sidenav-lnb").style.width = "0px";
-      document.getElementsByClassName('overlay-lnb')[0].style.display = "none";
+      this.isSidenavOpen = false;
     },
     goSettings() {
       location.replace('/settings')

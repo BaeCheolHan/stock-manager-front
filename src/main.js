@@ -3,24 +3,12 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import { loadFonts } from './plugins/webfontloader'
-import axios from "axios";
 import mitt from 'mitt';
 import VueApexCharts from "vue3-apexcharts";
-
-import UiService from "@/service/UiService";
-
-// Vuetify
-import 'vuetify/styles'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
+import vuetify from '@/plugins/vuetify'
+import axios from '@/plugins/axios'
 
 await loadFonts()
-
-const vuetify = createVuetify({
-    components,
-    directives,
-})
 
 
 const emitter = mitt();
@@ -31,5 +19,4 @@ app.use(router)
 app.use(store)
 app.use(vuetify)
 app.use(VueApexCharts)
-app.use(mitt)
 app.mount('#app')

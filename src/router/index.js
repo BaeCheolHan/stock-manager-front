@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Index from "@/views/index/Index.vue";
-import SocialRedirect from "@/components/social/redirect/SocialRedirect.vue";
-import PersonalSetting from "@/views/setting/PersonalSetting.vue";
-import Main from "@/views/my/Main.vue";
+const Index = () => import('@/views/index/Index.vue')
+const SocialRedirect = () => import('@/components/social/redirect/SocialRedirect.vue')
+const PersonalSetting = () => import('@/views/setting/PersonalSetting.vue')
+const Main = () => import('@/views/my/Main.vue')
 
 const routes = [
   {path: '/', name: 'Index', component: Index},

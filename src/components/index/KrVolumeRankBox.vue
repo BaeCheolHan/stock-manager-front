@@ -43,7 +43,7 @@
     </v-card>
   </div>
   <Modal v-if="isShowStockDetailPop" @close-modal="isShowStockDetailPop = false">
-    <DetailStock msg=""/>
+    <DetailStock :stock="selectedStock" msg=""/>
   </Modal>
 </template>
 

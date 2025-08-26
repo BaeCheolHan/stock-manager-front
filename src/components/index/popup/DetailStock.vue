@@ -2,13 +2,13 @@
   <div class="content" v-if="detail">
     <div class="flex" style="align-items: center">
       <img
-          :src="'https://financialmodelingprep.com/image-stock/'.concat(UiService().getStockLogo($parent.$parent.selectedStock)).concat('.png')"
+          :src="'https://financialmodelingprep.com/image-stock/'.concat(UiService().getStockLogo(stock)).concat('.png')"
           :style="UiService().isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
           style="border: 1px solid white; border-radius: 5px;"
           class="mg-r-5"
           @error="UiService().replaceStockImg($event)"
       >
-      <h2>{{ $parent.$parent.selectedStock.hts_kor_isnm ? $parent.$parent.selectedStock.hts_kor_isnm : $parent.$parent.selectedStock.name}}
+      <h2>{{ stock.hts_kor_isnm ? stock.hts_kor_isnm : stock.name}}
         ({{ symbol }})</h2>
     </div>
 
@@ -36,7 +36,7 @@
             <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}"
                     @click="changeChartType('M')">월별
             </button>
-            <button v-if="$parent.$parent.selectedStock.national === 'KR'"
+            <button v-if="stock.national === 'KR'"
                     :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}"
                     @click="changeChartType('Y')">년별
             </button>
@@ -52,7 +52,7 @@
           <div>
             <p class="bold">시가 : {{ detail.startPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">최고가 : {{ detail.highPrice.toLocaleString("ko-KR") }}</p>
-            <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{ detail.dividendInfo.dividendRate.toLocaleString("ko-KR") }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
+            <p class="bold">배당금 : <span v-if="stock.national !== 'KR'">$</span>{{ detail.dividendInfo.dividendRate.toLocaleString("ko-KR") }}<span v-if="stock.national == 'KR'">원</span></p>
             <p>PER : {{ detail.per }}</p>
             <p>EPS : {{ detail.eps }}</p>
           </div>
@@ -81,6 +81,10 @@ export default {
   components: {},
   props: {
     msg: String,
+    stock: {
+      type: Object,
+      required: true,
+    }
   },
   data: function () {
     return {
@@ -176,19 +180,16 @@ export default {
   watch: {
     chartType: async function () {
       let symbol;
-      if(this.$parent.$parent.selectedStock.symbol) {
-        symbol = this.$parent.$parent.selectedStock.symbol;
+      if(this.stock.symbol) {
+        symbol = this.stock.symbol;
       }
-
-      if(this.$parent.$parent.selectedStock.mksc_shrn_iscd) {
-        symbol = this.$parent.$parent.selectedStock.mksc_shrn_iscd;
+      if(this.stock.mksc_shrn_iscd) {
+        symbol = this.stock.mksc_shrn_iscd;
       }
-
-      console.log(this.$parent.$parent.selectedStock)
 
       let national = 'KR';
-      if(this.$parent.$parent.selectedStock.national && this.$parent.$parent.selectedStock.national !== 'KR') {
-        national = this.$parent.$parent.selectedStock.national;
+      if(this.stock.national && this.stock.national !== 'KR') {
+        national = this.stock.national;
       }
 
 
@@ -213,11 +214,11 @@ export default {
       return UiService
     },
     async init() {
-      this.symbol = this.$parent.$parent.selectedStock.mksc_shrn_iscd ? this.$parent.$parent.selectedStock.mksc_shrn_iscd : this.$parent.$parent.selectedStock.symbol;
+      this.symbol = this.stock.mksc_shrn_iscd ? this.stock.mksc_shrn_iscd : this.stock.symbol;
       let res = await this.axios.get("/api/stock"
           .concat("?symbol=").concat(this.symbol))
       this.detail = res.data.detail;
-      this.series[0].name = this.$parent.$parent.selectedStock.name
+      this.series[0].name = this.stock.name
       res.data.chartData.forEach(item => this.series[0].data.push({
         x: item.date,
         y: [item.open, item.high, item.low, item.close]

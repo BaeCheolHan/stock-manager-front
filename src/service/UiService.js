@@ -73,7 +73,7 @@ class UiService {
         };
 
         logo.onerror = function () {
-            e.target.src = './bank-icons/default-bank.png';
+            e.target.src = '/bank-icons/default-bank.png';
         }
 
         logo.src = 'https://stock.hws.pe.kr/logo/'.concat(fileName);
