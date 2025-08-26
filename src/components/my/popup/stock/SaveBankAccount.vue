@@ -3,17 +3,7 @@
     <h2>계좌 등록</h2>
     <div class="popup-wrap">
       <div class="mg-t-10" v-if="!this.selectedBank">
-        <div class="searchSelect">
-          <input class="form-control" placeholder="증권사를 검색해주세요" @focus="isDropdownOpen = true" @input="searchBankInput">
-          <i class="ti-angle-down" @click="isDropdownOpen = !isDropdownOpen"></i>
-        </div>
-        <ul class="searchSelectBox" v-show="isDropdownOpen">
-          <li v-for="bank in copiedBanks" :key="bank.code || bank.bankCode" @click="selectBank(bank)">
-            <img class="bank-icon" :src="'./bank-icons/'.concat(bank.bankCode).concat('.jpg')"
-                 @error="replaceBankDefaultImg">
-            <span>{{ bank.bankName }}</span>
-          </li>
-        </ul>
+        <SearchSelect :items="copiedBanks" :placeholder="'증권사를 검색해주세요'" :label="(b)=>b.bankName" :key-field="'bankCode'" @select="selectBank"/>
       </div>
       <div v-else class="mg-t-10">
         <div class="selected-bank-wrap" @click="cancelSelectBank">
@@ -37,8 +27,10 @@
 <script>
 import { useNotify } from '@/composables/useNotify'
 import { useLoading } from '@/composables/useLoading'
+import SearchSelect from '@/components/etc/SearchSelect.vue'
 export default {
   name: "SaveBankAccount",
+  components: { SearchSelect },
   props: {
     msg: String,
   },
@@ -50,7 +42,6 @@ export default {
       alias: null,
       timeout: null,
       isUpdating: false,
-      isDropdownOpen: false,
     }
   },
   async beforeMount() {
@@ -73,12 +64,7 @@ export default {
     replaceBankDefaultImg(e) {
       e.target.src = './bank-icons/default-bank.png';
     },
-    searchBankInput(event) {
-      const v = event.target.value || ''
-      this.copiedBanks = this.banks.filter(item => item.bankName.includes(v))
-    },
     selectBank(bank) {
-      this.isDropdownOpen = false;
       this.selectedBank = bank;
     },
     cancelSelectBank() {

@@ -46,16 +46,7 @@
           </select>
         </div>
         <div class="mg-t-10" v-if="!this.selectedStock">
-          <div class="searchSelect searchStockSelect">
-            <input class="form-control" placeholder="종목명" @focus="isStockOpen = true"
-                   v-model="stockKeyword" @input="searchStock">
-            <i class="ti-angle-down" @click="isStockOpen = !isStockOpen"></i>
-          </div>
-          <ul class="searchSelectBox" v-show="isStockOpen">
-            <li v-for="stock in copyStocks" :key="stock.symbol" @click="selectStock(stock)">
-              <span>{{ stock.name }} ({{ stock.symbol }})</span>
-            </li>
-          </ul>
+          <SearchSelect :items="copyStocks" :placeholder="'종목명'" :label="(s)=>s.name + ' ('+s.symbol+')'" :key-field="'symbol'" @select="selectStock" @input-change="onStockKeywordChange"/>
         </div>
         <div v-else class="mg-t-10">
           <div class="selected-bank-wrap" @click="cancelSelectStock">
@@ -83,11 +74,13 @@
 <script>
 import { useNotify } from '@/composables/useNotify'
 import { useLoading } from '@/composables/useLoading'
+import SearchSelect from '@/components/etc/SearchSelect.vue'
 export default {
   name: "SaveStock",
   props: {
     msg: String,
   },
+  components: { SearchSelect },
   data: function () {
     return {
       checkSpin:false,
@@ -107,7 +100,6 @@ export default {
       price: null,
       isBankOpen: false,
       bankKeyword: '',
-      isStockOpen: false,
       stockKeyword: '',
     }
   },
@@ -200,11 +192,12 @@ export default {
       const v = (this.bankKeyword || '').replace(' ', '')
       this.copiedBankAccounts = this.bankAccounts.filter(item => item.alias.replace(' ', '').includes(v))
     },
-    searchStock: function () {
-      const v = (this.stockKeyword || '').toLowerCase().replace(' ', '')
+    onStockKeywordChange(v) {
+      this.stockKeyword = v
+      const q = (v || '').toLowerCase().replace(' ', '')
       this.copyStocks = this.stocks.filter(item => (
-          item.name.toString().toLowerCase().replace(' ', '').includes(v) ||
-          item.symbol.toString().toLowerCase().replace(' ', '').includes(v)
+          item.name.toString().toLowerCase().replace(' ', '').includes(q) ||
+          item.symbol.toString().toLowerCase().replace(' ', '').includes(q)
       ));
     },
     replaceBankDefaultImg(e) {

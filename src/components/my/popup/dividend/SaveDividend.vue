@@ -6,16 +6,7 @@
     <h2>배당금 입력</h2>
     <div class="popup-wrap">
       <div class="mg-t-10" v-if="!this.selectedStock">
-        <div class="searchSelect searchStockSelect">
-          <input class="form-control" placeholder="종목이 나오지 않을 경우 티커를 입력" @focus="isDropdownOpen = true"
-                 v-model="keyword" @input="searchStock">
-          <i class="ti-angle-down" @click="isDropdownOpen = !isDropdownOpen"></i>
-        </div>
-        <ul class="searchSelectBox" v-show="isDropdownOpen">
-          <li v-for="stock in copyStocks" :key="stock.symbol" @click="selectStock(stock)">
-            <span>{{ stock.name }} ({{ stock.symbol }})</span>
-          </li>
-        </ul>
+        <SearchSelect :items="copyStocks" :placeholder="'종목이 나오지 않을 경우 티커를 입력'" :label="(s)=>s.name + ' ('+s.symbol+')'" :key-field="'symbol'" @select="selectStock" @input-change="onKeywordChange"/>
       </div>
       <div v-else class="mg-t-10">
         <div class="selected-bank-wrap" @click="cancelSelectStock">
@@ -45,6 +36,7 @@
 import {reactive} from 'vue';
 import { useNotify } from '@/composables/useNotify'
 import { useLoading } from '@/composables/useLoading'
+import SearchSelect from '@/components/etc/SearchSelect.vue'
 
 import '@vuepic/vue-datepicker/dist/main.css'
 import Datepicker from '@vuepic/vue-datepicker';
@@ -56,7 +48,8 @@ export default {
     msg: String,
   },
   components: {
-    Datepicker
+    Datepicker,
+    SearchSelect
   },
   setup() {
     const locale = reactive(ko);
@@ -73,7 +66,6 @@ export default {
       dividend: null,
       date: null,
       symbol: null,
-      isDropdownOpen: false,
       keyword: '',
     }
   },
@@ -94,16 +86,16 @@ export default {
       this.processing = false
     },
     selectStock(stock) {
-      this.isDropdownOpen = false;
       this.selectedStock = stock;
     },
     cancelSelectStock() {
       this.selectedStock = null;
     },
-    searchStock() {
-      const v = (this.keyword || '').toString().toLowerCase().replace(' ', '')
-      this.copyStocks = this.stocks.filter(item => item.name.toString().toLowerCase().replace(' ', '').includes(v))
-      this.symbol = this.keyword
+    onKeywordChange(v) {
+      this.keyword = v
+      const q = (v || '').toString().toLowerCase().replace(' ', '')
+      this.copyStocks = this.stocks.filter(item => item.name.toString().toLowerCase().replace(' ', '').includes(q))
+      this.symbol = v
     },
     async saveDividend() {
       const { success, error } = useNotify()

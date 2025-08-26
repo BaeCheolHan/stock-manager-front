@@ -1,5 +1,5 @@
 <template>
-  <v-snackbar v-model="ui.snackbar.show" :color="ui.snackbar.color" :timeout="ui.snackbar.timeout" location="bottom right">
+  <v-snackbar v-model="ui.snackbar.show" :color="ui.snackbar.color" :timeout="ui.snackbar.timeout" location="bottom right" role="status" aria-live="polite">
     {{ ui.snackbar.message }}
     <template #actions>
       <v-btn variant="text" @click="ui.hideSnackbar()">닫기</v-btn>
