@@ -1,15 +1,24 @@
 <template>
   <div>
-    <apexchart type="treemap" :options="treemapChartDataOptions" :series="chartData"></apexchart>
+    <Suspense>
+      <template #default>
+        <LazyApex type="treemap" :options="treemapChartDataOptions" :series="chartData"/>
+      </template>
+      <template #fallback>
+        <v-skeleton-loader type="image"/>
+      </template>
+    </Suspense>
   </div>
 </template>
 
 
 <script>
 
+import { defineAsyncComponent } from 'vue'
+
 export default {
   name: "StockTreemapChart",
-  components: {},
+  components: { LazyApex: defineAsyncComponent(() => import('vue3-apexcharts')) },
   props: {
     chartData: {
       type: Array,

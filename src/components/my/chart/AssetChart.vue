@@ -1,15 +1,24 @@
 <template>
   <div>
-    <apexchart type="area" height="350" :options="chartOptions" :series="chartData"></apexchart>
+    <Suspense>
+      <template #default>
+        <LazyApex type="area" height="350" :options="chartOptions" :series="chartData"/>
+      </template>
+      <template #fallback>
+        <v-skeleton-loader type="image"/>
+      </template>
+    </Suspense>
   </div>
 </template>
 
 
 <script>
 
+import { defineAsyncComponent } from 'vue'
+
 export default {
   name: "AssetChart",
-  components: {},
+  components: { LazyApex: defineAsyncComponent(() => import('vue3-apexcharts')) },
   props: {
     chartData: {
       type: Array,

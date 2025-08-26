@@ -45,13 +45,25 @@
                     @click="changeChartType('Y')">년별
             </button>
           </div>
-          <apexchart :height="UiService().isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions"
-                     :series="series"></apexchart>
+          <Suspense>
+            <template #default>
+              <LazyApex :height="UiService().isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions" :series="series"/>
+            </template>
+            <template #fallback>
+              <v-skeleton-loader type="image"/>
+            </template>
+          </Suspense>
         </div>
       </div>
       <div class="dividend-history-chart" v-if="mainChartType == 'history'">
-        <apexchart :height="UiService().isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions"
-                   :series="dividendSeries"></apexchart>
+        <Suspense>
+          <template #default>
+            <LazyApex :height="UiService().isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions" :series="dividendSeries"/>
+          </template>
+          <template #fallback>
+            <v-skeleton-loader type="image"/>
+          </template>
+        </Suspense>
       </div>
       <div>
 
@@ -149,12 +161,14 @@
 import DividendByStockBox from "@/components/my/board/dividend/DividendBoard/DividendByStockBox.vue";
 import DividendHistoryBox from "@/components/my/board/dividend/DividendBoard/DividendHistoryBox.vue";
 import UiService from "@/service/UiService";
+import { defineAsyncComponent } from 'vue'
 import { StocksService } from '@/service/stocks'
 
 export default {
   name: "MyDetailStock",
   components: {
-    DividendHistoryBox, DividendByStockBox
+    DividendHistoryBox, DividendByStockBox,
+    LazyApex: defineAsyncComponent(() => import('vue3-apexcharts')),
   },
   props: {
     msg: String,
