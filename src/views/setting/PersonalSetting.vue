@@ -154,7 +154,8 @@ export default {
           this.defaultBankAccountId = null;
         }
 
-        this.$store.commit('setUserInfo', this.userInfo);
+        const appStore = (await import('@/store')).useAppStore()
+        appStore.setUserInfo(this.userInfo);
         sessionStorage.setItem('userInfo', JSON.stringify(this.userInfo));
         // 사용자 정보 변경. 필요 시 상위에서 재조회 이벤트 처리 가능
       }
@@ -177,7 +178,8 @@ export default {
         let res = await this.axios.get("/api/bank/member/".concat(JSON.parse(sessionStorage.getItem('userInfo')).memberId));
         let userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
         userInfo.bankAccounts = res.data.accounts;
-        this.$store.commit('setUserInfo', userInfo);
+        const appStore = (await import('@/store')).useAppStore()
+        appStore.setUserInfo(userInfo);
         sessionStorage.setItem('userInfo', JSON.stringify(userInfo));
         // 사용자 정보 변경. 필요 시 상위에서 재조회 이벤트 처리 가능
 

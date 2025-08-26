@@ -6,6 +6,7 @@
 <script>
 import AssetChart from "@/components/my/chart/AssetChart.vue";
 import AssetBox from "@/components/my/board/asset/AssetBox.vue";
+import { useAppStore } from '@/store'
 
 export default {
   name: "AssetBoard",
@@ -18,11 +19,12 @@ export default {
   async created() {
     this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
     if (this.userInfo) {
-      this.$store.commit('setUserInfo', this.userInfo)
+      const appStore = useAppStore()
+      appStore.setUserInfo(this.userInfo)
       this.accounts = this.userInfo.bankAccounts;
       this.bankAccountTab = 'all'
     } else {
-      location.replace("/");
+      this.$router.replace("/");
     }
 
     await this.getAssetChartData();

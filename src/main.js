@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import store from './store'
+import { createPinia } from 'pinia'
 import { loadFonts } from './plugins/webfontloader'
 import mitt from 'mitt';
 import VueApexCharts from "vue3-apexcharts";
@@ -15,8 +15,9 @@ const emitter = mitt();
 const app = createApp(App);
 app.config.globalProperties.emitter = emitter;
 app.config.globalProperties.axios = axios;
+const pinia = createPinia()
 app.use(router)
-app.use(store)
+app.use(pinia)
 app.use(vuetify)
 app.use(VueApexCharts)
 app.mount('#app')

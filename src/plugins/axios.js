@@ -8,6 +8,18 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
+    try {
+      const userInfoRaw = sessionStorage.getItem('userInfo')
+      if (userInfoRaw) {
+        const userInfo = JSON.parse(userInfoRaw)
+        if (userInfo && userInfo.token) {
+          config.headers = config.headers || {}
+          config.headers.Authorization = `Bearer ${userInfo.token}`
+        }
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
     return config
   },
   (error) => {
@@ -17,8 +29,15 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // TODO: 전역 에러 처리(UI 토스트 등) 연결 가능
+  async (error) => {
+    if (error.response && error.response.status === 401) {
+      // 인증 만료 처리: 세션 초기화 및 로그인 화면 이동
+      try {
+        const router = (await import('@/router')).default
+        sessionStorage.removeItem('userInfo')
+        router.replace('/settings')
+      } catch (_) {}
+    }
     return Promise.reject(error)
   }
 )

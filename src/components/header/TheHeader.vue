@@ -67,6 +67,7 @@ import Modal from "@/components/modal/Modal.vue";
 import SearchStock from "@/components/header/popup/SearchStock.vue";
 import DetailStock from "@/components/index/popup/DetailStock.vue";
 import UiService from "@/service/UiService";
+import { useAppStore } from '@/store'
 
 export default {
   components: {
@@ -130,7 +131,8 @@ export default {
     },
     logout() {
       sessionStorage.removeItem('userInfo')
-      this.$store.commit('removeUserInfo')
+      const appStore = useAppStore()
+      appStore.removeUserInfo()
       this.$router.replace('/')
     }
   }

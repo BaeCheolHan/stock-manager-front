@@ -18,7 +18,8 @@ export default {
         const code = this.$route.query.code;
         let response = await this.axios.get('/sns/login/kakao?code='.concat(code));
         if (response.data) {
-          this.$store.commit('setUserInfo', JSON.stringify(response.data))
+          const appStore = (await import('@/store')).useAppStore()
+          appStore.setUserInfo(response.data)
           sessionStorage.setItem('userInfo', JSON.stringify(response.data))
           this.$router.replace('/my')
         }
@@ -29,7 +30,8 @@ export default {
         const scope = this.$route.query.scope;
         let response = await this.axios.get('/sns/login/google?code='.concat(code).concat("&scope=").concat(scope));
         if (response.data) {
-          this.$store.commit('setUserInfo', JSON.stringify(response.data))
+          const appStore = (await import('@/store')).useAppStore()
+          appStore.setUserInfo(response.data)
           sessionStorage.setItem('userInfo', JSON.stringify(response.data))
           this.$router.replace('/my')
         }

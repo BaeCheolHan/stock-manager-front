@@ -43,6 +43,7 @@ import DividendHistoryBox from "@/components/my/board/dividend/DividendBoard/Div
 import SaveDividend from "@/components/my/popup/dividend/SaveDividend.vue";
 import Modal from "@/components/modal/Modal.vue";
 import DividendByStockBox from "@/components/my/board/dividend/DividendBoard/DividendByStockBox.vue";
+import { useAppStore } from '@/store'
 
 export default {
   name: "DividendBoard",
@@ -69,7 +70,8 @@ export default {
   created() {
     this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
     if (this.userInfo) {
-      this.$store.commit('setUserInfo', this.userInfo)
+      const appStore = useAppStore()
+      appStore.setUserInfo(this.userInfo)
       this.accounts = this.userInfo.bankAccounts;
       this.bankAccountTab = 'all'
     } else {

@@ -35,6 +35,7 @@ import StockTreemapChart from "@/components/my/chart/StockTreemapChart.vue";
 import Modal from "@/components/modal/Modal.vue";
 import SaveBankAccount from "@/components/my/popup/stock/SaveBankAccount.vue";
 import StockBox from "@/components/my/board/stock/StockBox.vue";
+import { useAppStore } from '@/store'
 
 export default {
   name: "StockBoard",
@@ -63,7 +64,8 @@ export default {
   created() {
     this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
     if (this.userInfo) {
-      this.$store.commit('setUserInfo', this.userInfo)
+      const appStore = useAppStore()
+      appStore.setUserInfo(this.userInfo)
       this.accounts = this.userInfo.bankAccounts;
       this.bankAccountTab = 'all'
     } else {

@@ -89,7 +89,8 @@ export default {
     async init() {
       this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
       if (this.userInfo) {
-        this.$store.commit('setUserInfo', this.userInfo)
+        const appStore = (await import('@/store')).useAppStore()
+        appStore.setUserInfo(this.userInfo)
         this.accounts = this.userInfo.bankAccounts;
         this.bankAccountTab = 'all';
 

@@ -20,6 +20,7 @@ import UpperMenu from "@/components/my/tabs/UpperMenu.vue";
 import StockBoard from "@/components/my/board/stock/StockBoard.vue";
 import DividendBoard from "@/components/my/board/dividend/DividendBoard/DividendBoard.vue";
 import AssetBoard from "@/components/my/board/asset/AssetBoard.vue";
+import { useAppStore } from '@/store'
 
 export default {
   name: 'Main',
@@ -43,7 +44,8 @@ export default {
   created() {
     this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
     if (this.userInfo) {
-      this.$store.commit('setUserInfo', this.userInfo)
+      const appStore = useAppStore()
+      appStore.setUserInfo(this.userInfo)
       this.accounts = this.userInfo.bankAccounts;
     } else {
       this.$router.replace("/");

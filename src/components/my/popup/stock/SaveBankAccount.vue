@@ -114,9 +114,9 @@ export default {
       let res = await this.axios.get("/api/bank/member/".concat(JSON.parse(sessionStorage.getItem('userInfo')).memberId));
       let userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
       userInfo.bankAccounts = res.data.accounts;
-      this.$store.commit('setUserInfo', userInfo);
+      const appStore = (await import('@/store')).useAppStore()
+      appStore.setUserInfo(userInfo);
       sessionStorage.setItem('userInfo', JSON.stringify(userInfo));
-      await this.emitter.emit('reloadUserInfo');
     },
 
   }
