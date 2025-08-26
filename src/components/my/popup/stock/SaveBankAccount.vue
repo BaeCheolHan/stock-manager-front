@@ -15,10 +15,10 @@
         </div>
       </div>
       <div class="mg-t-10 flex inputBox">
-        <input class="form-control" type="text" v-model="alias" placeholder="계좌 별칭을 입력해주세요.">
+        <input class="form-control" type="text" v-model="alias" required aria-label="계좌 별칭" placeholder="계좌 별칭을 입력해주세요." enterkeyhint="done" autocomplete="off" autocapitalize="off">
       </div>
       <div class="btnBox t-a-c sticky-action-bottom">
-        <button type="button" @click="saveBank">등록</button>
+        <v-btn color="primary" :loading="isUpdating" :disabled="isUpdating" @click="saveBank" block>등록</v-btn>
       </div>
     </div>
   </div>
@@ -107,12 +107,12 @@ export default {
     },
     async getBankAccount() {
       const { AccountsService } = await import('@/service/accounts')
-      let res = await AccountsService.getMemberAccounts(JSON.parse(sessionStorage.getItem('userInfo')).memberId);
-      let userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
+      const { useAppStore } = await import('@/store')
+      const appStore = useAppStore()
+      let res = await AccountsService.getMemberAccounts(appStore.userInfo.memberId);
+      let userInfo = { ...appStore.userInfo };
       userInfo.bankAccounts = res.data.accounts;
-      const appStore = (await import('@/store')).useAppStore()
       appStore.setUserInfo(userInfo);
-      sessionStorage.setItem('userInfo', JSON.stringify(userInfo));
     },
 
   }

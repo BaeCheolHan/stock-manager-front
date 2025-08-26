@@ -770,6 +770,10 @@ select::-ms-expand {
     opacity: 0.5;
     background-color: black;
 }
+.fade-enter-active, .fade-leave-active { transition: opacity .2s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+.slide-up-enter-active, .slide-up-leave-active { transition: transform .25s ease; }
+.slide-up-enter-from, .slide-up-leave-to { transform: translateY(20px); }
 .modal-card {
     position: relative;
     width: 90%;
@@ -811,7 +815,46 @@ button, .v-btn {
     position: sticky;
     bottom: 0;
     background: #fff;
-    padding: 10px 0;
+    padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+}
+.skip-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translateY(-100%);
+    background: #000;
+    color: #fff;
+    padding: 8px 12px;
+    z-index: 10000;
+}
+.skip-link:focus {
+    transform: translateY(0);
+}
+
+/* Keyboard focus visibility */
+:focus-visible {
+    outline: 2px solid #1976d2;
+    outline-offset: 2px;
+}
+
+/* Mobile form usability */
+@media (max-width: 600px) {
+    .form-control,
+    .dp__input_wrap input {
+        font-size: 16px; /* prevent iOS zoom */
+        min-height: 44px;
+    }
+    .searchSelectBox li {
+        padding: 12px 20px;
+    }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0s !important;
+        transition-duration: 0s !important;
+    }
 }
 
 .visually-hidden {
@@ -921,4 +964,9 @@ button, .v-btn {
     width: 50px;
     height: 100%;
     font-size: 0;
+}
+
+/* subtle hover for cards */
+.hover-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
 }

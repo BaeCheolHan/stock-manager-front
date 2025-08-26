@@ -2,7 +2,7 @@
   <div class="content" :style="UiService().isMobileFont()">
     <StockIcon class="mg-b-10" @click="showRegStockPop"/>
     <div v-if="stocks">
-      <v-card class="mg-b-5" v-for="stock in stocks" :key="stock.id" @click="showStockDetail(stock)">
+      <v-card class="mg-b-5 hover-card" v-for="stock in stocks" :key="stock.id" @click="showStockDetail(stock)">
         <v-card-text>
           <div>
             <div class="flex bold mg-b-10" style="justify-content: left; align-items: center;">
@@ -11,6 +11,7 @@
                   :style="UiService().isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
                   style="border: 1px solid white; border-radius: 5px;"
                   class="mg-r-5"
+                  loading="lazy" decoding="async"
                   @error="UiService().replaceStockImg($event)"
               >
               <p style="overflow: hidden;

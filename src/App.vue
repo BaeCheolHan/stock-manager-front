@@ -1,7 +1,8 @@
 <template>
+  <a href="#main-content" class="skip-link">본문 바로가기</a>
   <TheHeader/>
   <v-app>
-    <v-main>
+    <v-main id="main-content" tabindex="-1" role="main">
       <router-view/>
     </v-main>
   </v-app>

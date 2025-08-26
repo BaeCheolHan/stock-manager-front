@@ -22,10 +22,10 @@
         </div>
       </div>
       <div class="mg-t-10">
-        <input type="number" class="form-control" placeholder="배당금" v-model="dividend">
+        <input type="number" inputmode="decimal" enterkeyhint="done" autocomplete="off" autocapitalize="off" required aria-label="배당금" class="form-control" placeholder="배당금" v-model="dividend">
       </div>
       <div class="mg-t-10 btnBox t-a-c sticky-action-bottom">
-        <button type="button" :disabled="this.processing" @click="saveDividend">등록</button>
+        <v-btn color="primary" :loading="processing" :disabled="processing" @click="saveDividend" block>등록</v-btn>
       </div>
     </div>
   </div>
@@ -71,8 +71,8 @@ export default {
   },
   watch: {},
   async created() {
-
-    this.userInfo = await JSON.parse(sessionStorage.getItem('userInfo'));
+    const { useAppStore } = await import('@/store')
+    this.userInfo = useAppStore().userInfo;
     let res = await this.axios.get('/api/stock/'.concat(this.userInfo.memberId));
     this.stocks = res.data.stocks;
     this.copyStocks = this.stocks.slice();

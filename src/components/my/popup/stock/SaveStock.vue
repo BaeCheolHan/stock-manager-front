@@ -58,13 +58,13 @@
           </div>
         </div>
         <div class="mg-t-10">
-          <input type="number" class="form-control" placeholder="구입 가격" v-model="price">
+          <input type="number" inputmode="decimal" enterkeyhint="next" autocomplete="off" autocapitalize="off" required aria-label="구입 가격" class="form-control" placeholder="구입 가격" v-model="price">
         </div>
         <div class="mg-t-10">
-          <input type="number" class="form-control" placeholder="수량" v-model="quantity">
+          <input type="number" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocapitalize="off" required aria-label="수량" class="form-control" placeholder="수량" v-model="quantity">
         </div>
         <div class="mg-t-10 btnBox t-a-c sticky-action-bottom">
-          <button type="button" :disabled="this.processing" @click="saveStock">등록</button>
+          <v-btn color="primary" :loading="processing" :disabled="processing" @click="saveStock" block>등록</v-btn>
         </div>
       </div>
     </div>
@@ -116,7 +116,8 @@ export default {
     }
   },
   created: async function () {
-    this.userInfo = await JSON.parse(sessionStorage.getItem('userInfo'));
+    const { useAppStore } = await import('@/store')
+    this.userInfo = useAppStore().userInfo;
     this.bankAccounts = this.userInfo.bankAccounts;
     this.copiedBankAccounts = this.bankAccounts.slice();
 
