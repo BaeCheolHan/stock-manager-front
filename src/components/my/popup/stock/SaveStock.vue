@@ -81,6 +81,8 @@
 </template>
 
 <script>
+import { useNotify } from '@/composables/useNotify'
+import { useLoading } from '@/composables/useLoading'
 export default {
   name: "SaveStock",
   props: {
@@ -147,23 +149,25 @@ export default {
       this.processing = false
     },
     saveStock: async function () {
+      const { success, error } = useNotify()
+      const { start, stop } = useLoading()
       if (!this.selectedBank) {
-        alert("계좌를 선택해주세요")
+        error("계좌를 선택해주세요")
         return;
       }
 
       if (!this.selectedStock) {
-        alert("종목을 선택해주세요")
+        error("종목을 선택해주세요")
         return;
       }
 
       if (!this.price || this.price === 0) {
-        alert("구입 가격을 입력해주세요")
+        error("구입 가격을 입력해주세요")
         return;
       }
 
       if (!this.quantity || this.quantity === 0) {
-        alert("수량을 입력해주세요")
+        error("수량을 입력해주세요")
         return;
       }
 
@@ -175,12 +179,21 @@ export default {
       }
       this.checkSpin = true;
       this.startProcessing();
-      let res = await this.axios.post('/api/stock', param);
-      this.checkSpin = false;
-      if (res.data.code === 'SUCCESS') {
-        alert("등록되었습니다.");
+      start('주식 등록 중...')
+      try {
+        let res = await this.axios.post('/api/stock', param);
+        if (res.data.code === 'SUCCESS') {
+          success('등록되었습니다.')
+          this.$emit('saved')
+        } else if (res.data.message) {
+          error(res.data.message)
+        }
+      } catch (e) {
+        error('등록 중 오류가 발생했습니다.')
+      } finally {
+        stop()
         this.endProcessing();
-        this.$emit('saved')
+        this.checkSpin = false;
       }
     },
     searchBank: function () {

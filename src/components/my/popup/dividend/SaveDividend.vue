@@ -43,6 +43,8 @@
 <script>
 
 import {reactive} from 'vue';
+import { useNotify } from '@/composables/useNotify'
+import { useLoading } from '@/composables/useLoading'
 
 import '@vuepic/vue-datepicker/dist/main.css'
 import Datepicker from '@vuepic/vue-datepicker';
@@ -104,9 +106,11 @@ export default {
       this.symbol = this.keyword
     },
     async saveDividend() {
+      const { success, error } = useNotify()
+      const { start, stop } = useLoading()
       if (!this.selectedStock) {
         if (!this.symbol) {
-          alert("종목을 선택해주세요.")
+          error("종목을 선택해주세요.")
           return;
         }
       } else {
@@ -114,15 +118,16 @@ export default {
       }
 
       if (!this.date) {
-        alert("날짜를 선택해주세요.")
+        error("날짜를 선택해주세요.")
       }
 
       if (!this.dividend) {
-        alert("배당금을 입력해주세요.")
+        error("배당금을 입력해주세요.")
         return;
       }
 
       this.startProcessing();
+      start('배당 등록 중...')
       this.checkSpin = true;
 
       let param = {
@@ -137,17 +142,18 @@ export default {
         let res = await DividendsService.saveDividend(param)
         this.checkSpin = false;
         if (res.data.code === 'SUCCESS') {
-          alert("등록 되었습니다.");
-          this.endProcessing();
+          success('등록 되었습니다.')
           this.$emit('saved')
-        } else {
-          alert(res.data.message);
-          this.endProcessing();
+        } else if (res.data.message) {
+          error(res.data.message)
         }
 
       } catch (e) {
-        console.log(e)
+        error('등록 중 오류가 발생했습니다.')
 
+      } finally {
+        stop()
+        this.endProcessing();
       }
     },
   }

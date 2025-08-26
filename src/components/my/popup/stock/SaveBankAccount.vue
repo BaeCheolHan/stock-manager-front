@@ -35,6 +35,8 @@
 </template>
 
 <script>
+import { useNotify } from '@/composables/useNotify'
+import { useLoading } from '@/composables/useLoading'
 export default {
   name: "SaveBankAccount",
   props: {
@@ -83,13 +85,15 @@ export default {
       this.selectedBank = null;
     },
     async saveBank() {
+      const { success, error } = useNotify()
+      const { start, stop } = useLoading()
       if (!this.selectedBank) {
-        alert("증권사를 선택해주세요")
+        error("증권사를 선택해주세요")
         return;
       }
 
       if (!this.alias) {
-        alert("계좌 별칭을 입력해주세요")
+        error("계좌 별칭을 입력해주세요")
         return;
       }
 
@@ -99,11 +103,20 @@ export default {
         alias: this.alias
       }
       const { AccountsService } = await import('@/service/accounts')
-      let res = await AccountsService.saveAccount(param);
-      if (res.data.code === 'SUCCESS') {
-        alert("등록되었습니다.");
-        await this.getBankAccount();
-        this.$parent.$parent.isShowRegAccountPop = false;
+      start('계좌 등록 중...')
+      try {
+        let res = await AccountsService.saveAccount(param);
+        if (res.data.code === 'SUCCESS') {
+          success('등록되었습니다.')
+          await this.getBankAccount();
+          this.$parent.$parent.isShowRegAccountPop = false;
+        } else if (res.data.message) {
+          error(res.data.message)
+        }
+      } catch (e) {
+        error('등록 중 오류가 발생했습니다.')
+      } finally {
+        stop()
       }
     },
     async getBankAccount() {
