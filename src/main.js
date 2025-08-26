@@ -4,7 +4,7 @@ import router from './router'
 import { createPinia } from 'pinia'
 import { loadFonts } from './plugins/webfontloader'
 import mitt from 'mitt';
-import VueApexCharts from "vue3-apexcharts";
+// import VueApexCharts from "vue3-apexcharts";
 import vuetify from '@/plugins/vuetify'
 import axios from '@/plugins/axios'
 
@@ -19,5 +19,5 @@ const pinia = createPinia()
 app.use(router)
 app.use(pinia)
 app.use(vuetify)
-app.use(VueApexCharts)
+// app.use(VueApexCharts) // lazy-load locally where needed
 app.mount('#app')
