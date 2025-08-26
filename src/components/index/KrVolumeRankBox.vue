@@ -1,7 +1,8 @@
 <template>
   <div style=" max-width: 90%; margin: 0 auto;">
     <h3>국내 거래량 순위</h3>
-    <v-card class="mg-b-5 mg-t-10" v-for="stock in data" :key="stock.data_rank" @click="showStockDetail(stock)">
+    <v-skeleton-loader v-if="!data" type="list-item-two-line, list-item-two-line, list-item-two-line" class="mg-t-10"/>
+    <v-card v-else class="mg-b-5 mg-t-10" v-for="stock in data" :key="stock.data_rank" @click="showStockDetail(stock)">
       <v-card-text>
         <div>
           <div class="flex" :style="UiService().isMobileFont()">

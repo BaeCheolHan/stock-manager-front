@@ -18,16 +18,7 @@
           </select>
         </div>
         <div class="mg-t-10" v-if="!this.selectedStock">
-          <div class="searchSelect">
-            <input class="form-control" placeholder="종목명" @focus="isDropdownOpen = true"
-                   v-model="searchKeyword" @input="searchStock">
-            <i class="ti-angle-down" @click="isDropdownOpen = !isDropdownOpen"></i>
-          </div>
-          <ul class="searchSelectBox" v-show="isDropdownOpen">
-            <li v-for="stock in copyStocks" :key="stock.symbol" @click="selectStock(stock)">
-              <span>{{ stock.name }} ({{ stock.symbol }})</span>
-            </li>
-          </ul>
+          <SearchSelect :items="copyStocks" :placeholder="'종목명'" :label="(s)=>s.name + ' ('+s.symbol+')'" :key-field="'symbol'" @select="selectStock" @input-change="onKeyword"/>
         </div>
         <div v-else class="mg-t-10">
           <div class="selected-bank-wrap" @click="cancelSelectStock">
@@ -48,6 +39,7 @@
 <script>
 export default {
   name: 'SearchStock',
+  components: { SearchSelect: () => import('@/components/etc/SearchSelect.vue') },
   data() {
     return {
       national: '',
@@ -57,7 +49,6 @@ export default {
       codes: [],
       selectedCode: "KOSPI",
       processing: false,
-      isDropdownOpen: false,
       searchKeyword: '',
     }
   },
@@ -80,12 +71,10 @@ export default {
     this.copyStocks = this.stocks.slice();
   },
   methods: {
-    searchStock() {
-      const keyword = this.searchKeyword.toLowerCase().replace(' ', '');
-      this.copyStocks = this.stocks.filter(item => {
-        return (item.name.toString().toLowerCase().replace(' ', '').includes(keyword) ||
-            item.symbol.toString().toLowerCase().replace(' ', '').includes(keyword))
-      });
+    onKeyword(v) {
+      this.searchKeyword = v
+      const keyword = (v || '').toLowerCase().replace(' ', '');
+      this.copyStocks = this.stocks.filter(item => (item.name.toString().toLowerCase().replace(' ', '').includes(keyword) || item.symbol.toString().toLowerCase().replace(' ', '').includes(keyword)));
     },
     selectStock(stock) {
       this.isDropdownOpen = false;
