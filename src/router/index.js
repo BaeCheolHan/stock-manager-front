@@ -8,7 +8,7 @@ const routes = [
   { path: '/', name: 'Index', component: Index, meta: { showSearchFab: true } },
   { path: '/:snsType/redirect', name: 'SocialRedirect', component: SocialRedirect },
   { path: '/settings', name: 'PersonalSetting', component: PersonalSetting, meta: { requiresAuth: true, showSearchFab: false } },
-  { path: '/my', name: 'Main', component: Main, meta: { requiresAuth: true, showSearchFab: true } },
+  { path: '/my', name: 'Main', component: Main, meta: { requiresAuth: true, showSearchFab: false } },
 ]
 
 const router = createRouter({

@@ -31,6 +31,7 @@ export default {
     iconSize: { type: [String, Number], default: 20 },
     activeColor: { type: String, default: 'primary' },
     inactiveColor: { type: String, default: undefined },
+    hideLabelsOnXs: { type: Boolean, default: true },
   },
   methods: {
     go(path) {
@@ -75,6 +76,14 @@ export default {
 }
 .mobile-bottom-nav button span { font-size: 11px; margin-top: 2px; }
 .mobile-bottom-nav button.active { color: #1976d2; }
+@media (max-width: 360px) {
+  .mobile-bottom-nav button span { display: none; }
+}
+.mobile-bottom-nav button.active :deep(.v-icon) {
+  background-color: rgba(25,118,210,.12);
+  border-radius: 999px;
+  padding: 6px;
+}
 </style>
 
 
