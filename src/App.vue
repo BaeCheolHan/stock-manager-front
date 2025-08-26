@@ -7,6 +7,7 @@
     </v-main>
   </v-app>
   <GlobalSnackbar/>
+  <MobileBottomNav v-if="isMobile"/>
   <TheFooter/>
 </template>
 
@@ -15,6 +16,8 @@
 import TheHeader from "@/components/header/TheHeader.vue";
 import TheFooter from "@/components/footer/TheFooter.vue";
 import GlobalSnackbar from '@/components/GlobalSnackbar.vue'
+import MobileBottomNav from '@/components/navigation/MobileBottomNav.vue'
+import UiService from '@/service/UiService'
 
 export default {
   name: 'App',
@@ -22,7 +25,14 @@ export default {
     TheHeader,
     TheFooter,
     GlobalSnackbar,
+    MobileBottomNav,
   },
+  data() {
+    return { isMobile: false }
+  },
+  mounted() {
+    this.isMobile = UiService.isMobile()
+  }
 }
 </script>
 <style>

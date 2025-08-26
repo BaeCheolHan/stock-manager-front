@@ -1,11 +1,11 @@
 <template>
   <div class="searchSelect" @keydown.down.prevent="move(1)" @keydown.up.prevent="move(-1)" @keydown.enter.prevent="enter">
     <div class="input_reset">
-      <input class="form-control" :placeholder="placeholder" v-model="keyword" @input="onInput" @focus="open = true" :aria-expanded="open ? 'true' : 'false'"/>
+      <input class="form-control" :placeholder="placeholder" v-model="keyword" @input="onInput" @focus="open = true" :aria-expanded="open ? 'true' : 'false'" role="combobox" aria-autocomplete="list" :aria-controls="listId" :enterkeyhint="enterKeyHint" autocomplete="off" autocapitalize="off" />
       <i class="ti-angle-down" @click="open = !open"></i>
     </div>
-    <ul class="searchSelectBox" v-show="open" role="listbox">
-      <li v-for="(item, idx) in filtered" :key="itemKey(item, idx)" :class="{active: idx === activeIndex}" @mousedown.prevent="select(item)" role="option">
+    <ul class="searchSelectBox" v-show="open" role="listbox" :id="listId">
+      <li v-for="(item, idx) in filtered" :key="itemKey(item, idx)" :class="{active: idx === activeIndex}" @mousedown.prevent="select(item)" role="option" tabindex="0">
         <slot name="item" :item="item">{{ itemLabel(item) }}</slot>
       </li>
       <li v-if="!loading && filtered.length === 0" class="t-a-c pd-10">검색 결과가 없습니다</li>
@@ -24,6 +24,7 @@ export default {
     placeholder: { type: String, default: '' },
     debounce: { type: Number, default: 250 },
     loading: { type: Boolean, default: false },
+    enterKeyHint: { type: String, default: 'search' },
   },
   emits: ['select', 'input-change'],
   data() {
@@ -33,6 +34,7 @@ export default {
       filtered: [],
       activeIndex: -1,
       timer: null,
+      listId: `ss-${Math.random().toString(36).slice(2)}`,
     }
   },
   watch: {
