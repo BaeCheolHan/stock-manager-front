@@ -79,6 +79,12 @@ class UiService {
         logo.src = 'https://stock.hws.pe.kr/logo/'.concat(fileName);
 
     }
+
+    vibrate(duration = 20) {
+        try {
+            if (navigator.vibrate) navigator.vibrate(duration);
+        } catch (_) {}
+    }
 }
 
 export default new UiService();

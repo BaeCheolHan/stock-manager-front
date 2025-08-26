@@ -15,11 +15,12 @@
         <button class="search-btn" @click="searchStockPop">검색</button>
       </div>
       <ExchangeRate/>
-      <div v-if="UiService().isMobile()">
-        <button class="search-btn" @click="searchStockPop">검색</button>
-      </div>
     </div>
   </div>
+
+  <button v-if="UiService().isMobile()" class="search-fab" aria-label="검색 열기" @click="searchStockPop">
+    <v-icon icon="mdi-magnify" color="white" size="24"/>
+  </button>
 
   <div class="overlay-lnb" @click="closeNav" v-show="isSidenavOpen"></div>
 

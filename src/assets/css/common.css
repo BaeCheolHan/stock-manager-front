@@ -966,6 +966,25 @@ button, .v-btn {
     font-size: 0;
 }
 
+/* Mobile search FAB */
+@media (max-width: 600px) {
+    .search-fab {
+        position: fixed;
+        right: 16px;
+        bottom: calc(70px + env(safe-area-inset-bottom));
+        width: 56px;
+        height: 56px;
+        border-radius: 28px;
+        background-color: #1976d2;
+        color: white;
+        box-shadow: 0 4px 12px rgba(0,0,0,.2);
+        z-index: 9998;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
 /* subtle hover for cards */
 .hover-card:hover {
     box-shadow: 0 2px 8px rgba(0,0,0,.12);
