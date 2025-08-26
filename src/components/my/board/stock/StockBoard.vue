@@ -25,6 +25,10 @@
     <!-- 주식 종목 item 영역 -->
     <StockBox :stocks="stocks"/>
   </div>
+  <div class="pd-5" v-show="checkSpin">
+    <v-skeleton-loader type="image, list-item-two-line, list-item-two-line, list-item-two-line" class="mg-b-10"/>
+    <v-skeleton-loader type="image, list-item-two-line, list-item-two-line, list-item-two-line"/>
+  </div>
 
   <Modal v-if="isShowRegAccountPop" @close-modal="isShowRegAccountPop = false">
     <SaveBankAccount msg=""/>

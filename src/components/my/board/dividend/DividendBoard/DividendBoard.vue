@@ -10,6 +10,9 @@
             <DividendIcon />
           </button>
           <v-data-table-virtual :headers="headers" :items="desserts" class="elevation-1 mg-t-10 dividend-year-table" item-value="name" v-if="desserts" style="font-size: 12px;"/>
+          <div v-else class="mg-t-10">
+            <v-skeleton-loader type="table"/>
+          </div>
 
           <v-divider class="mg-t-30 mg-b-30"></v-divider>
 
@@ -26,7 +29,13 @@
             </v-tabs>
           </div>
           <DividendHistoryBox :dividends="dividends" v-if="dividends" @reload="reloadDividend"/>
+          <div v-else class="mg-t-10">
+            <v-skeleton-loader type="list-item-two-line, list-item-two-line, list-item-two-line"/>
+          </div>
           <DividendByStockBox :dividends="dividendByItem" v-if="dividendByItem"/>
+          <div v-else class="mg-t-10">
+            <v-skeleton-loader type="list-item-two-line, list-item-two-line, list-item-two-line"/>
+          </div>
         </v-container>
       </v-window-item>
     </v-window>
