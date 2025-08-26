@@ -32,7 +32,14 @@
             <span>{{ kospi.output1.bstp_nmix_prdy_vrss }})</span>
           </div>
         </div>
-        <apexchart type="candlestick" :options="chartOptions" :series="kospiSeries"></apexchart>
+        <Suspense>
+          <template #default>
+            <LazyApex type="candlestick" :options="chartOptions" :series="kospiSeries"/>
+          </template>
+          <template #fallback>
+            <v-skeleton-loader type="image"/>
+          </template>
+        </Suspense>
       </div>
       <div style="min-width: 165px; width: 40%" v-if="kosdaq">
         <div class="flex" style="justify-content: flex-start; align-items: center">
@@ -46,7 +53,14 @@
             <span>{{ kosdaq.output1.bstp_nmix_prdy_vrss }})</span>
           </div>
         </div>
-        <apexchart type="candlestick" :options="chartOptions" :series="kosdaqSeries"></apexchart>
+        <Suspense>
+          <template #default>
+            <LazyApex type="candlestick" :options="chartOptions" :series="kosdaqSeries"/>
+          </template>
+          <template #fallback>
+            <v-skeleton-loader type="image"/>
+          </template>
+        </Suspense>
       </div>
     </div>
 
@@ -62,7 +76,14 @@
             <span>{{ snp.output1.ovrs_nmix_prdy_vrss }})</span>
           </div>
         </div>
-        <apexchart type="candlestick" :options="chartOptions" :series="snpSeries"></apexchart>
+        <Suspense>
+          <template #default>
+            <LazyApex type="candlestick" :options="chartOptions" :series="snpSeries"/>
+          </template>
+          <template #fallback>
+            <v-skeleton-loader type="image"/>
+          </template>
+        </Suspense>
       </div>
       <div style="min-width: 165px; width: 40%" v-if="nasdaq">
         <div class="flex" style="justify-content: flex-start; align-items: center">
@@ -76,7 +97,14 @@
             <span>{{ nasdaq.output1.ovrs_nmix_prdy_vrss }})</span>
           </div>
         </div>
-        <apexchart type="candlestick" :options="chartOptions" :series="nasdaqSeries"></apexchart>
+        <Suspense>
+          <template #default>
+            <LazyApex type="candlestick" :options="chartOptions" :series="nasdaqSeries"/>
+          </template>
+          <template #fallback>
+            <v-skeleton-loader type="image"/>
+          </template>
+        </Suspense>
       </div>
     </div>
 
@@ -92,7 +120,14 @@
             <span>{{ daw.output1.ovrs_nmix_prdy_vrss }})</span>
           </div>
         </div>
-        <apexchart type="candlestick" :options="chartOptions" :series="dawSeries"></apexchart>
+        <Suspense>
+          <template #default>
+            <LazyApex type="candlestick" :options="chartOptions" :series="dawSeries"/>
+          </template>
+          <template #fallback>
+            <v-skeleton-loader type="image"/>
+          </template>
+        </Suspense>
       </div>
       <div style="min-width: 165px; width: 40%" v-if="philadelphia">
         <div class="flex" style="justify-content: flex-start; align-items: center">
@@ -106,7 +141,14 @@
             <span>{{ philadelphia.output1.ovrs_nmix_prdy_vrss }})</span>
           </div>
         </div>
-        <apexchart type="candlestick" :options="chartOptions" :series="philadelphiaSeries"></apexchart>
+        <Suspense>
+          <template #default>
+            <LazyApex type="candlestick" :options="chartOptions" :series="philadelphiaSeries"/>
+          </template>
+          <template #fallback>
+            <v-skeleton-loader type="image"/>
+          </template>
+        </Suspense>
       </div>
     </div>
   </div>
@@ -116,9 +158,13 @@
 
 <script>
 import UiService from "@/service/UiService";
+import { defineAsyncComponent } from 'vue'
 
 export default {
   name: "IndexChartArea",
+  components: {
+    LazyApex: defineAsyncComponent(() => import('vue3-apexcharts')),
+  },
   data: function () {
     return {
       kospi: null,

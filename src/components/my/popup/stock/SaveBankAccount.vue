@@ -17,7 +17,7 @@
       <div class="mg-t-10 flex inputBox">
         <input class="form-control" type="text" v-model="alias" placeholder="계좌 별칭을 입력해주세요.">
       </div>
-      <div class="btnBox t-a-c">
+      <div class="btnBox t-a-c sticky-action-bottom">
         <button type="button" @click="saveBank">등록</button>
       </div>
     </div>

@@ -24,7 +24,7 @@
       <div class="mg-t-10">
         <input type="number" class="form-control" placeholder="배당금" v-model="dividend">
       </div>
-      <div class="mg-t-10 btnBox t-a-c">
+      <div class="mg-t-10 btnBox t-a-c sticky-action-bottom">
         <button type="button" :disabled="this.processing" @click="saveDividend">등록</button>
       </div>
     </div>

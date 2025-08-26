@@ -92,12 +92,14 @@ button {
 
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
+    appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
 }
 
 input[type=number] {
+    appearance: textfield;
     -moz-appearance: textfield;
 }
 
@@ -609,6 +611,7 @@ margin-bottom: 13px;
 .blue {color: rgb(0, 118, 255) !important;}
 
 select {
+    appearance: listbox !important;
     -moz-appearance: listbox !important;
     -webkit-appearance: listbox !important;
 }
@@ -782,6 +785,33 @@ select::-ms-expand {
     overflow-y: scroll;
     max-height: 95%;
 
+}
+
+/* Bottom sheet on mobile */
+@media (max-width: 600px) {
+    .modal-card {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        position: absolute;
+        bottom: 0;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+        max-height: 85%;
+    }
+}
+
+/* Touch targets */
+button, .v-btn {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+.sticky-action-bottom {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding: 10px 0;
 }
 
 .visually-hidden {
