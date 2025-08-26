@@ -7,7 +7,7 @@
             <div>
               <div class="flex mg-b-5" style="justify-content: space-between">
                 <p class="mg-r-10">{{dividend.year}}년 {{dividend.month}}월 {{dividend.day}}일</p>
-                <i class="ti-trash" @click="removeHistory(dividend.id)"></i>
+                <button class="ti-trash" @click="removeHistory(dividend.id)" aria-label="삭제"></button>
               </div>
               <div class="flex" style="justify-content: space-between">
                 <div>

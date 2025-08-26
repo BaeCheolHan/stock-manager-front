@@ -6,7 +6,9 @@
       <v-window-item>
         <v-container :fluid="true">
           <!-- 배당금 추가 버튼 -->
-          <DividendIcon @click="openDividendPop"/>
+          <button @click="openDividendPop" aria-label="배당 등록">
+            <DividendIcon />
+          </button>
           <v-data-table-virtual :headers="headers" :items="desserts" class="elevation-1 mg-t-10 dividend-year-table" item-value="name" v-if="desserts" style="font-size: 12px;"/>
 
           <v-divider class="mg-t-30 mg-b-30"></v-divider>
