@@ -2,13 +2,13 @@
   <div class="content" v-if="detail">
     <div class="flex" style="justify-content: left; align-items: center">
       <img
-          :src="'https://financialmodelingprep.com/image-stock/'.concat(UiService().getStockLogo($parent.$parent.selectedStock)).concat('.png')"
+          :src="'https://financialmodelingprep.com/image-stock/'.concat(UiService().getStockLogo(stock)).concat('.png')"
           :style="UiService().isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
           style="border: 1px solid white; border-radius: 5px;"
           class="mg-r-5"
           @error="UiService().replaceStockImg($event)"
       >
-      <h2>{{ $parent.$parent.selectedStock.name }}
+      <h2>{{ stock.name }}
         <span>(</span>
         <span :class="UiService().setUpDownArrowClass(detail.compareToYesterdaySign)"
               :style="UiService().setColorStyle(detail.compareToYesterdaySign)">
@@ -40,7 +40,7 @@
             <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}"
                     @click="changeChartType('M')">월별
             </button>
-            <button v-if="$parent.$parent.selectedStock.national == 'KR'"
+            <button v-if="stock.national == 'KR'"
                     :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}"
                     @click="changeChartType('Y')">년별
             </button>
@@ -61,9 +61,9 @@
           <div>
             <p class="bold">시가 : {{ detail.startPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">최고가 : {{ detail.highPrice.toLocaleString("ko-KR") }}</p>
-            <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{
+            <p class="bold">배당금 : <span v-if="stock.national !== 'KR'">$</span>{{
                 annualDividend.toLocaleString("ko-KR")
-              }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
+              }}<span v-if="stock.national == 'KR'">원</span></p>
             <p>PER : {{ detail.per }}</p>
             <p>EPS : {{ detail.eps }}</p>
           </div>
@@ -87,7 +87,7 @@
         <div class="flex" style="justify-content: space-between">
           <div>
             <p class="bold" :style="setPlusMinusColor(detail.nowPrice - Math.floor(totalPrice / totalQuantity))"
-               v-if="$parent.$parent.selectedStock.national == 'KR'">
+               v-if="stock.national == 'KR'">
               평균가 : {{ Math.floor(totalPrice / totalQuantity).toLocaleString("ko-KR") }}원
             </p>
             <p class="bold" v-else>평균가 : ${{ Math.floor(totalPrice / totalQuantity).toLocaleString("ko-KR") }}</p>
@@ -97,16 +97,16 @@
           </div>
           <div class="t-a-r">
             <p class="bold">수량 : {{ totalQuantity }} 주</p>
-            <p class="bold" v-if="$parent.$parent.selectedStock.national == 'KR'">
+            <p class="bold" v-if="stock.national == 'KR'">
               {{ totalPrice.toLocaleString("ko-KR") }}원
             </p>
             <p class="bold" v-else>$ {{ Math.floor(totalPrice).toLocaleString("ko-KR") }}</p>
 
-            <p class="bold red" v-if="$parent.$parent.selectedStock.national == 'KR'">
+            <p class="bold red" v-if="stock.national == 'KR'">
               {{ detail.totalDividend.toLocaleString('ko-KR') }}원</p>
             <p class="bold red" v-else> ${{ detail.totalDividend.toLocaleString('ko-KR') }}</p>
 
-            <p class="bold" v-if="$parent.$parent.selectedStock.national == 'KR'"
+            <p class="bold" v-if="stock.national == 'KR'"
                :style="setPlusMinusColor(rateOfReturn)">
               {{ Math.floor((this.detail.nowPrice * this.totalQuantity)).toLocaleString('ko-KR') }}원
               ({{ rateOfReturn.toLocaleString("ko-KR") }}원)
@@ -130,7 +130,7 @@
                 <i class="ti-trash" @click="removeHistory(stock.id)"></i>
               </div>
               <div class="flex" style="justify-content: space-between">
-                <p v-if="$parent.$parent.selectedStock.national == 'KR'">구매가: {{ stock.price.toLocaleString("ko-KR") }}
+                <p v-if="stock.national == 'KR'">구매가: {{ stock.price.toLocaleString("ko-KR") }}
                   원</p>
                 <p v-else>구매가: $ {{ stock.price.toLocaleString("ko-KR") }}</p>
                 <p>수량: {{ stock.quantity }}</p>
@@ -157,6 +157,10 @@ export default {
   },
   props: {
     msg: String,
+    stock: {
+      type: Object,
+      required: true,
+    }
   },
   data() {
     return {
@@ -253,8 +257,8 @@ export default {
   watch: {
     async chartType() {
       let res = await this.axios.get('/api/stock/chart/'.concat(this.chartType)
-          .concat('/').concat(this.$parent.$parent.selectedStock.national)
-          .concat('/').concat(this.$parent.$parent.selectedStock.symbol));
+          .concat('/').concat(this.stock.national)
+          .concat('/').concat(this.stock.symbol));
       this.series[0].data = [];
       res.data.chartData.forEach(item => this.series[0].data.push({
         x: item.date,
@@ -272,16 +276,16 @@ export default {
     async init() {
       let res = await this.axios.get("/api/stock/"
           .concat(JSON.parse(sessionStorage.getItem('userInfo')).memberId)
-          .concat("/").concat(this.$parent.$parent.selectedStock.national)
-          .concat("/").concat(this.$parent.$parent.selectedStock.code)
-          .concat("?symbol=").concat(this.$parent.$parent.selectedStock.symbol))
+          .concat("/").concat(this.stock.national)
+          .concat("/").concat(this.stock.code)
+          .concat("?symbol=").concat(this.stock.symbol))
       this.detail = res.data.detail;
       this.dividendRate = this.detail.dividendInfo != null ? this.detail.dividendInfo.dividendRate : 0
       this.annualDividend = this.detail.dividendInfo != null ? this.detail.dividendInfo.annualDividend: 0
       this.detail.stocks.forEach(item => this.totalPrice += (item.quantity * item.price))
       this.detail.stocks.forEach(item => this.totalQuantity += item.quantity)
       this.rateOfReturn = Math.floor((this.detail.nowPrice * this.totalQuantity) - this.totalPrice);
-      this.series[0].name = this.$parent.$parent.selectedStock.name
+      this.series[0].name = this.stock.name
       res.data.detail.chartData.forEach(item => this.series[0].data.push({
         x: item.date,
         y: [item.open, item.high, item.low, item.close]
@@ -305,7 +309,7 @@ export default {
       if (confirm("삭제하시겠습니까?")) {
         await this.axios.delete("/api/stock/".concat(id));
         await this.init();
-        await this.emitter.emit('reloadStock');
+        this.$emit('deleted')
       }
     },
     setPlusMinusColor(amount) {

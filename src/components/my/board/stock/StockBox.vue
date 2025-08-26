@@ -98,7 +98,7 @@
     <SaveStock msg="" @saved="onSaved"/>
   </Modal>
   <Modal v-if="isShowStockDetailPop" @close-modal="isShowStockDetailPop = false">
-    <MyDetailStock msg=""/>
+    <MyDetailStock msg="" :stock="selectedStock" @deleted="onDeleted"/>
   </Modal>
 </template>
 
@@ -157,6 +157,12 @@ export default {
     showStockDetail(stock) {
       this.selectedStock = stock
       this.isShowStockDetailPop = true
+    },
+    async onDeleted() {
+      this.isShowStockDetailPop = false
+      if (this.$parent && typeof this.$parent.reloadStock === 'function') {
+        await this.$parent.reloadStock();
+      }
     },
   }
 };
