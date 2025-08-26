@@ -23,7 +23,7 @@
               </v-tab>
             </v-tabs>
           </div>
-          <DividendHistoryBox :dividends="dividends" v-if="dividends"/>
+          <DividendHistoryBox :dividends="dividends" v-if="dividends" @reload="reloadDividend"/>
           <DividendByStockBox :dividends="dividendByItem" v-if="dividendByItem"/>
         </v-container>
       </v-window-item>
@@ -31,7 +31,7 @@
   </v-card>
 
   <Modal v-if="isSnowDividendRegPop" @close-modal="isSnowDividendRegPop = false">
-    <SaveDividend msg=""/>
+    <SaveDividend msg="" @saved="reloadDividend"/>
   </Modal>
 </template>
 
@@ -54,9 +54,7 @@ export default {
     DividendMonthlyChart,
     SaveDividend,
   },
-  mounted() {
-    this.emitter.on('reloadDividend', this.reloadDividend)
-  },
+  mounted() {},
   watch: {
     'dividendBoxType': async function() {
       this.dividends = null;

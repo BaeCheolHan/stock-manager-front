@@ -2,7 +2,7 @@
   <v-window>
     <v-container>
       <div v-if="userInfo && userInfo.bankAccounts && userInfo.bankAccounts.length > 0" class="account-wrap">
-        <UpperMenu/>
+        <UpperMenu @select="selectTabMenu"/>
         <StockBoard v-if="tabMenu === 'stock'"/>
         <DividendBoard v-if="tabMenu === 'dividend'"/>
         <AssetBoard v-if="tabMenu === 'asset'"/>
@@ -39,18 +39,14 @@ export default {
   },
   computed: {},
   watch: {},
-  mounted() {
-    this.emitter.on('selectTabMenu', (tabMenu) => {
-      this.selectTabMenu(tabMenu)
-    })
-  },
+  mounted() {},
   created() {
     this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
     if (this.userInfo) {
       this.$store.commit('setUserInfo', this.userInfo)
       this.accounts = this.userInfo.bankAccounts;
     } else {
-      location.replace("/");
+      this.$router.replace("/");
     }
   },
   methods: {

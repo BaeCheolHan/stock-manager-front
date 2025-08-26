@@ -27,7 +27,7 @@
   </div>
 
   <Modal v-if="isShowDividendByStockDetailPop" @close-modal="isShowDividendByStockDetailPop = false">
-    <DividendByStockDetailPop msg=""/>
+    <DividendByStockDetailPop msg="" :stock="selectedStock"/>
   </Modal>
 </template>
 

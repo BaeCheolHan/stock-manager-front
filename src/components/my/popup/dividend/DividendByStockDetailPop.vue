@@ -1,13 +1,13 @@
 <template>
   <div class="flex" style="align-items: center">
     <img
-        :src="'https://financialmodelingprep.com/image-stock/'.concat(UiService().getStockLogo($parent.$parent.selectedStock)).concat('.png')"
+        :src="'https://financialmodelingprep.com/image-stock/'.concat(UiService().getStockLogo(stock)).concat('.png')"
         :style="UiService().isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
         style="border: 1px solid white; border-radius: 5px;"
         class="mg-r-5"
         @error="UiService().replaceStockImg($event)"
     >
-    <h2>{{ $parent.$parent.selectedStock.name }}({{ $parent.$parent.selectedStock.symbol }})</h2>
+    <h2>{{ stock.name }}({{ stock.symbol }})</h2>
   </div>
   <div>
     <h2>배당 수령 내역</h2>
@@ -32,10 +32,10 @@
                         text-overflow: ellipsis;
                         white-space: nowrap;
                         word-break: break-all;
-                            ">{{ $parent.$parent.selectedStock.name }}({{ dividend.symbol }})</p>
+                            ">{{ stock.name }}({{ dividend.symbol }})</p>
               </div>
               <div>
-                <p class="t-a-r">{{$parent.$parent.selectedStock.national !== 'KR' ? '$' : ''}}{{ dividend.dividend.toLocaleString('ko-KR')}} {{$parent.$parent.selectedStock.national == 'KR' ? '원' : ''}}</p>
+                <p class="t-a-r">{{stock.national !== 'KR' ? '$' : ''}}{{ dividend.dividend.toLocaleString('ko-KR')}} {{stock.national == 'KR' ? '원' : ''}}</p>
               </div>
             </div>
           </div>
@@ -49,7 +49,12 @@ import UiService from "@/service/UiService";
 
 export default {
   name: "DividendByStockDetailPop",
-  props: {},
+  props: {
+    stock: {
+      type: Object,
+      required: true,
+    }
+  },
   data() {
     return {
       userInfo: null,
@@ -88,7 +93,7 @@ export default {
         this.accounts = this.userInfo.bankAccounts;
         this.bankAccountTab = 'all';
 
-        let res = await this.axios.get('/api/dividend/by-item/'.concat(this.userInfo.memberId).concat('/').concat(this.$parent.$parent.selectedStock.symbol));
+        let res = await this.axios.get('/api/dividend/by-item/'.concat(this.userInfo.memberId).concat('/').concat(this.stock.symbol));
 
         for (let data of res.data.data) {
           this.chartOptions.xaxis.categories.push(data.year.toString().concat('-').concat(data.month.toString()))

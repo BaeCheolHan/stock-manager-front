@@ -96,7 +96,7 @@ export default {
     },
     search() {
       this.startProcessing();
-      this.emitter.emit('searchStock', this.selectedStock)
+      this.$emit('search', this.selectedStock)
       this.endProcessing();
     },
     startProcessing: function () {

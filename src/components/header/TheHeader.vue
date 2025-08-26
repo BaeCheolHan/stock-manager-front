@@ -54,7 +54,7 @@
   </div>
 
   <Modal v-if="searchPop" @close-modal="closeSearchPop">
-    <SearchStock v-if="!isSearch"/>
+    <SearchStock v-if="!isSearch" @search="onSearch"/>
     <DetailStock v-if="isSearch" :stock="selectedStock"/>
   </Modal>
 
@@ -86,12 +86,7 @@ export default {
       isSidenavOpen: false,
     }
   },
-  mounted() {
-    this.emitter.on('searchStock', (stock) => {
-      this.selectedStock = stock;
-      this.isSearch = true;
-    })
-  },
+  mounted() {},
   async created() {
     if (sessionStorage.getItem('userInfo')) {
       this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
@@ -114,25 +109,29 @@ export default {
       this.isSidenavOpen = false;
     },
     goSettings() {
-      location.replace('/settings')
+      this.$router.replace('/settings')
     },
     goDashboard() {
-      location.replace('/')
+      this.$router.replace('/')
     },
     goMyStockManage() {
-      location.replace('/my')
+      this.$router.replace('/my')
+    },
+    onSearch(stock) {
+      this.selectedStock = stock;
+      this.isSearch = true;
     },
     searchStockPop() {
       this.searchPop = true;
     },
     async snsLoginBtn(snsType) {
       let res = await this.axios.get('/login/'.concat(snsType))
-      location.replace(res.data.loginUri)
+      location.href = res.data.loginUri
     },
     logout() {
       sessionStorage.removeItem('userInfo')
       this.$store.commit('removeUserInfo')
-      location.replace('/')
+      this.$router.replace('/')
     }
   }
 

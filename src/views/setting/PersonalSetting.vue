@@ -115,7 +115,7 @@ export default {
     if (this.userInfo) {
       this.defaultBankAccountId = this.userInfo.defaultBankAccountId;
     } else {
-      location.replace("/");
+      this.$router.replace("/");
     }
   },
   methods: {
@@ -156,7 +156,7 @@ export default {
 
         this.$store.commit('setUserInfo', this.userInfo);
         sessionStorage.setItem('userInfo', JSON.stringify(this.userInfo));
-        await this.emitter.emit('reloadUserInfo');
+        // 사용자 정보 변경. 필요 시 상위에서 재조회 이벤트 처리 가능
       }
 
     },
@@ -179,7 +179,7 @@ export default {
         userInfo.bankAccounts = res.data.accounts;
         this.$store.commit('setUserInfo', userInfo);
         sessionStorage.setItem('userInfo', JSON.stringify(userInfo));
-        await this.emitter.emit('reloadUserInfo');
+        // 사용자 정보 변경. 필요 시 상위에서 재조회 이벤트 처리 가능
 
         alert("등록 되었습니다.")
       }

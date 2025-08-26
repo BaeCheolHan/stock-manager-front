@@ -95,7 +95,7 @@
     </v-card>
   </div>
   <Modal v-if="isShowRegStockPop" @close-modal="isShowRegStockPop = false">
-    <SaveStock msg=""/>
+    <SaveStock msg="" @saved="onSaved"/>
   </Modal>
   <Modal v-if="isShowStockDetailPop" @close-modal="isShowStockDetailPop = false">
     <MyDetailStock msg=""/>
@@ -138,6 +138,12 @@ export default {
     },
     showRegStockPop() {
       this.isShowRegStockPop = true;
+    },
+    async onSaved() {
+      this.isShowRegStockPop = false;
+      if (this.$parent && typeof this.$parent.reloadStock === 'function') {
+        await this.$parent.reloadStock();
+      }
     },
     setPriceColor(stock) {
       return Number(stock.avgPrice) > Number(stock.nowPrice) ? 'color: blue' : 'color: red'

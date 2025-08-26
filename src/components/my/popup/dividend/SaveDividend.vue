@@ -143,7 +143,7 @@ export default {
         if (res.data.code === 'SUCCESS') {
           alert("등록 되었습니다.");
           this.endProcessing();
-          await this.emitter.emit('reloadDividend');
+          this.$emit('saved')
         } else {
           alert(res.data.message);
           this.endProcessing();

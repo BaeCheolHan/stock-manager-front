@@ -67,13 +67,11 @@ export default {
       this.accounts = this.userInfo.bankAccounts;
       this.bankAccountTab = 'all'
     } else {
-      location.replace("/");
+      this.$router.replace("/");
     }
 
   },
-  mounted() {
-    this.emitter.on('reloadStock', this.reloadStock)
-  },
+  mounted() {},
   watch: {
     'bankAccountTab': async function () {
       let memberId = this.userInfo.memberId

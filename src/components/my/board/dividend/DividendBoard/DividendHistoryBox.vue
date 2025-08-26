@@ -43,7 +43,7 @@ export default {
     async removeHistory(id) {
       if(confirm('삭제 하시겠습니까?')) {
         await this.axios.delete('/api/dividend/'.concat(id));
-        this.emitter.emit('reloadDividend');
+        this.$emit('reload');
       }
     }
   }
