@@ -51,7 +51,8 @@ export default {
     }
   },
   async beforeMount() {
-    let res = await this.axios.get("/api/banks");
+    const { AccountsService } = await import('@/service/accounts')
+    let res = await AccountsService.getBanks();
     this.banks = JSON.parse(JSON.stringify(res.data));
     this.copiedBanks = this.banks.slice();
     this.closeDropDown();
@@ -103,7 +104,8 @@ export default {
         bank: this.selectedBank.code,
         alias: this.alias
       }
-      let res = await this.axios.post('/api/account', param);
+      const { AccountsService } = await import('@/service/accounts')
+      let res = await AccountsService.saveAccount(param);
       if (res.data.code === 'SUCCESS') {
         alert("등록되었습니다.");
         await this.getBankAccount();
@@ -111,7 +113,8 @@ export default {
       }
     },
     async getBankAccount() {
-      let res = await this.axios.get("/api/bank/member/".concat(JSON.parse(sessionStorage.getItem('userInfo')).memberId));
+      const { AccountsService } = await import('@/service/accounts')
+      let res = await AccountsService.getMemberAccounts(JSON.parse(sessionStorage.getItem('userInfo')).memberId);
       let userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
       userInfo.bankAccounts = res.data.accounts;
       const appStore = (await import('@/store')).useAppStore()

@@ -149,6 +149,7 @@
 import DividendByStockBox from "@/components/my/board/dividend/DividendBoard/DividendByStockBox.vue";
 import DividendHistoryBox from "@/components/my/board/dividend/DividendBoard/DividendHistoryBox.vue";
 import UiService from "@/service/UiService";
+import { StocksService } from '@/service/stocks'
 
 export default {
   name: "MyDetailStock",
@@ -256,9 +257,7 @@ export default {
   },
   watch: {
     async chartType() {
-      let res = await this.axios.get('/api/stock/chart/'.concat(this.chartType)
-          .concat('/').concat(this.stock.national)
-          .concat('/').concat(this.stock.symbol));
+      let res = await StocksService.getStockChart(this.chartType, this.stock.national, this.stock.symbol)
       this.series[0].data = [];
       res.data.chartData.forEach(item => this.series[0].data.push({
         x: item.date,
@@ -274,11 +273,12 @@ export default {
       return UiService
     },
     async init() {
-      let res = await this.axios.get("/api/stock/"
-          .concat(JSON.parse(sessionStorage.getItem('userInfo')).memberId)
-          .concat("/").concat(this.stock.national)
-          .concat("/").concat(this.stock.code)
-          .concat("?symbol=").concat(this.stock.symbol))
+      let res = await StocksService.getStockDetail(
+          JSON.parse(sessionStorage.getItem('userInfo')).memberId,
+          this.stock.national,
+          this.stock.code,
+          this.stock.symbol
+      )
       this.detail = res.data.detail;
       this.dividendRate = this.detail.dividendInfo != null ? this.detail.dividendInfo.dividendRate : 0
       this.annualDividend = this.detail.dividendInfo != null ? this.detail.dividendInfo.annualDividend: 0

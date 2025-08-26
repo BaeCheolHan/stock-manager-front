@@ -36,6 +36,7 @@ import Modal from "@/components/modal/Modal.vue";
 import SaveBankAccount from "@/components/my/popup/stock/SaveBankAccount.vue";
 import StockBox from "@/components/my/board/stock/StockBox.vue";
 import { useAppStore } from '@/store'
+import { StocksService } from '@/service/stocks'
 
 export default {
   name: "StockBoard",
@@ -77,14 +78,10 @@ export default {
   watch: {
     'bankAccountTab': async function () {
       let memberId = this.userInfo.memberId
-      let url;
-      if (this.bankAccountTab !== 'all') {
-        url = "/api/stock/".concat(memberId).concat("/").concat(this.bankAccountTab);
-      } else {
-        url = "/api/stock/".concat(memberId);
-      }
       this.checkSpin = true
-      let res = await this.axios.get(url);
+      let res = this.bankAccountTab !== 'all'
+          ? await StocksService.getMemberStocksByAccount(memberId, this.bankAccountTab)
+          : await StocksService.getMemberStocks(memberId)
       if (res.data.stocks) {
         this.stocks = res.data.stocks;
         this.treemapChartData[0].data = []
@@ -100,13 +97,9 @@ export default {
   methods: {
     async reloadStock() {
       let memberId = this.userInfo.memberId
-      let url;
-      if (this.bankAccountTab !== 'all') {
-        url = "/api/stock/".concat(memberId).concat("/").concat(this.bankAccountTab);
-      } else {
-        url = "/api/stock/".concat(memberId);
-      }
-      let res = await this.axios.get(url);
+      let res = this.bankAccountTab !== 'all'
+          ? await StocksService.getMemberStocksByAccount(memberId, this.bankAccountTab)
+          : await StocksService.getMemberStocks(memberId)
       if (res.data.stocks) this.stocks = res.data.stocks;
       else this.stocks = [];
     },

@@ -44,6 +44,7 @@ import SaveDividend from "@/components/my/popup/dividend/SaveDividend.vue";
 import Modal from "@/components/modal/Modal.vue";
 import DividendByStockBox from "@/components/my/board/dividend/DividendBoard/DividendByStockBox.vue";
 import { useAppStore } from '@/store'
+import { DividendsService } from '@/service/dividends'
 
 export default {
   name: "DividendBoard",
@@ -112,7 +113,7 @@ export default {
   methods: {
     async getDividendChartData() {
       this.desserts = [];
-      let res = await this.axios.get("/api/dividend/".concat(this.userInfo.memberId).concat("/chart"))
+      let res = await DividendsService.getMonthlyChart(this.userInfo.memberId)
       this.dividendChartSeries = res.data.series;
       for (let i = 0; i < res.data.series.length; i++) {
         let data = {
@@ -137,11 +138,11 @@ export default {
       }
     },
     async getDividends() {
-      let res = await this.axios.get("/api/dividend/member/".concat(this.userInfo.memberId));
+      let res = await DividendsService.getMemberDividends(this.userInfo.memberId)
       this.dividends = res.data.data;
     },
     async getDividendsByItems() {
-      let res = await this.axios.get("/api/dividend/by-item/".concat(this.userInfo.memberId));
+      let res = await DividendsService.getDividendsByItem(this.userInfo.memberId)
       this.dividendByItem = res.data.data;
     },
     openDividendPop() {

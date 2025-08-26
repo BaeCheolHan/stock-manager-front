@@ -138,7 +138,8 @@ export default {
       }
 
       try {
-        let res = await this.axios.post("/api/dividend", param);
+        const { DividendsService } = await import('@/service/dividends')
+        let res = await DividendsService.saveDividend(param)
         this.checkSpin = false;
         if (res.data.code === 'SUCCESS') {
           alert("등록 되었습니다.");
