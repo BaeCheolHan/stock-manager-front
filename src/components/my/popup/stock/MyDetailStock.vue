@@ -62,7 +62,7 @@
             <p class="bold">시가 : {{ detail.startPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">최고가 : {{ detail.highPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{
-                dividendRate.toLocaleString("ko-KR")
+                annualDividend.toLocaleString("ko-KR")
               }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
             <p>PER : {{ detail.per }}</p>
             <p>EPS : {{ detail.eps }}</p>
@@ -78,7 +78,7 @@
                 }})</span>
             </div>
             <p class="bold">최저가 : {{ detail.lowPrice.toLocaleString("ko-KR") }}</p>
-            <p class="bold">배당율 : {{ annualDividend }}%</p>
+            <p class="bold">배당율 : {{ dividendRate }}%</p>
             <p>PBR : {{ detail.pbr }}</p>
             <p>BPS : {{ detail.bps }}</p>
           </div>
