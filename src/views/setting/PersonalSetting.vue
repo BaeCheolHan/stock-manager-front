@@ -82,8 +82,8 @@
           </select>
         </div>
       </div>
-      <div class="mg-t-20 btnBox t-a-c">
-        <button type="button" :disabled="this.processing" @click="savePersonalBankAccountSetting">등록</button>
+      <div class="mg-t-20 btnBox t-a-c sticky-action-bottom">
+        <v-btn color="primary" :loading="processing" :disabled="processing" @click="savePersonalBankAccountSetting" block>등록</v-btn>
       </div>
     </div>
   </div>
@@ -146,18 +146,23 @@ export default {
 
     },
     async removeBankAccount(id) {
+      const { success, error } = await import('@/composables/useNotify').then(m => m.useNotify())
       if (confirm("정말 삭제 하시겠습니까? 해당 계좌에 등록된 주식 정보도 함께 삭제됩니다.")) {
-        let res = await this.axios.delete('/api/bank/'.concat(id));
-        this.userInfo.bankAccounts = res.data.accounts;
-        if (this.userInfo.defaultBankAccountId == id) {
-          this.userInfo.defaultBankAccountId = null;
-          this.defaultBankAccountId = null;
-        }
+        try {
+          let res = await this.axios.delete('/api/bank/'.concat(id));
+          this.userInfo.bankAccounts = res.data.accounts;
+          if (this.userInfo.defaultBankAccountId == id) {
+            this.userInfo.defaultBankAccountId = null;
+            this.defaultBankAccountId = null;
+          }
 
-        const appStore = (await import('@/store')).useAppStore()
-        appStore.setUserInfo(this.userInfo);
-        sessionStorage.setItem('userInfo', JSON.stringify(this.userInfo));
-        // 사용자 정보 변경. 필요 시 상위에서 재조회 이벤트 처리 가능
+          const appStore = (await import('@/store')).useAppStore()
+          appStore.setUserInfo(this.userInfo);
+          sessionStorage.setItem('userInfo', JSON.stringify(this.userInfo));
+          success('계좌가 삭제되었습니다.')
+        } catch (e) {
+          error('계좌 삭제 중 오류가 발생했습니다.')
+        }
       }
 
     },

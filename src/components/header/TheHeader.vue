@@ -15,26 +15,27 @@
         <button class="search-btn" @click="searchStockPop">검색</button>
       </div>
       <ExchangeRate/>
-      <div v-if="UiService().isMobile()">
-        <button class="search-btn" @click="searchStockPop">검색</button>
-      </div>
     </div>
   </div>
 
+  <button v-if="UiService().isMobile() && $route.meta && $route.meta.showSearchFab" class="search-fab" aria-label="검색 열기" @click="searchStockPop">
+    <v-icon icon="mdi-magnify" color="white" size="24"/>
+  </button>
+
   <div class="overlay-lnb" @click="closeNav" v-show="isSidenavOpen"></div>
 
-  <div id="sidenav-lnb" class="sidenav" :style="{ width: isSidenavOpen ? '250px' : '0px' }">
+  <div id="sidenav-lnb" class="sidenav" :style="{ width: isSidenavOpen ? '250px' : '0px' }" role="navigation" aria-label="사이드 메뉴" :aria-hidden="isSidenavOpen ? 'false' : 'true'">
     <div v-if="userInfo">
       <div>
         <div class="flex">
-          <div class="profile-wrap" @click="goDashboard">
-            <img class="profile-thumbnail" :src="userInfo.profileImgUrl">
+          <div class="profile-wrap" @click="goDashboard" tabindex="0">
+            <img class="profile-thumbnail" :src="userInfo.profileImgUrl" alt="프로필 이미지">
             <div class="profile-nickname">
               <span>{{ userInfo.nickname }}</span>
             </div>
           </div>
           <div>
-            <button class="closer mg-r-10" @click="closeNav" style="color: #818181;">&times;</button>
+            <button class="closer mg-r-10" @click="closeNav" style="color: #818181;" aria-label="사이드 메뉴 닫기">&times;</button>
           </div>
         </div>
         <div>
@@ -43,10 +44,10 @@
       </div>
       <div class="side-menus" style="height: 100%">
         <ul>
-          <li @click="goDashboard">홈</li>
-          <li @click="goMyStockManage">내 주식 관리</li>
-          <li @click="goSettings">설정</li>
-          <li @click="logout">로그아웃</li>
+          <li role="button" tabindex="0" @click="goDashboard">홈</li>
+          <li role="button" tabindex="0" @click="goMyStockManage">내 주식 관리</li>
+          <li role="button" tabindex="0" @click="goSettings">설정</li>
+          <li role="button" tabindex="0" @click="logout">로그아웃</li>
         </ul>
       </div>
     </div>
