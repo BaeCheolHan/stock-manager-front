@@ -4,11 +4,11 @@
     <div class="popup-wrap">
       <div class="mg-t-10" v-if="!this.selectedBank">
         <div class="searchSelect">
-          <input class="form-control" placeholder="증권사를 검색해주세요" @focus="bankSelectFocus" @keyup="searchBank($event)">
-          <i class="ti-angle-down"></i>
+          <input class="form-control" placeholder="증권사를 검색해주세요" @focus="isDropdownOpen = true" @input="searchBankInput">
+          <i class="ti-angle-down" @click="isDropdownOpen = !isDropdownOpen"></i>
         </div>
-        <ul class="searchSelectBox" @blur="closeDropDown" @focus="bankSelectFocus">
-          <li v-for="bank in copiedBanks" :key="bank" @click="selectBank(bank)">
+        <ul class="searchSelectBox" v-show="isDropdownOpen">
+          <li v-for="bank in copiedBanks" :key="bank.code || bank.bankCode" @click="selectBank(bank)">
             <img class="bank-icon" :src="'./bank-icons/'.concat(bank.bankCode).concat('.jpg')"
                  @error="replaceBankDefaultImg">
             <span>{{ bank.bankName }}</span>
@@ -48,6 +48,7 @@ export default {
       alias: null,
       timeout: null,
       isUpdating: false,
+      isDropdownOpen: false,
     }
   },
   async beforeMount() {
@@ -70,19 +71,12 @@ export default {
     replaceBankDefaultImg(e) {
       e.target.src = './bank-icons/default-bank.png';
     },
-    closeDropDown() {
-      document.getElementsByClassName('searchSelectBox')[0].style.display = "none";
-    },
-    bankSelectFocus() {
-      document.getElementsByClassName('searchSelectBox')[0].style.display = "";
-    },
-    searchBank(event) {
-      this.copiedBanks = this.banks.filter(item => {
-        return item.bankName.includes(event.target.value)
-      });
+    searchBankInput(event) {
+      const v = event.target.value || ''
+      this.copiedBanks = this.banks.filter(item => item.bankName.includes(v))
     },
     selectBank(bank) {
-      document.getElementsByClassName('searchSelectBox')[0].style.display = "none";
+      this.isDropdownOpen = false;
       this.selectedBank = bank;
     },
     cancelSelectBank() {
