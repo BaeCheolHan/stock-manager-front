@@ -3,19 +3,19 @@
     <ul>
       <li>
         <button @click="go('/')" :class="{active: isActive('/')}" :aria-current="isActive('/') ? 'page' : undefined" aria-label="홈">
-          <v-icon :color="isActive('/') ? 'primary' : undefined" icon="mdi-home-outline" size="20"/>
+          <v-icon :color="colorFor('/')" icon="mdi-home-outline" :size="sizePx()"/>
           <span>홈</span>
         </button>
       </li>
       <li>
         <button @click="go('/my')" :class="{active: isActive('/my')}" :aria-current="isActive('/my') ? 'page' : undefined" aria-label="내 주식">
-          <v-icon :color="isActive('/my') ? 'primary' : undefined" icon="mdi-finance" size="20"/>
+          <v-icon :color="colorFor('/my')" icon="mdi-finance" :size="sizePx()"/>
           <span>내 주식</span>
         </button>
       </li>
       <li>
         <button @click="go('/settings')" :class="{active: isActive('/settings')}" :aria-current="isActive('/settings') ? 'page' : undefined" aria-label="설정">
-          <v-icon :color="isActive('/settings') ? 'primary' : undefined" icon="mdi-cog-outline" size="20"/>
+          <v-icon :color="colorFor('/settings')" icon="mdi-cog-outline" :size="sizePx()"/>
           <span>설정</span>
         </button>
       </li>
@@ -27,13 +27,24 @@
 import UiService from '@/service/UiService'
 export default {
   name: 'MobileBottomNav',
+  props: {
+    iconSize: { type: [String, Number], default: 20 },
+    activeColor: { type: String, default: 'primary' },
+    inactiveColor: { type: String, default: undefined },
+  },
   methods: {
     go(path) {
       UiService.vibrate(10)
       if (this.$route.path !== path) this.$router.replace(path)
     },
-    isActive(path) {
-      return this.$route.path === path
+    isActive(pathPrefix) {
+      return this.$route.path === pathPrefix || this.$route.path.startsWith(pathPrefix + '/')
+    },
+    colorFor(pathPrefix) {
+      return this.isActive(pathPrefix) ? this.activeColor : this.inactiveColor
+    },
+    sizePx() {
+      return Number(this.iconSize)
     }
   }
 }

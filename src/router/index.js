@@ -5,10 +5,10 @@ const PersonalSetting = () => import('@/views/setting/PersonalSetting.vue')
 const Main = () => import('@/views/my/Main.vue')
 
 const routes = [
-  { path: '/', name: 'Index', component: Index },
+  { path: '/', name: 'Index', component: Index, meta: { showSearchFab: true } },
   { path: '/:snsType/redirect', name: 'SocialRedirect', component: SocialRedirect },
-  { path: '/settings', name: 'PersonalSetting', component: PersonalSetting, meta: { requiresAuth: true } },
-  { path: '/my', name: 'Main', component: Main, meta: { requiresAuth: true } },
+  { path: '/settings', name: 'PersonalSetting', component: PersonalSetting, meta: { requiresAuth: true, showSearchFab: false } },
+  { path: '/my', name: 'Main', component: Main, meta: { requiresAuth: true, showSearchFab: true } },
 ]
 
 const router = createRouter({

@@ -7,7 +7,7 @@
     </v-main>
   </v-app>
   <GlobalSnackbar/>
-  <MobileBottomNav v-if="isMobile"/>
+  <MobileBottomNav v-if="isMobile" :icon-size="22" active-color="primary"/>
   <TheFooter/>
 </template>
 

@@ -18,7 +18,7 @@
     </div>
   </div>
 
-  <button v-if="UiService().isMobile()" class="search-fab" aria-label="검색 열기" @click="searchStockPop">
+  <button v-if="UiService().isMobile() && $route.meta && $route.meta.showSearchFab" class="search-fab" aria-label="검색 열기" @click="searchStockPop">
     <v-icon icon="mdi-magnify" color="white" size="24"/>
   </button>
 
