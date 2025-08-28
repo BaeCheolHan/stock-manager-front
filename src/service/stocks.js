@@ -1,4 +1,4 @@
-₩import api, { swr } from './apiClient'
+import api, { swr } from './apiClient'
 
 export const StocksService = {
   getDashboardIndexChart: (type) => swr(`index:${type}`, () => api.get(`/api/dashboard/index-chart/${type}`)),
