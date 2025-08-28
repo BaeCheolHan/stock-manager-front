@@ -27,42 +27,30 @@
       <div class="price-chart" v-if="mainChartType === 'stock'">
         <div v-if="series" id="chart">
           <div class="flex mg-l-5">
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}"
-                    @click="changeChartType('D')">일별
-            </button>
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'W', 'border-radius-8' : chartType !== 'W'}"
-                    @click="changeChartType('W')">주별
-            </button>
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}"
-                    @click="changeChartType('M')">월별
-            </button>
-            <button v-if="stock.national === 'KR'"
-                    :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}"
-                    @click="changeChartType('Y')">년별
-            </button>
+            <RangeToggle :model-value="chartType" :show-year="stock.national === 'KR'" @update:modelValue="changeChartType"/>
           </div>
-          <apexchart :height="UiService().isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions" :series="series"></apexchart>
+          <ApexChart :key="'price-' + chartType" :height="UiService().isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions" :series="series" />
         </div>
       </div>
       <div class="dividend-history-chart" v-if="mainChartType === 'history'">
-        <apexchart :height="UiService().isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions" :series="dividendSeries"></apexchart>
+        <ApexChart :key="'dividend-' + mainChartType" :height="UiService().isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions" :series="dividendSeries" />
       </div>
       <div class="pd-10 border">
         <div class="flex" style="justify-content: space-between;">
           <div>
             <p class="bold">시가 : {{ detail.startPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">최고가 : {{ detail.highPrice.toLocaleString("ko-KR") }}</p>
-            <p class="bold">배당금 : <span v-if="stock.national !== 'KR'">$</span>{{ detail.dividendInfo.dividendRate.toLocaleString("ko-KR") }}<span v-if="stock.national == 'KR'">원</span></p>
+            <p class="bold">배당금 : <span v-if="stock.national !== 'KR'">$</span>{{ detail.dividendInfo.annualDividend }}<span v-if="stock.national == 'KR'">원</span></p>
             <p>PER : {{ detail.per }}</p>
             <p>EPS : {{ detail.eps }}</p>
           </div>
           <div>
             <div>
-              <span class="bold" :style="UiService().setColorStyle(detail.compareToYesterdaySign)">현재가 : {{ detail.nowPrice.toLocaleString("ko-KR") }}(</span>
-              <span class="bold" :style="UiService().setColorStyle(detail.compareToYesterdaySign)" :class="UiService().setUpDownArrowClass(detail.compareToYesterdaySign)">{{ detail.compareToYesterday.toLocaleString("ko-KR") }})</span>
+              <span class="bold" :class="[UiService().setColorClass(detail.compareToYesterdaySign)]">현재가 : {{ detail.nowPrice.toLocaleString("ko-KR") }}(</span>
+              <span class="bold" :class="[UiService().setColorClass(detail.compareToYesterdaySign), UiService().setUpDownArrowClass(detail.compareToYesterdaySign)]">{{ detail.compareToYesterday.toLocaleString("ko-KR") }})</span>
             </div>
             <p class="bold">최저가 : {{ detail.lowPrice.toLocaleString("ko-KR") }}</p>
-            <p class="bold">배당율 : {{ detail.dividendInfo.annualDividend }}%</p>
+            <p class="bold">배당율 : {{ detail.dividendInfo.dividendRate.toLocaleString("ko-KR") }}%</p>
             <p>PBR : {{ detail.pbr }}</p>
             <p>BPS : {{ detail.bps }}</p>
           </div>
@@ -75,10 +63,12 @@
 <script>
 
 import UiService from "@/service/UiService";
+import RangeToggle from '@/components/etc/RangeToggle.vue'
+import { defineAsyncComponent } from 'vue'
 
 export default {
   name: "DetailStock",
-  components: {},
+  components: { RangeToggle, ApexChart: defineAsyncComponent(() => import('vue3-apexcharts')) },
   props: {
     msg: String,
     stock: {
@@ -193,17 +183,14 @@ export default {
       }
 
 
-      let res = await this.axios.get('/api/stock/chart/'.concat(this.chartType)
-          .concat('/')
-          .concat(national)
-          .concat('/').concat(symbol));
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getStockChart(this.chartType, national, symbol)
 
-      this.series[0].data = [];
-
-      res.data.chartData.forEach(item => this.series[0].data.push({
+      const nextData = res.data.chartData.map(item => ({
         x: item.date,
         y: [item.open, item.high, item.low, item.close]
       }))
+      this.series = [{ name: this.series[0]?.name || this.stock.name, data: nextData }]
     }
   },
   async created() {
@@ -215,14 +202,14 @@ export default {
     },
     async init() {
       this.symbol = this.stock.mksc_shrn_iscd ? this.stock.mksc_shrn_iscd : this.stock.symbol;
-      let res = await this.axios.get("/api/stock"
-          .concat("?symbol=").concat(this.symbol))
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getStockBySymbol(this.symbol)
       this.detail = res.data.detail;
-      this.series[0].name = this.stock.name
-      res.data.chartData.forEach(item => this.series[0].data.push({
+      const initData = res.data.chartData.map(item => ({
         x: item.date,
         y: [item.open, item.high, item.low, item.close]
       }))
+      this.series = [{ name: this.stock.name, data: initData }]
 
       for (let data of res.data.detail.dividendInfo.dividendHistories) {
         this.dividendChartOptions.xaxis.categories.push(data.date);

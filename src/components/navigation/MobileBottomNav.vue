@@ -3,19 +3,19 @@
     <ul>
       <li>
         <button @click="go('/')" :class="{active: isActive('/')}" :aria-current="isActive('/') ? 'page' : undefined" aria-label="홈">
-          <v-icon :color="colorFor('/')" icon="mdi-home-outline" :size="sizePx()"/>
+          <span class="icon-badge"><v-icon :color="colorFor('/')" :icon="isActive('/') ? 'mdi-home' : 'mdi-home-outline'" :size="sizePx()"/></span>
           <span>홈</span>
         </button>
       </li>
       <li>
         <button @click="go('/my')" :class="{active: isActive('/my')}" :aria-current="isActive('/my') ? 'page' : undefined" aria-label="내 주식">
-          <v-icon :color="colorFor('/my')" icon="mdi-finance" :size="sizePx()"/>
+          <span class="icon-badge"><v-icon :color="colorFor('/my')" :icon="isActive('/my') ? 'mdi-finance' : 'mdi-finance'" :size="sizePx()"/></span>
           <span>내 주식</span>
         </button>
       </li>
       <li>
         <button @click="go('/settings')" :class="{active: isActive('/settings')}" :aria-current="isActive('/settings') ? 'page' : undefined" aria-label="설정">
-          <v-icon :color="colorFor('/settings')" icon="mdi-cog-outline" :size="sizePx()"/>
+          <span class="icon-badge"><v-icon :color="colorFor('/settings')" :icon="isActive('/settings') ? 'mdi-cog' : 'mdi-cog-outline'" :size="sizePx()"/></span>
           <span>설정</span>
         </button>
       </li>
@@ -29,7 +29,7 @@ export default {
   name: 'MobileBottomNav',
   props: {
     iconSize: { type: [String, Number], default: 20 },
-    activeColor: { type: String, default: 'primary' },
+    activeColor: { type: String, default: '#e00000' },
     inactiveColor: { type: String, default: undefined },
     hideLabelsOnXs: { type: Boolean, default: true },
   },
@@ -75,14 +75,24 @@ export default {
   align-items: center;
 }
 .mobile-bottom-nav button span { font-size: 11px; margin-top: 2px; }
-.mobile-bottom-nav button.active { color: #1976d2; }
+.mobile-bottom-nav button.active { color: #e00000; }
 @media (max-width: 360px) {
   .mobile-bottom-nav button span { display: none; }
 }
-.mobile-bottom-nav button.active :deep(.v-icon) {
-  background-color: rgba(25,118,210,.12);
+.mobile-bottom-nav .icon-badge { display: inline-flex; border-radius: 999px; position: relative; }
+.mobile-bottom-nav .icon-badge :deep(.v-icon) { position: relative; z-index: 1; }
+.mobile-bottom-nav button.active .icon-badge { padding: 0; }
+.mobile-bottom-nav button.active .icon-badge::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, -50%);
+  background-color: rgba(224,0,0,.18);
   border-radius: 999px;
-  padding: 6px;
+  z-index: 0;
 }
 </style>
 

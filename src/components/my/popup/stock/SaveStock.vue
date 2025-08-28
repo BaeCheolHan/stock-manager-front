@@ -58,12 +58,14 @@
           </div>
         </div>
         <div class="mg-t-10">
-          <input type="number" inputmode="decimal" enterkeyhint="next" autocomplete="off" autocapitalize="off" required aria-label="구입 가격" class="form-control" placeholder="구입 가격" v-model="price">
+          <input type="text" inputmode="decimal" enterkeyhint="next" autocomplete="off" autocapitalize="off" required aria-label="구입 가격" class="form-control" placeholder="구입 가격" v-model="priceText">
+          <p v-if="attempted && (!price || Number(price) === 0)" class="red" style="font-size: 11px; margin-top: 4px;">구입 가격을 입력해주세요.</p>
         </div>
         <div class="mg-t-10">
-          <input type="number" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocapitalize="off" required aria-label="수량" class="form-control" placeholder="수량" v-model="quantity">
+          <input type="text" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocapitalize="off" required aria-label="수량" class="form-control" placeholder="수량" v-model="quantityText">
+          <p v-if="attempted && (!quantity || Number(quantity) === 0)" class="red" style="font-size: 11px; margin-top: 4px;">수량을 입력해주세요.</p>
         </div>
-        <div class="mg-t-10 btnBox t-a-c sticky-action-bottom">
+        <div class="mg-t-10 btnBox t-a-c sticky-action-bottom form-compact">
           <v-btn color="primary" :loading="processing" :disabled="processing" @click="saveStock" block>등록</v-btn>
         </div>
       </div>
@@ -85,6 +87,7 @@ export default {
     return {
       checkSpin:false,
       processing: false,
+      attempted: false,
       userInfo: null,
       bankAccounts: null,
       copiedBankAccounts: null,
@@ -98,6 +101,8 @@ export default {
       selectedCode: "KOSPI",
       quantity: null,
       price: null,
+      quantityText: '',
+      priceText: '',
       isBankOpen: false,
       bankKeyword: '',
       stockKeyword: '',
@@ -106,13 +111,32 @@ export default {
   watch: {
     'national': async function () {
       this.closeStockDropDown();
-      let res = await this.axios.get("/api/stocks/code/".concat(this.national));
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getCodesByNational(this.national)
       this.codes = res.data.codes;
     },
     'selectedCode': async function () {
-      let res = await this.axios.get("/api/stocks/".concat(this.selectedCode))
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getStocksByCode(this.selectedCode)
       this.stocks = res.data.stocksList;
       this.copyStocks = this.stocks.slice();
+    },
+    priceText(val) {
+      const raw = (val || '').toString().replace(/[^0-9.]/g, '')
+      const num = raw === '' ? null : Number(raw)
+      this.price = Number.isFinite(num) ? num : 0
+      const parts = raw.split('.')
+      let formatted = ''
+      if (parts[0]) formatted = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      if (parts.length > 1) formatted += '.' + parts[1]
+      if (formatted !== val) this.priceText = formatted
+    },
+    quantityText(val) {
+      const raw = (val || '').toString().replace(/[^0-9]/g, '')
+      const num = raw === '' ? null : Number(raw)
+      this.quantity = Number.isFinite(num) ? num : 0
+      const formatted = raw.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      if (formatted !== val) this.quantityText = formatted
     }
   },
   created: async function () {
@@ -130,11 +154,18 @@ export default {
 
     this.closeBankDropDown();
     this.closeStockDropDown();
-    let res = await this.axios.get("/api/stocks/".concat(this.selectedCode))
+    const { StocksService } = await import('@/service/stocks')
+    let res = await StocksService.getStocksByCode(this.selectedCode)
     this.stocks = res.data.stocksList;
     this.copyStocks = this.stocks.slice();
   },
   methods: {
+    formatNumber(val) {
+      if (val === null || val === undefined || val === '') return ''
+      const num = Number(val)
+      if (Number.isNaN(num)) return ''
+      return num.toLocaleString('ko-KR')
+    },
     startProcessing: function () {
       this.processing = true
     },
@@ -144,6 +175,7 @@ export default {
     saveStock: async function () {
       const { success, error } = useNotify()
       const { start, stop } = useLoading()
+      this.attempted = true
       if (!this.selectedBank) {
         error("계좌를 선택해주세요")
         return;
@@ -174,7 +206,8 @@ export default {
       this.startProcessing();
       start('주식 등록 중...')
       try {
-        let res = await this.axios.post('/api/stock', param);
+        const { StocksService } = await import('@/service/stocks')
+        let res = await StocksService.saveStock(param);
         if (res.data.code === 'SUCCESS') {
           success('등록되었습니다.')
           this.$emit('saved')

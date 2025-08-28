@@ -1,29 +1,16 @@
 <template>
-  <div class="flex mg-t-5" style="justify-content: right;" :style="UiService().isMobileFont()">
+  <div class="flex mg-t-5 text-xs-mobile" style="justify-content: right;">
     <span>* 각 지수는 3분 주기로 갱신합니다.</span>
   </div>
   <div class="flex mg-t-5" style="justify-content: right;">
-    <div class="flex" :style="UiService().isMobileFont()">
-      <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}"
-              @click="changeChartType('D')">일별
-      </button>
-      <button class="mg-r-10" :class="{'redBtn' : chartType === 'W', 'border-radius-8' : chartType !== 'W'}"
-              @click="changeChartType('W')">주별
-      </button>
-      <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}"
-              @click="changeChartType('M')">월별
-      </button>
-      <button class="mg-r-10" :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}"
-              @click="changeChartType('Y')">년별
-      </button>
-    </div>
+    <RangeToggle :model-value="chartType" @update:modelValue="changeChartType"/>
   </div>
   <div class="mg-t-10">
     <div class="flex" style="flex-wrap: wrap; max-width: 90%; margin: 0 auto; justify-content: space-around">
       <div style="min-width: 165px; width: 40%" v-if="kospi">
-        <div class="flex" style="justify-content: flex-start; align-items: center">
+        <div class="flex text-xs-mobile" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">KOSPI</h4>
-          <div :class="UiService().setColorClass(kospi.output1.prdy_vrss_sign)"
+          <div :class="[UiService().setColorClass(kospi.output1.prdy_vrss_sign)]"
                :style="UiService().isMobileFont()">
             <span>{{ kospi.output1.bstp_nmix_prpr }}</span>
             <span>
@@ -42,9 +29,9 @@
         </Suspense>
       </div>
       <div style="min-width: 165px; width: 40%" v-if="kosdaq">
-        <div class="flex" style="justify-content: flex-start; align-items: center">
+        <div class="flex text-xs-mobile" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">KOSDAQ</h4>
-          <div :class="UiService().setColorClass(kosdaq.output1.prdy_vrss_sign)"
+          <div :class="[UiService().setColorClass(kosdaq.output1.prdy_vrss_sign)]"
                :style="UiService().isMobileFont()">
             <span>{{ kosdaq.output1.bstp_nmix_prpr }}</span>
             <span>
@@ -66,9 +53,9 @@
 
     <div class="flex" style="flex-wrap: wrap; max-width: 90%; margin: 0 auto; justify-content: space-around">
       <div style="min-width: 165px; width: 40%" v-if="snp">
-        <div class="flex" style="justify-content: flex-start; align-items: center">
+        <div class="flex text-xs-mobile" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">S&P500</h4>
-          <div :class="UiService().setColorClass(snp.output1.prdy_vrss_sign)" :style="UiService().isMobileFont()">
+          <div :class="[UiService().setColorClass(snp.output1.prdy_vrss_sign)]" :style="UiService().isMobileFont()">
             <span>{{ snp.output1.ovrs_nmix_prpr }}</span>
             <span>
               (<span :class="UiService().setUpDownArrowClass(snp.output1.prdy_vrss_sign)"></span>
@@ -86,9 +73,9 @@
         </Suspense>
       </div>
       <div style="min-width: 165px; width: 40%" v-if="nasdaq">
-        <div class="flex" style="justify-content: flex-start; align-items: center">
+        <div class="flex text-xs-mobile" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">NASDAQ</h4>
-          <div :class="UiService().setColorClass(nasdaq.output1.prdy_vrss_sign)"
+          <div :class="[UiService().setColorClass(nasdaq.output1.prdy_vrss_sign)]"
                :style="UiService().isMobileFont()">
             <span>{{ nasdaq.output1.ovrs_nmix_prpr }}</span>
             <span>
@@ -110,9 +97,9 @@
 
     <div class="flex" style="flex-wrap: wrap; max-width: 90%; margin: 0 auto; justify-content: space-around">
       <div style="min-width: 165px; width: 40%" v-if="daw">
-        <div class="flex" style="justify-content: flex-start; align-items: center">
+        <div class="flex text-xs-mobile" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">다우존스</h4>
-          <div :class="UiService().setColorClass(daw.output1.prdy_vrss_sign)" :style="UiService().isMobileFont()">
+          <div :class="[UiService().setColorClass(daw.output1.prdy_vrss_sign)]" :style="UiService().isMobileFont()">
             <span>{{ daw.output1.ovrs_nmix_prpr }}</span>
             <span>
               (<span :class="UiService().setUpDownArrowClass(daw.output1.prdy_vrss_sign)"></span>
@@ -132,7 +119,7 @@
       <div style="min-width: 165px; width: 40%" v-if="philadelphia">
         <div class="flex" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">필라델피아 <br/>반도체 지수</h4>
-          <div :class="UiService().setColorClass(philadelphia.output1.prdy_vrss_sign)"
+          <div :class="[UiService().setColorClass(philadelphia.output1.prdy_vrss_sign)]"
                :style="UiService().isMobileFont()">
             <span>{{ philadelphia.output1.ovrs_nmix_prpr }}</span>
             <span>
@@ -159,11 +146,13 @@
 <script>
 import UiService from "@/service/UiService";
 import { defineAsyncComponent } from 'vue'
+import RangeToggle from '@/components/etc/RangeToggle.vue'
 
 export default {
   name: "IndexChartArea",
   components: {
     LazyApex: defineAsyncComponent(() => import('vue3-apexcharts')),
+    RangeToggle,
   },
   data: function () {
     return {
@@ -255,7 +244,8 @@ export default {
       return UiService
     },
     async getIndexChartData() {
-      let res = await this.axios.get('/api/dashboard/index-chart/'.concat(this.chartType));
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getDashboardIndexChart(this.chartType)
       this.kospi = res.data.kospi;
       this.kosdaq = res.data.kosdaq;
       this.snp = res.data.snp;

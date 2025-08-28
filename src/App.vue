@@ -7,7 +7,7 @@
     </v-main>
   </v-app>
   <GlobalSnackbar/>
-  <MobileBottomNav v-if="isMobile" :icon-size="22" active-color="primary"/>
+  <MobileBottomNav v-if="isMobile && isLoggedIn" :icon-size="22" active-color="primary"/>
   <TheFooter/>
 </template>
 
@@ -18,6 +18,7 @@ import TheFooter from "@/components/footer/TheFooter.vue";
 import GlobalSnackbar from '@/components/GlobalSnackbar.vue'
 import MobileBottomNav from '@/components/navigation/MobileBottomNav.vue'
 import UiService from '@/service/UiService'
+import { useAppStore } from '@/store'
 
 export default {
   name: 'App',
@@ -28,7 +29,14 @@ export default {
     MobileBottomNav,
   },
   data() {
-    return { isMobile: false }
+    return { isMobile: false, isLoggedIn: false }
+  },
+  created() {
+    const appStore = useAppStore()
+    this.isLoggedIn = !!(appStore.userInfo && appStore.userInfo.memberId)
+    appStore.$subscribe((_mutation, state) => {
+      this.isLoggedIn = !!(state.userInfo && state.userInfo.memberId)
+    })
   },
   mounted() {
     this.isMobile = UiService.isMobile()

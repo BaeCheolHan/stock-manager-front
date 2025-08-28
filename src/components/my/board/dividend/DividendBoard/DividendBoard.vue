@@ -28,14 +28,20 @@
               </v-tab>
             </v-tabs>
           </div>
-          <DividendHistoryBox :dividends="dividends" v-if="dividends" @reload="reloadDividend"/>
-          <div v-else class="mg-t-10">
-            <v-skeleton-loader type="list-item-two-line, list-item-two-line, list-item-two-line"/>
-          </div>
-          <DividendByStockBox :dividends="dividendByItem" v-if="dividendByItem"/>
-          <div v-else class="mg-t-10">
-            <v-skeleton-loader type="list-item-two-line, list-item-two-line, list-item-two-line"/>
-          </div>
+          <template v-if="dividendBoxType === 'history'">
+            <DividendHistoryBox :dividends="dividends" v-if="dividends && dividends.length" @reload="reloadDividend"/>
+            <div v-else class="mg-t-10 t-a-c">
+              <div class="mg-b-10">아직 배당 내역이 없습니다.</div>
+              <v-btn color="primary" variant="elevated" @click="openDividendPop">지금 등록</v-btn>
+            </div>
+          </template>
+          <template v-else>
+            <DividendByStockBox :dividends="dividendByItem" v-if="dividendByItem && dividendByItem.length"/>
+            <div v-else class="mg-t-10 t-a-c">
+              <div class="mg-b-10">등록된 배당 종목이 없습니다.</div>
+              <v-btn color="primary" variant="elevated" @click="openDividendPop">지금 등록</v-btn>
+            </div>
+          </template>
         </v-container>
       </v-window-item>
     </v-window>

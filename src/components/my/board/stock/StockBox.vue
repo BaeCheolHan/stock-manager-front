@@ -1,9 +1,11 @@
 <template>
-  <div class="content" :style="UiService().isMobileFont()">
+  <div class="content text-xs-mobile">
     <StockIcon class="mg-b-10" @click="showRegStockPop"/>
-    <div v-if="stocks">
-      <v-card class="mg-b-5 hover-card" v-for="stock in stocks" :key="stock.id" @click="showStockDetail(stock)">
-        <v-card-text>
+    <div v-if="stocks && stocks.length">
+      <v-lazy v-for="stock in stocks" :key="stock.id" :options="{ rootMargin: '200px 0px', threshold: 0.1 }" min-height="80">
+        <template #default>
+        <v-card class="mg-b-5 hover-card" @click="showStockDetail(stock)">
+          <v-card-text>
           <div>
             <div class="flex bold mg-b-10" style="justify-content: left; align-items: center;">
               <img
@@ -12,15 +14,15 @@
                   style="border: 1px solid white; border-radius: 5px;"
                   class="mg-r-5"
                   loading="lazy" decoding="async"
+                  width="50" height="40"
                   @error="UiService().replaceStockImg($event)"
               >
               <p style="overflow: hidden;
                         text-overflow: ellipsis;
                         white-space: nowrap;
-                        max-width: 40%;
+                        max-width: 38%;
                         word-break: break-all;">{{ stock.name }}</p>
-              <p>({{ stock.symbol }} <span :class="UiService().setUpDownArrowClass(stock.compareToYesterdaySign)"
-                                                            :style="UiService().setColorStyle(stock.compareToYesterdaySign)">
+              <p style="white-space: nowrap;">({{ stock.symbol }} <span :class="[UiService().setUpDownArrowClass(stock.compareToYesterdaySign), UiService().setColorClass(stock.compareToYesterdaySign)]">
                 {{ Math.floor(((stock.compareToYesterday / stock.nowPrice) * 100) * 100) / 100 }}%</span>)</p>
             </div>
             <div class="flex" style="justify-content: space-between; font-size: 12px;">
@@ -46,17 +48,16 @@
               <div class="t-a-r w-55">
                 <div class="flex" style="justify-content: right">
                   <span>현재가 : </span>
-                  <span :style="UiService().setColorStyle(stock.compareToYesterdaySign)"></span>
-                  <span :style="UiService().setColorStyle(stock.compareToYesterdaySign)">{{
+                  <span :class="[UiService().setColorClass(stock.compareToYesterdaySign)]"></span>
+                  <span :class="[UiService().setColorClass(stock.compareToYesterdaySign)]">{{
                       stock.nowPrice.toLocaleString()
                     }}</span>
                   <div v-if="stock.compareToYesterdaySign != 3">
-                    <span :style="UiService().setColorStyle(stock.compareToYesterdaySign)">(</span>
-                    <span :style="UiService().setColorStyle(stock.compareToYesterdaySign)"
-                          :class="UiService().setUpDownArrowClass(stock.compareToYesterdaySign)"> {{
+                    <span :class="[UiService().setColorClass(stock.compareToYesterdaySign)]">(</span>
+                    <span :class="[UiService().setColorClass(stock.compareToYesterdaySign), UiService().setUpDownArrowClass(stock.compareToYesterdaySign)]"> {{
                         stock.compareToYesterday.toLocaleString("ko-KR")
                       }}</span>
-                    <span :style="UiService().setColorStyle(stock.compareToYesterdaySign)">)</span>
+                    <span :class="[UiService().setColorClass(stock.compareToYesterdaySign)]">)</span>
                   </div>
                 </div>
                 <p>
@@ -83,16 +84,16 @@
               </div>
             </div>
           </div>
-        </v-card-text>
-      </v-card>
+          </v-card-text>
+        </v-card>
+        </template>
+      </v-lazy>
     </div>
-    <v-card>
-      <v-card-actions>
-        <v-btn color="deep-purple-lighten-2" variant="text" @click="showRegStockPop" width="100%"
-               style="text-align: center">
-          + 보유 주식을 등록해주세요.
-        </v-btn>
-      </v-card-actions>
+    <v-card v-else class="t-a-c mg-t-20">
+      <v-card-text>
+        <div class="mg-b-10">아직 등록된 보유 주식이 없습니다.</div>
+        <v-btn color="primary" variant="elevated" @click="showRegStockPop">지금 등록</v-btn>
+      </v-card-text>
     </v-card>
   </div>
   <Modal v-if="isShowRegStockPop" @close-modal="isShowRegStockPop = false">

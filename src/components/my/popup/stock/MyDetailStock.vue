@@ -10,8 +10,7 @@
       >
       <h2>{{ stock.name }}
         <span>(</span>
-        <span :class="UiService().setUpDownArrowClass(detail.compareToYesterdaySign)"
-              :style="UiService().setColorStyle(detail.compareToYesterdaySign)">
+        <span :class="[UiService().setUpDownArrowClass(detail.compareToYesterdaySign), UiService().setColorClass(detail.compareToYesterdaySign)]">
           {{ Math.floor(((detail.compareToYesterday / detail.nowPrice) * 100) * 100) / 100 }}%
         </span>
         <span>)</span>
@@ -31,19 +30,7 @@
       <div class="price-chart" v-if="mainChartType == 'stock'">
         <div v-if="series" id="chart">
           <div class="flex mg-l-5">
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}"
-                    @click="changeChartType('D')">일별
-            </button>
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'W', 'border-radius-8' : chartType !== 'W'}"
-                    @click="changeChartType('W')">주별
-            </button>
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}"
-                    @click="changeChartType('M')">월별
-            </button>
-            <button v-if="stock.national == 'KR'"
-                    :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}"
-                    @click="changeChartType('Y')">년별
-            </button>
+            <RangeToggle :model-value="chartType" :show-year="stock.national == 'KR'" @update:modelValue="changeChartType"/>
           </div>
           <Suspense>
             <template #default>
@@ -81,11 +68,10 @@
           </div>
           <div>
             <div>
-              <span class="bold" :style="UiService().setColorStyle(detail.compareToYesterdaySign)">현재가 : {{
+              <span class="bold" :class="[UiService().setColorClass(detail.compareToYesterdaySign)]">현재가 : {{
                   detail.nowPrice.toLocaleString("ko-KR")
                 }}(</span>
-              <span class="bold" :style="UiService().setColorStyle(detail.compareToYesterdaySign)"
-                    :class="UiService().setUpDownArrowClass(detail.compareToYesterdaySign)">{{
+              <span class="bold" :class="[UiService().setColorClass(detail.compareToYesterdaySign), UiService().setUpDownArrowClass(detail.compareToYesterdaySign)]">{{
                   detail.compareToYesterday.toLocaleString("ko-KR")
                 }})</span>
             </div>
@@ -162,12 +148,13 @@ import DividendByStockBox from "@/components/my/board/dividend/DividendBoard/Div
 import DividendHistoryBox from "@/components/my/board/dividend/DividendBoard/DividendHistoryBox.vue";
 import UiService from "@/service/UiService";
 import { defineAsyncComponent } from 'vue'
+import RangeToggle from '@/components/etc/RangeToggle.vue'
 import { StocksService } from '@/service/stocks'
 
 export default {
   name: "MyDetailStock",
   components: {
-    DividendHistoryBox, DividendByStockBox,
+    DividendHistoryBox, DividendByStockBox, RangeToggle,
     LazyApex: defineAsyncComponent(() => import('vue3-apexcharts')),
   },
   props: {
@@ -287,8 +274,9 @@ export default {
       return UiService
     },
     async init() {
+      const { useAppStore } = await import('@/store')
       let res = await StocksService.getStockDetail(
-          JSON.parse(sessionStorage.getItem('userInfo')).memberId,
+          useAppStore().userInfo.memberId,
           this.stock.national,
           this.stock.code,
           this.stock.symbol
@@ -323,7 +311,7 @@ export default {
       const { success, error } = await import('@/composables/useNotify').then(m => m.useNotify())
       if (confirm("삭제하시겠습니까?")) {
         try {
-          await this.axios.delete("/api/stock/".concat(id));
+          await StocksService.removeStockHistory(id)
           await this.init();
           success('삭제되었습니다.')
           this.$emit('deleted')

@@ -9,3 +9,21 @@ export const apiClient = {
 
 export default apiClient
 
+export const PublicService = {
+  getExchangeRate: () => apiClient.get('/api/exchange-rate'),
+  getSnsLoginUrl: (snsType) => apiClient.get(`/login/${snsType}`)
+}
+
+// Simple SWR helper
+export async function swr(key, fetcher, cache = swr.cache) {
+  if (cache.has(key)) {
+    const cached = cache.get(key)
+    // Fire and forget background revalidation
+    fetcher().then(res => cache.set(key, res)).catch(() => {})
+    return cached
+  }
+  const res = await fetcher()
+  cache.set(key, res)
+  return res
+}
+swr.cache = new Map()

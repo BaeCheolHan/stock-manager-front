@@ -5,6 +5,7 @@
         :style="UiService().isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
         style="border: 1px solid white; border-radius: 5px;"
         class="mg-r-5"
+        width="50" height="40"
         @error="UiService().replaceStockImg($event)"
     >
     <h2>{{ stock.name }}({{ stock.symbol }})</h2>
@@ -96,27 +97,25 @@ export default {
       return UiService
     },
     async init() {
-      this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
-      if (this.userInfo) {
-        const appStore = (await import('@/store')).useAppStore()
-        appStore.setUserInfo(this.userInfo)
-        this.accounts = this.userInfo.bankAccounts;
-        this.bankAccountTab = 'all';
+      const appStore = (await import('@/store')).useAppStore()
+      this.userInfo = appStore.userInfo
+      if (!this.userInfo) return this.$router.replace('/')
+      this.accounts = this.userInfo.bankAccounts;
+      this.bankAccountTab = 'all';
 
-        let res = await this.axios.get('/api/dividend/by-item/'.concat(this.userInfo.memberId).concat('/').concat(this.stock.symbol));
+      const { DividendsService } = await import('@/service/dividends')
+      let res = await DividendsService.getDividendsBySymbol(this.userInfo.memberId, this.stock.symbol)
 
-        for (let data of res.data.data) {
-          this.chartOptions.xaxis.categories.push(data.year.toString().concat('-').concat(data.month.toString()))
-          this.series[0].data.push(data.dividend)
-        }
-        this.dividends = res.data.data;
-      } else {
-        location.replace("/");
+      for (let data of res.data.data) {
+        this.chartOptions.xaxis.categories.push(data.year.toString().concat('-').concat(data.month.toString()))
+        this.series[0].data.push(data.dividend)
       }
+      this.dividends = res.data.data;
     },
     async removeHistory(id) {
       if(confirm('삭제 하시겠습니까?')) {
-        await this.axios.delete('/api/dividend/'.concat(id));
+        const { DividendsService } = await import('@/service/dividends')
+        await DividendsService.removeDividend(id)
         this.emitter.emit('reloadDividend');
         await this.init();
       }

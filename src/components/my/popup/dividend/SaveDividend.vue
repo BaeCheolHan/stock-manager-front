@@ -22,9 +22,10 @@
         </div>
       </div>
       <div class="mg-t-10">
-        <input type="number" inputmode="decimal" enterkeyhint="done" autocomplete="off" autocapitalize="off" required aria-label="배당금" class="form-control" placeholder="배당금" v-model="dividend">
+        <input type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" autocapitalize="off" required aria-label="배당금" class="form-control" placeholder="배당금" v-model="dividendText">
+        <p v-if="attempted && (!dividend || Number(dividend) === 0)" class="red" style="font-size: 11px; margin-top: 4px;">배당금을 입력해주세요.</p>
       </div>
-      <div class="mg-t-10 btnBox t-a-c sticky-action-bottom">
+      <div class="mg-t-10 btnBox t-a-c sticky-action-bottom form-compact">
         <v-btn color="primary" :loading="processing" :disabled="processing" @click="saveDividend" block>등록</v-btn>
       </div>
     </div>
@@ -64,9 +65,11 @@ export default {
       selectedStock: null,
       copyStocks: null,
       dividend: null,
+      dividendText: '',
       date: null,
       symbol: null,
       keyword: '',
+      attempted: false,
     }
   },
   watch: {},
@@ -79,6 +82,16 @@ export default {
     this.closeStockDropDown();
   },
   methods: {
+    dividendText(val) {
+      const raw = (val || '').toString().replace(/[^0-9.]/g, '')
+      const num = raw === '' ? null : Number(raw)
+      this.dividend = Number.isFinite(num) ? num : 0
+      const parts = raw.split('.')
+      let formatted = ''
+      if (parts[0]) formatted = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      if (parts.length > 1) formatted += '.' + parts[1]
+      if (formatted !== val) this.dividendText = formatted
+    },
     startProcessing() {
       this.processing = true
     },
@@ -100,6 +113,7 @@ export default {
     async saveDividend() {
       const { success, error } = useNotify()
       const { start, stop } = useLoading()
+      this.attempted = true
       if (!this.selectedStock) {
         if (!this.symbol) {
           error("종목을 선택해주세요.")
@@ -122,8 +136,10 @@ export default {
       start('배당 등록 중...')
       this.checkSpin = true;
 
+      const { useAppStore } = await import('@/store')
+      const memberId = useAppStore().userInfo?.memberId
       let param = {
-        memberId: JSON.parse(sessionStorage.getItem('userInfo')).memberId,
+        memberId,
         symbol: this.symbol,
         date: this.date,
         dividend: this.dividend

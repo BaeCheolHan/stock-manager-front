@@ -20,7 +20,6 @@ export default {
         if (response.data) {
           const appStore = (await import('@/store')).useAppStore()
           appStore.setUserInfo(response.data)
-          sessionStorage.setItem('userInfo', JSON.stringify(response.data))
           this.$router.replace('/my')
         }
       }
@@ -32,7 +31,6 @@ export default {
         if (response.data) {
           const appStore = (await import('@/store')).useAppStore()
           appStore.setUserInfo(response.data)
-          sessionStorage.setItem('userInfo', JSON.stringify(response.data))
           this.$router.replace('/my')
         }
       }

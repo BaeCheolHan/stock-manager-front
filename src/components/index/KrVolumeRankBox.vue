@@ -5,12 +5,12 @@
     <v-card v-else class="mg-b-5 mg-t-10" v-for="stock in data" :key="stock.data_rank" @click="showStockDetail(stock)">
       <v-card-text>
         <div>
-          <div class="flex" :style="UiService().isMobileFont()">
+          <div class="flex text-xs-mobile">
             <div>
               <div class="flex" style="justify-content: left;">
                 <span class="bold">{{ stock.data_rank }}. </span>
                 <span class="bold">{{ stock.hts_kor_isnm }}</span>
-                <div :style="UiService().setColorStyle(stock.prdy_vrss_sign)">
+                <div :class="[UiService().setColorClass(stock.prdy_vrss_sign)]">
                   <span class="mg-l-5">
                     (<span :class="UiService().setUpDownArrowClass(stock.prdy_vrss_sign)"></span>{{
                       Number(stock.prdy_ctrt).toLocaleString('ko-KR')
@@ -27,7 +27,7 @@
                 </div>
                 <div>
                   <span class="mg-l-20 bold">전일 대비 : </span>
-                  <span :style="UiService().setColorStyle(stock.prdy_vrss_sign)">
+                  <span :class="[UiService().setColorClass(stock.prdy_vrss_sign)]">
                     <span :class="UiService().setUpDownArrowClass(stock.prdy_vrss_sign)"></span>
                     {{ Number(stock.prdy_vrss).toLocaleString('ko-KR') }} 원
                 </span>
@@ -68,7 +68,8 @@ export default {
     }
   },
   async created() {
-    let res = await this.axios.get("/api/dashboard/kr/volume/0000")
+    const { StocksService } = await import('@/service/stocks')
+    let res = await StocksService.getKrVolumeRank()
     this.data = res.data.data;
   },
   methods: {

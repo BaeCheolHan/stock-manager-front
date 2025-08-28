@@ -3,6 +3,7 @@ import api from './apiClient'
 export const AccountsService = {
   getBanks: () => api.get('/api/banks'),
   getMemberAccounts: (memberId) => api.get(`/api/bank/member/${memberId}`),
+  getMemberAssetCharts: (memberId) => api.get(`/api/asset/member/${memberId}/chart`),
   saveAccount: (payload) => api.post('/api/account', payload),
   removeAccount: (id) => api.delete(`/api/bank/${id}`),
   setDefaultAccount: (memberId, id) => api.put(`/api/default-bank/${memberId}/${id}`),

@@ -6,7 +6,9 @@
     </div>
     <ul class="searchSelectBox" v-show="open" role="listbox" :id="listId">
       <li v-for="(item, idx) in filtered" :key="itemKey(item, idx)" :class="{active: idx === activeIndex}" @mousedown.prevent="select(item)" role="option" tabindex="0">
-        <slot name="item" :item="item">{{ itemLabel(item) }}</slot>
+        <slot name="item" :item="item">
+          <span v-html="highlight(itemLabel(item))"/>
+        </slot>
       </li>
       <li v-if="!loading && filtered.length === 0" class="t-a-c pd-10">검색 결과가 없습니다</li>
       <li v-if="loading" class="t-a-c pd-10">로딩중...</li>
@@ -57,6 +59,15 @@ export default {
         this.$emit('input-change', this.keyword)
         this.filterNow()
       }, this.debounce)
+    },
+    highlight(text) {
+      const q = (this.keyword || '').toString().trim()
+      if (!q) return text
+      try {
+        const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const re = new RegExp(`(${esc})`, 'ig')
+        return text.toString().replace(re, '<mark>$1</mark>')
+      } catch(_) { return text }
     },
     filterNow() {
       const v = (this.keyword || '').toString().toLowerCase().replace(/\s+/g, '')

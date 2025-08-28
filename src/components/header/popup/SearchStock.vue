@@ -18,7 +18,7 @@
           </select>
         </div>
         <div class="mg-t-10" v-if="!this.selectedStock">
-          <SearchSelect :items="copyStocks" :placeholder="'종목명'" :label="(s)=>s.name + ' ('+s.symbol+')'" :key-field="'symbol'" @select="selectStock" @input-change="onKeyword"/>
+          <SearchSelect :key="national + '-' + selectedCode" :items="copyStocks" :placeholder="'종목명'" :label="(s)=>s.name + ' ('+s.symbol+')'" :key-field="'symbol'" @select="selectStock" @input-change="onKeyword"/>
         </div>
         <div v-else class="mg-t-10">
           <div class="selected-bank-wrap" @click="cancelSelectStock">
@@ -37,9 +37,10 @@
   </div>
 </template>
 <script>
+import { defineAsyncComponent } from 'vue'
 export default {
   name: 'SearchStock',
-  components: { SearchSelect: () => import('@/components/etc/SearchSelect.vue') },
+  components: { SearchSelect: defineAsyncComponent(() => import('@/components/etc/SearchSelect.vue')) },
   data() {
     return {
       national: '',
@@ -54,21 +55,46 @@ export default {
   },
   watch: {
     'national': async function () {
-      this.closeStockDropDown();
-      let res = await this.axios.get("/api/stocks/code/".concat(this.national));
-      this.codes = res.data.codes;
+      // reset selection on national change
+      this.selectedStock = null
+      this.searchKeyword = ''
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getCodesByNational(this.national)
+      this.codes = res.data.codes || [];
+      if (!this.codes.includes(this.selectedCode)) {
+        this.selectedCode = this.codes[0] || ''
+      }
     },
     'selectedCode': async function () {
-      let res = await this.axios.get("/api/stocks/".concat(this.selectedCode));
-      this.stocks = res.data.stocksList;
+      if (!this.selectedCode) {
+        this.stocks = [];
+        this.copyStocks = [];
+        return;
+      }
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getStocksByCode(this.selectedCode)
+      this.stocks = res.data.stocksList || [];
       this.copyStocks = this.stocks.slice();
     }
   },
   async created() {
     this.national = 'KR';
-    let res = await this.axios.get("/api/stocks/".concat(this.selectedCode))
-    this.stocks = res.data.stocksList;
-    this.copyStocks = this.stocks.slice();
+    // 초기 코드 목록 로드 후 기본 코드 설정
+    const { StocksService } = await import('@/service/stocks')
+    let codeRes = await StocksService.getCodesByNational(this.national)
+    this.codes = codeRes.data.codes || [];
+    if (!this.codes.includes(this.selectedCode)) {
+      this.selectedCode = this.codes[0] || ''
+    }
+    // 선택된 코드 기준 종목 로드
+    if (this.selectedCode) {
+      let res = await StocksService.getStocksByCode(this.selectedCode)
+      this.stocks = res.data.stocksList || [];
+      this.copyStocks = this.stocks.slice();
+    } else {
+      this.stocks = [];
+      this.copyStocks = [];
+    }
   },
   methods: {
     onKeyword(v) {

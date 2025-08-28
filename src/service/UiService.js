@@ -23,17 +23,7 @@ class UiService {
         return '';
     }
 
-    setColorStyle(prdy_vrss_sign) {
-        if (prdy_vrss_sign == 1 || prdy_vrss_sign == 2) {
-            return 'color : red;'
-        }
-
-        if (prdy_vrss_sign == 4 || prdy_vrss_sign == 5) {
-            return 'color: blue'
-        }
-
-        return '';
-    }
+    // setColorStyle is deprecated – use setColorClass instead
 
     isMobile() {
         const info = navigator.userAgent;

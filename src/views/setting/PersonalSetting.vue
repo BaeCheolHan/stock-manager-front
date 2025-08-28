@@ -106,12 +106,14 @@ export default {
   },
   watch: {
     'defaultNational': async function () {
-      let res = await this.axios.get("/api/stocks/code/".concat(this.defaultNational))
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getCodesByNational(this.defaultNational)
       this.codes = res.data.codes;
     },
   },
-  created() {
-    this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
+  async created() {
+    const { useAppStore } = await import('@/store')
+    this.userInfo = useAppStore().userInfo
     if (this.userInfo) {
       this.defaultBankAccountId = this.userInfo.defaultBankAccountId;
     } else {
@@ -124,7 +126,8 @@ export default {
     },
     async selectBank(bank) {
       this.selectedBank = bank;
-      let res = await this.axios.get('/api/personal-setting/'.concat(this.selectedBank.id));
+      const { AccountsService } = await import('@/service/accounts')
+      let res = await AccountsService.getPersonalSetting(this.selectedBank.id)
       if (res.data.setting) {
         this.defaultNational = res.data.setting.defaultNational;
         this.defaultCode = res.data.setting.defaultCode;
@@ -136,10 +139,10 @@ export default {
     },
     async saveDefaultBankAccount(id) {
       if (confirm("대표 계좌로 등록 하시겠습니까?")) {
-        let res = await this.axios.put('/api/default-bank/'.concat(this.userInfo.memberId).concat('/').concat(id));
+        const { AccountsService } = await import('@/service/accounts')
+        let res = await AccountsService.setDefaultAccount(this.userInfo.memberId, id)
         if (res.data.code === 'SUCCESS') {
           this.userInfo.defaultBankAccountId = id;
-          sessionStorage.setItem('userInfo', JSON.stringify(this.userInfo));
           this.defaultBankAccountId = id;
         }
       }
@@ -149,7 +152,8 @@ export default {
       const { success, error } = await import('@/composables/useNotify').then(m => m.useNotify())
       if (confirm("정말 삭제 하시겠습니까? 해당 계좌에 등록된 주식 정보도 함께 삭제됩니다.")) {
         try {
-          let res = await this.axios.delete('/api/bank/'.concat(id));
+          const { AccountsService } = await import('@/service/accounts')
+          let res = await AccountsService.removeAccount(id)
           this.userInfo.bankAccounts = res.data.accounts;
           if (this.userInfo.defaultBankAccountId == id) {
             this.userInfo.defaultBankAccountId = null;
@@ -158,7 +162,6 @@ export default {
 
           const appStore = (await import('@/store')).useAppStore()
           appStore.setUserInfo(this.userInfo);
-          sessionStorage.setItem('userInfo', JSON.stringify(this.userInfo));
           success('계좌가 삭제되었습니다.')
         } catch (e) {
           error('계좌 삭제 중 오류가 발생했습니다.')
@@ -178,14 +181,14 @@ export default {
         defaultCode: this.defaultCode
       }
 
-      let res = await this.axios.put('/api/personal-setting/'.concat(this.selectedBank.id), param);
+      const { AccountsService } = await import('@/service/accounts')
+      let res = await AccountsService.savePersonalSetting(this.selectedBank.id, param)
       if (res.data.code === 'SUCCESS') {
-        let res = await this.axios.get("/api/bank/member/".concat(JSON.parse(sessionStorage.getItem('userInfo')).memberId));
-        let userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
+        let res = await AccountsService.getMemberAccounts(this.userInfo.memberId)
+        let userInfo = { ...this.userInfo };
         userInfo.bankAccounts = res.data.accounts;
         const appStore = (await import('@/store')).useAppStore()
         appStore.setUserInfo(userInfo);
-        sessionStorage.setItem('userInfo', JSON.stringify(userInfo));
         // 사용자 정보 변경. 필요 시 상위에서 재조회 이벤트 처리 가능
 
         alert("등록 되었습니다.")

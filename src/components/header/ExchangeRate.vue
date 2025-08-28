@@ -25,7 +25,8 @@ export default {
     }
   },
   async created() {
-    let res = await this.axios.get('/api/exchange-rate');
+    const { PublicService } = await import('@/service/apiClient')
+    let res = await PublicService.getExchangeRate()
     this.exchangeRate.basePrice = res.data.basePrice;
     this.exchangeRate.date = res.data.date;
     this.exchangeRate.time = res.data.time;

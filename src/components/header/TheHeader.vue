@@ -18,8 +18,16 @@
     </div>
   </div>
 
-  <button v-if="UiService().isMobile() && $route.meta && $route.meta.showSearchFab" class="search-fab" aria-label="검색 열기" @click="searchStockPop">
-    <v-icon icon="mdi-magnify" color="white" size="24"/>
+  <button
+    v-if="UiService().isMobile() && $route.meta && $route.meta.showSearchFab"
+    :class="['search-fab', { 'is-hidden': !showFab, 'show-label': showFabLabel, 'tutorial': showFabTutorial, 'longpress': showFabLongpress }]"
+    aria-label="종목 검색" title="종목 검색"
+    @click="onFabClick"
+    @touchstart.passive="onFabPressStart" @touchend.passive="onFabPressEnd"
+    @mousedown="onFabPressStart" @mouseup="onFabPressEnd"
+  >
+    <img src="/icons/ic_search.png" alt="" class="search-fab__icon"/>
+    <span class="visually-hidden">종목 검색</span>
   </button>
 
   <div class="overlay-lnb" @click="closeNav" v-show="isSidenavOpen"></div>
@@ -86,13 +94,49 @@ export default {
       isSearch: false,
       selectedStock: null,
       isSidenavOpen: false,
+      // FAB state
+      showFab: true,
+      showFabLabel: true,
+      showFabTutorial: false,
+      showFabLongpress: false,
+      _fabPressTimer: null,
+      _lastScrollY: 0,
     }
   },
-  mounted() {},
+  mounted() {
+    if (this.UiService().isMobile()) {
+      this._lastScrollY = window.scrollY || 0
+      window.addEventListener('scroll', this.onScroll, { passive: true })
+      // One-time tutorial badge
+      try {
+        const seen = localStorage.getItem('fab_tutorial_seen') === '1'
+        if (!seen) {
+          this.showFabTutorial = true
+          setTimeout(() => {
+            this.showFabTutorial = false
+            localStorage.setItem('fab_tutorial_seen', '1')
+          }, 4000)
+        }
+      } catch(_) {}
+    }
+  },
+  beforeUnmount() {
+    try { window.removeEventListener('scroll', this.onScroll) } catch(_) {}
+    clearTimeout(this._fabPressTimer)
+  },
   async created() {
+    const appStore = useAppStore()
+    // 초기 동기화 (세션에 있을 경우 유지)
     if (sessionStorage.getItem('userInfo')) {
       this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
+      appStore.setUserInfo(this.userInfo)
+    } else {
+      this.userInfo = appStore.userInfo
     }
+    // 스토어 변경 구독: 로그인/로그아웃 시 버튼 즉시 반영
+    appStore.$subscribe((_mutation, state) => {
+      this.userInfo = state.userInfo
+    })
     this.exchangeRate = sessionStorage.getItem('exchangeRate');
   },
   methods: {
@@ -126,8 +170,35 @@ export default {
     searchStockPop() {
       this.searchPop = true;
     },
+    onScroll() {
+      const y = window.scrollY || 0
+      const delta = y - this._lastScrollY
+      // Hide on scroll down, show on scroll up
+      if (Math.abs(delta) > 4) {
+        this.showFab = delta < 0
+        this.showFabLabel = delta < 0
+      }
+      this._lastScrollY = y
+    },
+    onFabClick() {
+      try { this.showFabTutorial = false; localStorage.setItem('fab_tutorial_seen', '1') } catch(_) {}
+      this.UiService().vibrate(15)
+      this.searchStockPop()
+    },
+    onFabPressStart() {
+      clearTimeout(this._fabPressTimer)
+      this._fabPressTimer = setTimeout(() => {
+        this.showFabLongpress = true
+        this.UiService().vibrate(20)
+        setTimeout(() => { this.showFabLongpress = false }, 1200)
+      }, 500)
+    },
+    onFabPressEnd() {
+      clearTimeout(this._fabPressTimer)
+    },
     async snsLoginBtn(snsType) {
-      let res = await this.axios.get('/login/'.concat(snsType))
+      const { PublicService } = await import('@/service/apiClient')
+      let res = await PublicService.getSnsLoginUrl(snsType)
       location.href = res.data.loginUri
     },
     logout() {
