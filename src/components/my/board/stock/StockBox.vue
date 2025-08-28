@@ -48,16 +48,12 @@
               <div class="t-a-r w-55">
                 <div class="flex" style="justify-content: right">
                   <span>현재가 : </span>
-                  <span :class="[UiService().setColorClass(stock.compareToYesterdaySign)]"></span>
-                  <span :class="[UiService().setColorClass(stock.compareToYesterdaySign)]">{{
-                      stock.nowPrice.toLocaleString()
-                    }}</span>
-                  <div v-if="stock.compareToYesterdaySign != 3">
-                    <span :class="[UiService().setColorClass(stock.compareToYesterdaySign)]">(</span>
-                    <span :class="[UiService().setColorClass(stock.compareToYesterdaySign), UiService().setUpDownArrowClass(stock.compareToYesterdaySign)]"> {{
-                        stock.compareToYesterday.toLocaleString("ko-KR")
-                      }}</span>
-                    <span :class="[UiService().setColorClass(stock.compareToYesterdaySign)]">)</span>
+                  <span :class="[signClass(stock)]"></span>
+                  <span :class="[signClass(stock)]">{{ currentPriceText(stock) }}</span>
+                  <div>
+                    <span :class="[signClass(stock)]">(</span>
+                    <span :class="[signClass(stock), arrowClass(stock)]">{{ absChangeText(stock) }}</span>
+                    <span :class="[signClass(stock)]"> {{ '(' + rtChangePercentText(stock) + ')' }}</span>
                   </div>
                 </div>
                 <p>
@@ -131,12 +127,110 @@ export default {
       isShowStockDetailPop: false,
       stockName: '',
       selectedStock: null,
+      ws: null,
+      rtMap: new Map(),
     }
   },
-  watch: {},
+  mounted() {
+    this.startWs()
+  },
+  beforeUnmount() {
+    this.stopWs()
+  },
+  watch: {
+    stocks: {
+      immediate: false,
+      handler() {
+        this.startWs()
+      }
+    }
+  },
   methods: {
     UiService() {
       return UiService;
+    },
+    async startWs() {
+      try {
+        this.stopWs()
+        const tickers = (this.stocks || []).map(s => this.toTicker(s)).filter(Boolean)
+        if (!tickers.length) return
+        const { createQuoteWS } = await import('@/services/quoteWsClient')
+        this.ws = createQuoteWS(tickers, { intervalSec: 1 })
+          .onMessage((list) => {
+            for (const q of list) this.applyRt(q)
+          })
+        this.ws.connect()
+      } catch(_) {}
+    },
+    stopWs() {
+      try { this.ws && this.ws.close() } catch(_) {}
+      this.ws = null
+      this.rtMap = new Map()
+    },
+    toTicker(stock) {
+      const sym = String(stock?.symbol || '').trim().toUpperCase()
+      if (!sym) return null
+      return sym
+    },
+    applyRt(q) {
+      if (!q) return
+      const sym = String(q.symbol || '').toUpperCase()
+      const price = q.regularMarketPrice ?? q.price
+      const dp = q.regularMarketChangePercent ?? q.dp
+      if (price == null || dp == null) return
+      this.rtMap.set(sym, { price, dp })
+      const base = sym.split('.')[0]
+      if (base) this.rtMap.set(base, { price, dp })
+    },
+    getRt(stock) {
+      const sym = this.toTicker(stock)
+      if (!sym) return null
+      return this.rtMap.get(sym) || this.rtMap.get(sym + '.KS') || this.rtMap.get(sym + '.KQ') || this.rtMap.get(sym.split('.')[0]) || null
+    },
+    getRtDp(stock) {
+      const v = this.getRt(stock)
+      return v ? Number(v.dp) : null
+    },
+    signClass(stock) {
+      const dp = this.getRtDp(stock)
+      if (dp == null) return this.UiService().setColorClass(stock.compareToYesterdaySign)
+      return dp >= 0 ? 'red' : 'blue'
+    },
+    arrowClass(stock) {
+      const dp = this.getRtDp(stock)
+      if (dp == null) return this.UiService().setUpDownArrowClass(stock.compareToYesterdaySign)
+      return dp >= 0 ? 'icon-up' : 'icon-down'
+    },
+    currentPriceText(stock) {
+      const v = this.getRt(stock)
+      const price = v && v.price != null ? v.price : stock.nowPrice
+      try { return Number(price).toLocaleString('ko-KR') } catch(_) { return String(price ?? '-') }
+    },
+    rtChangePercentText(stock) {
+      const v = this.getRt(stock)
+      const dp = v && v.dp != null ? Number(v.dp) : null
+      if (dp == null) {
+        const base = Number(stock.nowPrice) && Number(stock.compareToYesterday) ? (Number(stock.compareToYesterday) / Number(stock.nowPrice - stock.compareToYesterday)) * 100 : 0
+        const s = base >= 0 ? '+' : ''
+        return s + base.toFixed(2) + '%'
+      }
+      const pct = dp > 1 ? dp : dp * 100
+      const s = pct >= 0 ? '+' : ''
+      return s + pct.toFixed(2) + '%'
+    },
+    absChangeText(stock) {
+      const v = this.getRt(stock)
+      if (!v) {
+        try { return Number(stock.compareToYesterday).toLocaleString('ko-KR') } catch(_) { return String(stock.compareToYesterday ?? '-') }
+      }
+      const price = Number(v.price)
+      const dp = Number(v.dp)
+      if (!Number.isFinite(price) || !Number.isFinite(dp)) return '-'
+      const frac = dp > 1 ? dp / 100 : dp
+      const denom = 1 + frac
+      if (Math.abs(denom) < 1e-6) return '0'
+      const abs = Math.abs(price * (frac / denom))
+      try { return abs.toLocaleString('ko-KR') } catch(_) { return String(abs) }
     },
     showRegStockPop() {
       this.isShowRegStockPop = true;

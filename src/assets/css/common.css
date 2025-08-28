@@ -839,6 +839,9 @@ select::-ms-expand {
     }
 }
 
+/* Hide bottom nav only when keyboard is actually open */
+body.keyboard-open .mobile-bottom-nav { transform: translateY(100%); }
+
 /* Swipe-to-close smooth animation */
 .modal-card.is-closing {
     animation: modal-swipe-down .18s ease forwards;

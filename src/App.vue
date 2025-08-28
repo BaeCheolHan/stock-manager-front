@@ -29,7 +29,7 @@ export default {
     MobileBottomNav,
   },
   data() {
-    return { isMobile: false, isLoggedIn: false }
+    return { isMobile: false, isLoggedIn: false, _mql: null }
   },
   created() {
     const appStore = useAppStore()
@@ -39,7 +39,15 @@ export default {
     })
   },
   mounted() {
-    this.isMobile = UiService.isMobile()
+    // Viewport 기반 모바일 감지로 iPad/UA 이슈 대비
+    try {
+      this._mql = window.matchMedia('(max-width: 600px)')
+      const update = () => { this.isMobile = this._mql.matches || UiService.isMobile() }
+      this._mql.addEventListener ? this._mql.addEventListener('change', update) : this._mql.addListener(update)
+      update()
+    } catch(_) {
+      this.isMobile = UiService.isMobile()
+    }
   }
 }
 </script>

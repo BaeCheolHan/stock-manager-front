@@ -212,6 +212,16 @@ export default {
         },
         tooltip: {
           enabled: true,
+          y: {
+            formatter: (val) => {
+              if (val == null) return ''
+              const n = Number(val)
+              if (!Number.isFinite(n)) return ''
+              if (n >= 1e8) return (n/1e8).toFixed(2) + '억'
+              if (n >= 1e4) return (n/1e4).toFixed(2) + '만'
+              return n.toLocaleString('ko-KR')
+            }
+          }
         },
         xaxis: {
           type: 'category',
@@ -224,6 +234,15 @@ export default {
         },
         yaxis: {
           show: !this.UiService().isMobile(),
+          labels: {
+            formatter: function (val) {
+              const n = Number(val)
+              if (!Number.isFinite(n)) return ''
+              if (n >= 1e8) return (n/1e8).toFixed(1) + '억'
+              if (n >= 1e4) return (n/1e4).toFixed(1) + '만'
+              return n.toLocaleString('ko-KR')
+            }
+          },
           tooltip: {
             enabled: false
           }
@@ -237,6 +256,10 @@ export default {
     }
   },
   created: async function () {
+    try {
+      const saved = localStorage.getItem('idx_chart_type')
+      if (saved === 'D' || saved === 'W' || saved === 'M' || saved === 'Y') this.chartType = saved
+    } catch (_) {}
     await this.getIndexChartData();
   },
   methods: {
@@ -288,6 +311,7 @@ export default {
     },
     changeChartType(val) {
       this.chartType = val;
+      try { localStorage.setItem('idx_chart_type', val) } catch(_) {}
     },
   }
 };

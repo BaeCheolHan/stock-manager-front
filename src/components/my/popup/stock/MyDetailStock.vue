@@ -10,9 +10,7 @@
       >
       <h2>{{ stock.name }}
         <span>(</span>
-        <span :class="[UiService().setUpDownArrowClass(detail.compareToYesterdaySign), UiService().setColorClass(detail.compareToYesterdaySign)]">
-          {{ Math.floor(((detail.compareToYesterday / detail.nowPrice) * 100) * 100) / 100 }}%
-        </span>
+        <span :class="[rtArrowClass(), rtSignClass()]">{{ rtChangePercentText() }}</span>
         <span>)</span>
       </h2>
     </div>
@@ -68,12 +66,8 @@
           </div>
           <div>
             <div>
-              <span class="bold" :class="[UiService().setColorClass(detail.compareToYesterdaySign)]">현재가 : {{
-                  detail.nowPrice.toLocaleString("ko-KR")
-                }}(</span>
-              <span class="bold" :class="[UiService().setColorClass(detail.compareToYesterdaySign), UiService().setUpDownArrowClass(detail.compareToYesterdaySign)]">{{
-                  detail.compareToYesterday.toLocaleString("ko-KR")
-                }})</span>
+              <span class="bold" :class="[rtSignClass()]">현재가 : {{ currentPriceText() }}</span>
+              <span class="bold mg-l-10" :class="[rtSignClass(), rtArrowClass()]">{{ absChangeText() }} ({{ rtChangePercentText() }})</span>
             </div>
             <p class="bold">최저가 : {{ detail.lowPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">배당율 : {{ dividendRate }}%</p>
@@ -168,6 +162,8 @@ export default {
     return {
       mainChartType: 'stock',
       detail: null,
+      ws: null,
+      rt: null,
       totalPrice: 0,
       totalQuantity: 0,
       rateOfReturn: 0,
@@ -269,6 +265,9 @@ export default {
   async created() {
     await this.init();
   },
+  beforeUnmount() {
+    try { this.ws && this.ws.close() } catch(_) {}
+  },
   methods: {
     UiService() {
       return UiService
@@ -299,6 +298,19 @@ export default {
           this.dividendSeries[0].data.push(data.dividend)
         }
       }
+      // 실시간 WS 시작
+      try {
+        const { createQuoteWS } = await import('@/services/quoteWsClient')
+        this.ws = createQuoteWS([this.stock.symbol], { intervalSec: 1 })
+          .onMessage((list) => {
+            const q = Array.isArray(list) && list.length ? list[0] : null
+            if (!q) return
+            const price = q.regularMarketPrice ?? q.price
+            const dp = q.regularMarketChangePercent ?? q.dp
+            this.rt = { price, dp }
+          })
+        this.ws.connect()
+      } catch(_) {}
 
     },
     yyyyMMdd(value) {
@@ -325,6 +337,48 @@ export default {
     },
     changeChartType(chartType) {
       this.chartType = chartType;
+    },
+    rtSignClass() {
+      const dp = this.rt && this.rt.dp != null ? Number(this.rt.dp) : null
+      if (dp == null) return this.UiService().setColorClass(this.detail?.compareToYesterdaySign)
+      return dp >= 0 ? 'red' : 'blue'
+    },
+    rtArrowClass() {
+      const dp = this.rt && this.rt.dp != null ? Number(this.rt.dp) : null
+      if (dp == null) return this.UiService().setUpDownArrowClass(this.detail?.compareToYesterdaySign)
+      return dp >= 0 ? 'icon-up' : 'icon-down'
+    },
+    currentPriceText() {
+      const price = this.rt && this.rt.price != null ? this.rt.price : this.detail?.nowPrice
+      try { return Number(price).toLocaleString('ko-KR') } catch(_) { return String(price ?? '-') }
+    },
+    rtChangePercentText() {
+      const dp = this.rt && this.rt.dp != null ? Number(this.rt.dp) : null
+      if (dp == null) {
+        const base = Number(this.detail?.nowPrice) && Number(this.detail?.compareToYesterday)
+          ? (Number(this.detail.compareToYesterday) / Number(this.detail.nowPrice - this.detail.compareToYesterday)) * 100
+          : 0
+        const s = base >= 0 ? '+' : ''
+        return s + base.toFixed(2) + '%'
+      }
+      const pct = dp > 1 ? dp : dp * 100
+      const s = pct >= 0 ? '+' : ''
+      return s + pct.toFixed(2) + '%'
+    },
+    absChangeText() {
+      if (this.rt && this.rt.price != null && this.rt.dp != null) {
+        const price = Number(this.rt.price)
+        const dp = Number(this.rt.dp)
+        if (Number.isFinite(price) && Number.isFinite(dp)) {
+          const frac = dp > 1 ? dp / 100 : dp
+          const denom = 1 + frac
+          if (Math.abs(denom) >= 1e-6) {
+            const abs = Math.abs(price * (frac / denom))
+            try { return abs.toLocaleString('ko-KR') } catch(_) { return String(abs) }
+          }
+        }
+      }
+      try { return this.detail?.compareToYesterday?.toLocaleString('ko-KR') ?? '-' } catch(_) { return String(this.detail?.compareToYesterday ?? '-') }
     },
   }
 };

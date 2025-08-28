@@ -49,6 +49,13 @@ module.exports = defineConfig({
         '/api': {
           target: process.env.VUE_APP_API_PROXY_TARGET || 'http://localhost:18081'
         },
+        // WebSocket → yfin(로컬 8080)
+        '/ws': {
+          target: process.env.VUE_APP_WS_PROXY_TARGET || 'http://127.0.0.1:8080',
+          changeOrigin: true,
+          ws: true,
+          pathRewrite: { '^/ws': '/ws' }
+        },
         '/login': {
           target: process.env.VUE_APP_API_PROXY_TARGET || 'http://localhost:18081'
         },

@@ -63,6 +63,8 @@ export default {
       ],
       stocks: [],
       userInfo: null,
+      ws: null,
+      symbolToIndex: new Map(),
 
     }
   },
@@ -79,6 +81,7 @@ export default {
 
   },
   mounted() {},
+  beforeUnmount() { try { this.ws && this.ws.close() } catch(_) {} },
   watch: {
     'bankAccountTab': async function () {
       let memberId = this.userInfo.memberId
@@ -92,20 +95,93 @@ export default {
         await this.stocks.forEach(item => {
           this.treemapChartData[0].data.push({x: item.name, y: item.priceImportance})
         });
+        // 실시간 구독 갱신
+        this.rebuildIndex()
+        this.startWs()
       } else {
         this.stocks = [];
+        this.stopWs()
       }
       this.checkSpin = false;
     },
   },
   methods: {
+    async startWs() {
+      try {
+        this.stopWs()
+        const tickers = this.stocks.map(s => this.toTicker(s)).filter(Boolean)
+        if (!tickers.length) return
+        const { createQuoteWS } = await import('@/services/quoteWsClient')
+        this.ws = createQuoteWS(tickers, { intervalSec: 1 })
+          .onMessage((list) => {
+            for (const q of list) this.applyRt(q)
+          })
+        this.ws.connect()
+      } catch(_) {}
+    },
+    stopWs() {
+      try { this.ws && this.ws.close() } catch(_) {}
+      this.ws = null
+    },
+    rebuildIndex() {
+      this.symbolToIndex = new Map()
+      for (let i = 0; i < this.stocks.length; i++) {
+        const s = this.stocks[i]
+        const sym = String(s.symbol || '').toUpperCase()
+        if (!sym) continue
+        this.symbolToIndex.set(sym, i)
+        if (s.national === 'KR') {
+          this.symbolToIndex.set(sym + '.KS', i)
+          this.symbolToIndex.set(sym + '.KQ', i)
+        }
+      }
+    },
+    toTicker(stock) {
+      const sym = String(stock.symbol || '').trim().toUpperCase()
+      if (!sym) return null
+      // 6자리 한국 코드는 원코드로 전송하면 서버에서 .KS/.KQ 정규화됨
+      return sym
+    },
+    applyRt(q) {
+      if (!q) return
+      const sym = String(q.symbol || '').toUpperCase()
+      const idx = this.symbolToIndex.get(sym) || this.symbolToIndex.get(sym.split('.')[0])
+      if (idx == null) return
+      const price = q.regularMarketPrice ?? q.price
+      const dpRaw = q.regularMarketChangePercent ?? q.dp
+      if (price == null || dpRaw == null) return
+      const dpPct = Number(dpRaw) > 1 ? Number(dpRaw) : Number(dpRaw) * 100
+      const p = Number(price)
+      if (!Number.isFinite(p)) return
+      // prev ≈ price / (1 + dpPct/100), abs change ≈ price * ((dpPct/100) / (1 + dpPct/100))
+      const frac = dpPct / 100
+      const denom = 1 + frac
+      const abs = Math.abs(denom === 0 ? 0 : p * (frac / denom))
+      const s = this.stocks[idx]
+      if (!s) return
+      // 업데이트
+      const updated = {
+        ...s,
+        nowPrice: p,
+        compareToYesterday: abs,
+        compareToYesterdaySign: dpPct >= 0 ? 1 : 4,
+        rateOfReturnPer: (Number(s.avgPrice) ? ((p - Number(s.avgPrice)) / Number(s.avgPrice)) * 100 : 0),
+      }
+      this.stocks.splice(idx, 1, updated)
+    },
     async reloadStock() {
       let memberId = this.userInfo.memberId
       let res = this.bankAccountTab !== 'all'
           ? await StocksService.getMemberStocksByAccount(memberId, this.bankAccountTab)
           : await StocksService.getMemberStocks(memberId)
-      if (res.data.stocks) this.stocks = res.data.stocks;
-      else this.stocks = [];
+      if (res.data.stocks) {
+        this.stocks = res.data.stocks;
+        this.rebuildIndex();
+        this.startWs();
+      } else {
+        this.stocks = [];
+        this.stopWs();
+      }
     },
     openRegAccountPop() {
       this.isShowRegAccountPop = true;

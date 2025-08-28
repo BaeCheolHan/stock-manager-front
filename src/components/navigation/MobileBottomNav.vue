@@ -57,7 +57,7 @@ export default {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 9997;
+  z-index: 10001;
   background: #ffffff;
   border-top: 1px solid #e6e4eb;
   padding-bottom: env(safe-area-inset-bottom);

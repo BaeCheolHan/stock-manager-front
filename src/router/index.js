@@ -32,4 +32,8 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
+router.afterEach(() => {
+  try { document.body.classList.remove('keyboard-open') } catch(_) {}
+})
+
 export default router

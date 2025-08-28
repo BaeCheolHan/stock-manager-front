@@ -107,6 +107,12 @@ export default {
     if (this.UiService().isMobile()) {
       this._lastScrollY = window.scrollY || 0
       window.addEventListener('scroll', this.onScroll, { passive: true })
+      // Hide FAB and bottom nav when keyboard opens (visualViewport height shrink)
+      try {
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener('resize', this.onViewportResize)
+        }
+      } catch(_) {}
       // One-time tutorial badge
       try {
         const seen = localStorage.getItem('fab_tutorial_seen') === '1'
@@ -122,6 +128,7 @@ export default {
   },
   beforeUnmount() {
     try { window.removeEventListener('scroll', this.onScroll) } catch(_) {}
+    try { if (window.visualViewport) window.visualViewport.removeEventListener('resize', this.onViewportResize) } catch(_) {}
     clearTimeout(this._fabPressTimer)
   },
   async created() {
@@ -195,6 +202,19 @@ export default {
     },
     onFabPressEnd() {
       clearTimeout(this._fabPressTimer)
+    },
+    onViewportResize() {
+      try {
+        const vh = window.visualViewport.height
+        const sh = window.innerHeight
+        const shrink = Math.max(0, sh - vh)
+        const ae = document.activeElement
+        const isTextInput = ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')
+        const keyboardOpen = isTextInput && shrink > 100
+        this.showFab = !keyboardOpen
+        this.showFabLabel = !keyboardOpen
+        document.body.classList.toggle('keyboard-open', keyboardOpen)
+      } catch(_) {}
     },
     async snsLoginBtn(snsType) {
       const { PublicService } = await import('@/service/apiClient')
