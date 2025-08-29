@@ -23,7 +23,7 @@
                         max-width: 38%;
                         word-break: break-all;">{{ stock.name }}</p>
               <p style="white-space: nowrap;">({{ stock.symbol }} <span :class="[UiService().setUpDownArrowClass(stock.compareToYesterdaySign), UiService().setColorClass(stock.compareToYesterdaySign)]">
-                {{ Math.floor(((stock.compareToYesterday / stock.nowPrice) * 100) * 100) / 100 }}%</span>)</p>
+               {{ '(' + rtChangePercentText(stock) }}%</span>)</p>
             </div>
             <div class="flex" style="justify-content: space-between; font-size: 12px;">
               <div class="w-50">
@@ -53,7 +53,7 @@
                   <div>
                     <span :class="[signClass(stock)]">(</span>
                     <span :class="[signClass(stock), arrowClass(stock)]">{{ absChangeText(stock) }}</span>
-                    <span :class="[signClass(stock)]"> {{ '(' + rtChangePercentText(stock) + ')' }}</span>
+                    <span :class="[signClass(stock)]">)</span>
                   </div>
                 </div>
                 <p>
