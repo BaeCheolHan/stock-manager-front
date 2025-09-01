@@ -23,7 +23,7 @@
                         max-width: 38%;
                         word-break: break-all;">{{ stock.name }}</p>
               <p style="white-space: nowrap;">({{ stock.symbol }} <span :class="[UiService().setUpDownArrowClass(stock.compareToYesterdaySign), UiService().setColorClass(stock.compareToYesterdaySign)]">
-               {{ '(' + rtChangePercentText(stock) }}%</span>)</p>
+               {{ '(' + rtChangePercentText(stock) }}</span>)</p>
             </div>
             <div class="flex" style="justify-content: space-between; font-size: 12px;">
               <div class="w-50">
