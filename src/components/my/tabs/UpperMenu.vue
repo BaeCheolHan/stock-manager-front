@@ -28,7 +28,7 @@ export default {
   },
   watch: {
     'chartTab': function () {
-      this.emitter.emit('selectTabMenu', this.chartTab)
+      this.$emit('select', this.chartTab)
     }
   },
   methods: {

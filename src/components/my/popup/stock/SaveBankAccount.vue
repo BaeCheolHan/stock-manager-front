@@ -3,17 +3,7 @@
     <h2>계좌 등록</h2>
     <div class="popup-wrap">
       <div class="mg-t-10" v-if="!this.selectedBank">
-        <div class="searchSelect">
-          <input class="form-control" placeholder="증권사를 검색해주세요" @focus="bankSelectFocus" @keyup="searchBank($event)">
-          <i class="ti-angle-down"></i>
-        </div>
-        <ul class="searchSelectBox" @blur="closeDropDown" @focus="bankSelectFocus">
-          <li v-for="bank in copiedBanks" :key="bank" @click="selectBank(bank)">
-            <img class="bank-icon" :src="'./bank-icons/'.concat(bank.bankCode).concat('.jpg')"
-                 @error="replaceBankDefaultImg">
-            <span>{{ bank.bankName }}</span>
-          </li>
-        </ul>
+        <SearchSelect :items="copiedBanks" :placeholder="'증권사를 검색해주세요'" :label="(b)=>b.bankName" :key-field="'bankCode'" @select="selectBank"/>
       </div>
       <div v-else class="mg-t-10">
         <div class="selected-bank-wrap" @click="cancelSelectBank">
@@ -25,18 +15,22 @@
         </div>
       </div>
       <div class="mg-t-10 flex inputBox">
-        <input class="form-control" type="text" v-model="alias" placeholder="계좌 별칭을 입력해주세요.">
+        <input class="form-control" type="text" v-model="alias" required aria-label="계좌 별칭" placeholder="계좌 별칭을 입력해주세요." enterkeyhint="done" autocomplete="off" autocapitalize="off">
       </div>
-      <div class="btnBox t-a-c">
-        <button type="button" @click="saveBank">등록</button>
+      <div class="btnBox t-a-c sticky-action-bottom">
+        <v-btn color="primary" :loading="isUpdating" :disabled="isUpdating" @click="saveBank" block>등록</v-btn>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { useNotify } from '@/composables/useNotify'
+import { useLoading } from '@/composables/useLoading'
+import SearchSelect from '@/components/etc/SearchSelect.vue'
 export default {
   name: "SaveBankAccount",
+  components: { SearchSelect },
   props: {
     msg: String,
   },
@@ -51,7 +45,8 @@ export default {
     }
   },
   async beforeMount() {
-    let res = await this.axios.get("/api/banks");
+    const { AccountsService } = await import('@/service/accounts')
+    let res = await AccountsService.getBanks();
     this.banks = JSON.parse(JSON.stringify(res.data));
     this.copiedBanks = this.banks.slice();
     this.closeDropDown();
@@ -69,32 +64,22 @@ export default {
     replaceBankDefaultImg(e) {
       e.target.src = './bank-icons/default-bank.png';
     },
-    closeDropDown() {
-      document.getElementsByClassName('searchSelectBox')[0].style.display = "none";
-    },
-    bankSelectFocus() {
-      document.getElementsByClassName('searchSelectBox')[0].style.display = "";
-    },
-    searchBank(event) {
-      this.copiedBanks = this.banks.filter(item => {
-        return item.bankName.includes(event.target.value)
-      });
-    },
     selectBank(bank) {
-      document.getElementsByClassName('searchSelectBox')[0].style.display = "none";
       this.selectedBank = bank;
     },
     cancelSelectBank() {
       this.selectedBank = null;
     },
     async saveBank() {
+      const { success, error } = useNotify()
+      const { start, stop } = useLoading()
       if (!this.selectedBank) {
-        alert("증권사를 선택해주세요")
+        error("증권사를 선택해주세요")
         return;
       }
 
       if (!this.alias) {
-        alert("계좌 별칭을 입력해주세요")
+        error("계좌 별칭을 입력해주세요")
         return;
       }
 
@@ -103,20 +88,31 @@ export default {
         bank: this.selectedBank.code,
         alias: this.alias
       }
-      let res = await this.axios.post('/api/account', param);
-      if (res.data.code === 'SUCCESS') {
-        alert("등록되었습니다.");
-        await this.getBankAccount();
-        this.$parent.$parent.isShowRegAccountPop = false;
+      const { AccountsService } = await import('@/service/accounts')
+      start('계좌 등록 중...')
+      try {
+        let res = await AccountsService.saveAccount(param);
+        if (res.data.code === 'SUCCESS') {
+          success('등록되었습니다.')
+          await this.getBankAccount();
+          this.$parent.$parent.isShowRegAccountPop = false;
+        } else if (res.data.message) {
+          error(res.data.message)
+        }
+      } catch (e) {
+        error('등록 중 오류가 발생했습니다.')
+      } finally {
+        stop()
       }
     },
     async getBankAccount() {
-      let res = await this.axios.get("/api/bank/member/".concat(JSON.parse(sessionStorage.getItem('userInfo')).memberId));
-      let userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
+      const { AccountsService } = await import('@/service/accounts')
+      const { useAppStore } = await import('@/store')
+      const appStore = useAppStore()
+      let res = await AccountsService.getMemberAccounts(appStore.userInfo.memberId);
+      let userInfo = { ...appStore.userInfo };
       userInfo.bankAccounts = res.data.accounts;
-      this.$store.commit('setUserInfo', userInfo);
-      sessionStorage.setItem('userInfo', JSON.stringify(userInfo));
-      await this.emitter.emit('reloadUserInfo');
+      appStore.setUserInfo(userInfo);
     },
 
   }

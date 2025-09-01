@@ -6,8 +6,13 @@
       <v-window-item>
         <v-container :fluid="true">
           <!-- 배당금 추가 버튼 -->
-          <DividendIcon @click="openDividendPop"/>
+          <button @click="openDividendPop" aria-label="배당 등록">
+            <DividendIcon />
+          </button>
           <v-data-table-virtual :headers="headers" :items="desserts" class="elevation-1 mg-t-10 dividend-year-table" item-value="name" v-if="desserts" style="font-size: 12px;"/>
+          <div v-else class="mg-t-10">
+            <v-skeleton-loader type="table"/>
+          </div>
 
           <v-divider class="mg-t-30 mg-b-30"></v-divider>
 
@@ -23,15 +28,27 @@
               </v-tab>
             </v-tabs>
           </div>
-          <DividendHistoryBox :dividends="dividends" v-if="dividends"/>
-          <DividendByStockBox :dividends="dividendByItem" v-if="dividendByItem"/>
+          <template v-if="dividendBoxType === 'history'">
+            <DividendHistoryBox :dividends="dividends" v-if="dividends && dividends.length" @reload="reloadDividend"/>
+            <div v-else class="mg-t-10 t-a-c">
+              <div class="mg-b-10">아직 배당 내역이 없습니다.</div>
+              <v-btn color="primary" variant="elevated" @click="openDividendPop">지금 등록</v-btn>
+            </div>
+          </template>
+          <template v-else>
+            <DividendByStockBox :dividends="dividendByItem" v-if="dividendByItem && dividendByItem.length"/>
+            <div v-else class="mg-t-10 t-a-c">
+              <div class="mg-b-10">등록된 배당 종목이 없습니다.</div>
+              <v-btn color="primary" variant="elevated" @click="openDividendPop">지금 등록</v-btn>
+            </div>
+          </template>
         </v-container>
       </v-window-item>
     </v-window>
   </v-card>
 
   <Modal v-if="isSnowDividendRegPop" @close-modal="isSnowDividendRegPop = false">
-    <SaveDividend msg=""/>
+    <SaveDividend msg="" @saved="reloadDividend"/>
   </Modal>
 </template>
 
@@ -43,6 +60,8 @@ import DividendHistoryBox from "@/components/my/board/dividend/DividendBoard/Div
 import SaveDividend from "@/components/my/popup/dividend/SaveDividend.vue";
 import Modal from "@/components/modal/Modal.vue";
 import DividendByStockBox from "@/components/my/board/dividend/DividendBoard/DividendByStockBox.vue";
+import { useAppStore } from '@/store'
+import { DividendsService } from '@/service/dividends'
 
 export default {
   name: "DividendBoard",
@@ -54,9 +73,7 @@ export default {
     DividendMonthlyChart,
     SaveDividend,
   },
-  mounted() {
-    this.emitter.on('reloadDividend', this.reloadDividend)
-  },
+  mounted() {},
   watch: {
     'dividendBoxType': async function() {
       this.dividends = null;
@@ -71,7 +88,8 @@ export default {
   created() {
     this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
     if (this.userInfo) {
-      this.$store.commit('setUserInfo', this.userInfo)
+      const appStore = useAppStore()
+      appStore.setUserInfo(this.userInfo)
       this.accounts = this.userInfo.bankAccounts;
       this.bankAccountTab = 'all'
     } else {
@@ -112,7 +130,7 @@ export default {
   methods: {
     async getDividendChartData() {
       this.desserts = [];
-      let res = await this.axios.get("/api/dividend/".concat(this.userInfo.memberId).concat("/chart"))
+      let res = await DividendsService.getMonthlyChart(this.userInfo.memberId)
       this.dividendChartSeries = res.data.series;
       for (let i = 0; i < res.data.series.length; i++) {
         let data = {
@@ -137,11 +155,11 @@ export default {
       }
     },
     async getDividends() {
-      let res = await this.axios.get("/api/dividend/member/".concat(this.userInfo.memberId));
+      let res = await DividendsService.getMemberDividends(this.userInfo.memberId)
       this.dividends = res.data.data;
     },
     async getDividendsByItems() {
-      let res = await this.axios.get("/api/dividend/by-item/".concat(this.userInfo.memberId));
+      let res = await DividendsService.getDividendsByItem(this.userInfo.memberId)
       this.dividendByItem = res.data.data;
     },
     openDividendPop() {

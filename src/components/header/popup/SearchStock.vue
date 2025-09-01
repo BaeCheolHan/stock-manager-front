@@ -18,16 +18,7 @@
           </select>
         </div>
         <div class="mg-t-10" v-if="!this.selectedStock">
-          <div class="searchSelect searchStockSelect">
-            <input class="form-control" placeholder="종목명" @focus="stockSelectFocus"
-                   @keyup="searchStock($event)">
-            <i class="ti-angle-down"></i>
-          </div>
-          <ul class="searchSelectBox searchStockSelectBox" @blur="closeStockDropDown" @focus="stockSelectFocus">
-            <li v-for="stock in copyStocks" :key="stock" @click="selectStock(stock)">
-              <span>{{ stock.name }} ({{ stock.symbol }})</span>
-            </li>
-          </ul>
+          <SearchSelect :key="national + '-' + selectedCode" :items="copyStocks" :placeholder="'종목명'" :label="(s)=>s.name + ' ('+s.symbol+')'" :key-field="'symbol'" @select="selectStock" @input-change="onKeyword"/>
         </div>
         <div v-else class="mg-t-10">
           <div class="selected-bank-wrap" @click="cancelSelectStock">
@@ -46,8 +37,10 @@
   </div>
 </template>
 <script>
+import { defineAsyncComponent } from 'vue'
 export default {
   name: 'SearchStock',
+  components: { SearchSelect: defineAsyncComponent(() => import('@/components/etc/SearchSelect.vue')) },
   data() {
     return {
       national: '',
@@ -57,41 +50,60 @@ export default {
       codes: [],
       selectedCode: "KOSPI",
       processing: false,
+      searchKeyword: '',
     }
   },
   watch: {
     'national': async function () {
-      this.closeStockDropDown();
-      let res = await this.axios.get("/api/stocks/code/".concat(this.national));
-      this.codes = res.data.codes;
+      // reset selection on national change
+      this.selectedStock = null
+      this.searchKeyword = ''
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getCodesByNational(this.national)
+      this.codes = res.data.codes || [];
+      if (!this.codes.includes(this.selectedCode)) {
+        this.selectedCode = this.codes[0] || ''
+      }
     },
     'selectedCode': async function () {
-      let res = await this.axios.get("/api/stocks/".concat(this.selectedCode));
-      this.stocks = res.data.stocksList;
+      if (!this.selectedCode) {
+        this.stocks = [];
+        this.copyStocks = [];
+        return;
+      }
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getStocksByCode(this.selectedCode)
+      this.stocks = res.data.stocksList || [];
       this.copyStocks = this.stocks.slice();
     }
   },
   async created() {
     this.national = 'KR';
-    let res = await this.axios.get("/api/stocks/".concat(this.selectedCode))
-    this.stocks = res.data.stocksList;
-    this.copyStocks = this.stocks.slice();
+    // 초기 코드 목록 로드 후 기본 코드 설정
+    const { StocksService } = await import('@/service/stocks')
+    let codeRes = await StocksService.getCodesByNational(this.national)
+    this.codes = codeRes.data.codes || [];
+    if (!this.codes.includes(this.selectedCode)) {
+      this.selectedCode = this.codes[0] || ''
+    }
+    // 선택된 코드 기준 종목 로드
+    if (this.selectedCode) {
+      let res = await StocksService.getStocksByCode(this.selectedCode)
+      this.stocks = res.data.stocksList || [];
+      this.copyStocks = this.stocks.slice();
+    } else {
+      this.stocks = [];
+      this.copyStocks = [];
+    }
   },
   methods: {
-    searchStock(event) {
-      this.copyStocks = this.stocks.filter(item => {
-        return (item.name.toString().toLowerCase().replace(' ', '').includes(event.target.value.toLowerCase().replace(' ', '')) ||
-            item.symbol.toString().toLowerCase().replace(' ', '').includes(event.target.value.toLowerCase().replace(' ', '')))
-      });
-    },
-    stockSelectFocus() {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "";
-    },
-    closeStockDropDown() {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "none";
+    onKeyword(v) {
+      this.searchKeyword = v
+      const keyword = (v || '').toLowerCase().replace(' ', '');
+      this.copyStocks = this.stocks.filter(item => (item.name.toString().toLowerCase().replace(' ', '').includes(keyword) || item.symbol.toString().toLowerCase().replace(' ', '').includes(keyword)));
     },
     selectStock(stock) {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "none";
+      this.isDropdownOpen = false;
       this.selectedStock = stock;
     },
     cancelSelectStock() {
@@ -99,7 +111,7 @@ export default {
     },
     search() {
       this.startProcessing();
-      this.emitter.emit('searchStock', this.selectedStock)
+      this.$emit('search', this.selectedStock)
       this.endProcessing();
     },
     startProcessing: function () {

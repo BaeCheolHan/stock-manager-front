@@ -6,16 +6,7 @@
     <h2>배당금 입력</h2>
     <div class="popup-wrap">
       <div class="mg-t-10" v-if="!this.selectedStock">
-        <div class="searchSelect searchStockSelect">
-          <input class="form-control" placeholder="종목이 나오지 않을 경우 티커를 입력" @focus="stockSelectFocus"
-                 @keyup="searchStock($event)">
-          <i class="ti-angle-down"></i>
-        </div>
-        <ul class="searchSelectBox searchStockSelectBox" @blur="closeStockDropDown" @focus="stockSelectFocus">
-          <li v-for="stock in copyStocks" :key="stock" @click="selectStock(stock)">
-            <span>{{ stock.name }} ({{ stock.symbol }})</span>
-          </li>
-        </ul>
+        <SearchSelect :items="copyStocks" :placeholder="'종목이 나오지 않을 경우 티커를 입력'" :label="(s)=>s.name + ' ('+s.symbol+')'" :key-field="'symbol'" @select="selectStock" @input-change="onKeywordChange"/>
       </div>
       <div v-else class="mg-t-10">
         <div class="selected-bank-wrap" @click="cancelSelectStock">
@@ -31,10 +22,11 @@
         </div>
       </div>
       <div class="mg-t-10">
-        <input type="number" class="form-control" placeholder="배당금" v-model="dividend">
+        <input type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" autocapitalize="off" required aria-label="배당금" class="form-control" placeholder="배당금" v-model="dividendText">
+        <p v-if="attempted && (!dividend || Number(dividend) === 0)" class="red" style="font-size: 11px; margin-top: 4px;">배당금을 입력해주세요.</p>
       </div>
-      <div class="mg-t-10 btnBox t-a-c">
-        <button type="button" :disabled="this.processing" @click="saveDividend">등록</button>
+      <div class="mg-t-10 btnBox t-a-c sticky-action-bottom form-compact">
+        <v-btn color="primary" :loading="processing" :disabled="processing" @click="saveDividend" block>등록</v-btn>
       </div>
     </div>
   </div>
@@ -43,6 +35,9 @@
 <script>
 
 import {reactive} from 'vue';
+import { useNotify } from '@/composables/useNotify'
+import { useLoading } from '@/composables/useLoading'
+import SearchSelect from '@/components/etc/SearchSelect.vue'
 
 import '@vuepic/vue-datepicker/dist/main.css'
 import Datepicker from '@vuepic/vue-datepicker';
@@ -54,7 +49,8 @@ export default {
     msg: String,
   },
   components: {
-    Datepicker
+    Datepicker,
+    SearchSelect
   },
   setup() {
     const locale = reactive(ko);
@@ -69,49 +65,58 @@ export default {
       selectedStock: null,
       copyStocks: null,
       dividend: null,
+      dividendText: '',
       date: null,
       symbol: null,
+      keyword: '',
+      attempted: false,
     }
   },
   watch: {},
   async created() {
-
-    this.userInfo = await JSON.parse(sessionStorage.getItem('userInfo'));
+    const { useAppStore } = await import('@/store')
+    this.userInfo = useAppStore().userInfo;
     let res = await this.axios.get('/api/stock/'.concat(this.userInfo.memberId));
     this.stocks = res.data.stocks;
     this.copyStocks = this.stocks.slice();
     this.closeStockDropDown();
   },
   methods: {
+    dividendText(val) {
+      const raw = (val || '').toString().replace(/[^0-9.]/g, '')
+      const num = raw === '' ? null : Number(raw)
+      this.dividend = Number.isFinite(num) ? num : 0
+      const parts = raw.split('.')
+      let formatted = ''
+      if (parts[0]) formatted = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      if (parts.length > 1) formatted += '.' + parts[1]
+      if (formatted !== val) this.dividendText = formatted
+    },
     startProcessing() {
       this.processing = true
     },
     endProcessing() {
       this.processing = false
     },
-    stockSelectFocus() {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "";
-    },
     selectStock(stock) {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "none";
       this.selectedStock = stock;
     },
     cancelSelectStock() {
       this.selectedStock = null;
     },
-    searchStock(event) {
-      this.copyStocks = this.stocks.filter(item => {
-        return item.name.toString().replace(' ', '').includes(event.target.value)
-      });
-      this.symbol = event.target.value;
-    },
-    closeStockDropDown() {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "none";
+    onKeywordChange(v) {
+      this.keyword = v
+      const q = (v || '').toString().toLowerCase().replace(' ', '')
+      this.copyStocks = this.stocks.filter(item => item.name.toString().toLowerCase().replace(' ', '').includes(q))
+      this.symbol = v
     },
     async saveDividend() {
+      const { success, error } = useNotify()
+      const { start, stop } = useLoading()
+      this.attempted = true
       if (!this.selectedStock) {
         if (!this.symbol) {
-          alert("종목을 선택해주세요.")
+          error("종목을 선택해주세요.")
           return;
         }
       } else {
@@ -119,39 +124,44 @@ export default {
       }
 
       if (!this.date) {
-        alert("날짜를 선택해주세요.")
+        error("날짜를 선택해주세요.")
       }
 
       if (!this.dividend) {
-        alert("배당금을 입력해주세요.")
+        error("배당금을 입력해주세요.")
         return;
       }
 
       this.startProcessing();
+      start('배당 등록 중...')
       this.checkSpin = true;
 
+      const { useAppStore } = await import('@/store')
+      const memberId = useAppStore().userInfo?.memberId
       let param = {
-        memberId: JSON.parse(sessionStorage.getItem('userInfo')).memberId,
+        memberId,
         symbol: this.symbol,
         date: this.date,
         dividend: this.dividend
       }
 
       try {
-        let res = await this.axios.post("/api/dividend", param);
+        const { DividendsService } = await import('@/service/dividends')
+        let res = await DividendsService.saveDividend(param)
         this.checkSpin = false;
         if (res.data.code === 'SUCCESS') {
-          alert("등록 되었습니다.");
-          this.endProcessing();
-          await this.emitter.emit('reloadDividend');
-        } else {
-          alert(res.data.message);
-          this.endProcessing();
+          success('등록 되었습니다.')
+          this.$emit('saved')
+        } else if (res.data.message) {
+          error(res.data.message)
         }
 
       } catch (e) {
-        console.log(e)
+        error('등록 중 오류가 발생했습니다.')
 
+      } finally {
+        stop()
+        this.endProcessing();
       }
     },
   }

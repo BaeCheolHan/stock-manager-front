@@ -1,15 +1,25 @@
 <template>
   <div>
-      <apexchart type="bar" height="350" :options="dividendChartOption" :series="chartData"></apexchart>
+    <Suspense>
+      <template #default>
+        <LazyApex type="bar" height="350" :options="dividendChartOption" :series="chartData"/>
+      </template>
+      <template #fallback>
+        <v-skeleton-loader type="image"/>
+      </template>
+    </Suspense>
   </div>
 </template>
 
 
 <script>
 
+import { defineAsyncComponent } from 'vue'
+
 export default {
   name: "DividendMonthlyChart",
   components: {
+    LazyApex: defineAsyncComponent(() => import('vue3-apexcharts')),
   },
   props: {
     chartData: {

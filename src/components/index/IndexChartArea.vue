@@ -1,29 +1,16 @@
 <template>
-  <div class="flex mg-t-5" style="justify-content: right;" :style="UiService().isMobileFont()">
+  <div class="flex mg-t-5 text-xs-mobile" style="justify-content: right;">
     <span>* 각 지수는 3분 주기로 갱신합니다.</span>
   </div>
   <div class="flex mg-t-5" style="justify-content: right;">
-    <div class="flex" :style="UiService().isMobileFont()">
-      <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}"
-              @click="changeChartType('D')">일별
-      </button>
-      <button class="mg-r-10" :class="{'redBtn' : chartType === 'W', 'border-radius-8' : chartType !== 'W'}"
-              @click="changeChartType('W')">주별
-      </button>
-      <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}"
-              @click="changeChartType('M')">월별
-      </button>
-      <button class="mg-r-10" :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}"
-              @click="changeChartType('Y')">년별
-      </button>
-    </div>
+    <RangeToggle :model-value="chartType" @update:modelValue="changeChartType"/>
   </div>
   <div class="mg-t-10">
     <div class="flex" style="flex-wrap: wrap; max-width: 90%; margin: 0 auto; justify-content: space-around">
       <div style="min-width: 165px; width: 40%" v-if="kospi">
-        <div class="flex" style="justify-content: flex-start; align-items: center">
+        <div class="flex text-xs-mobile" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">KOSPI</h4>
-          <div :class="UiService().setColorClass(kospi.output1.prdy_vrss_sign)"
+          <div :class="[UiService().setColorClass(kospi.output1.prdy_vrss_sign)]"
                :style="UiService().isMobileFont()">
             <span>{{ kospi.output1.bstp_nmix_prpr }}</span>
             <span>
@@ -32,12 +19,19 @@
             <span>{{ kospi.output1.bstp_nmix_prdy_vrss }})</span>
           </div>
         </div>
-        <apexchart type="candlestick" :options="chartOptions" :series="kospiSeries"></apexchart>
+        <Suspense>
+          <template #default>
+            <LazyApex type="candlestick" :options="chartOptions" :series="kospiSeries"/>
+          </template>
+          <template #fallback>
+            <v-skeleton-loader type="image"/>
+          </template>
+        </Suspense>
       </div>
       <div style="min-width: 165px; width: 40%" v-if="kosdaq">
-        <div class="flex" style="justify-content: flex-start; align-items: center">
+        <div class="flex text-xs-mobile" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">KOSDAQ</h4>
-          <div :class="UiService().setColorClass(kosdaq.output1.prdy_vrss_sign)"
+          <div :class="[UiService().setColorClass(kosdaq.output1.prdy_vrss_sign)]"
                :style="UiService().isMobileFont()">
             <span>{{ kosdaq.output1.bstp_nmix_prpr }}</span>
             <span>
@@ -46,15 +40,22 @@
             <span>{{ kosdaq.output1.bstp_nmix_prdy_vrss }})</span>
           </div>
         </div>
-        <apexchart type="candlestick" :options="chartOptions" :series="kosdaqSeries"></apexchart>
+        <Suspense>
+          <template #default>
+            <LazyApex type="candlestick" :options="chartOptions" :series="kosdaqSeries"/>
+          </template>
+          <template #fallback>
+            <v-skeleton-loader type="image"/>
+          </template>
+        </Suspense>
       </div>
     </div>
 
     <div class="flex" style="flex-wrap: wrap; max-width: 90%; margin: 0 auto; justify-content: space-around">
       <div style="min-width: 165px; width: 40%" v-if="snp">
-        <div class="flex" style="justify-content: flex-start; align-items: center">
+        <div class="flex text-xs-mobile" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">S&P500</h4>
-          <div :class="UiService().setColorClass(snp.output1.prdy_vrss_sign)" :style="UiService().isMobileFont()">
+          <div :class="[UiService().setColorClass(snp.output1.prdy_vrss_sign)]" :style="UiService().isMobileFont()">
             <span>{{ snp.output1.ovrs_nmix_prpr }}</span>
             <span>
               (<span :class="UiService().setUpDownArrowClass(snp.output1.prdy_vrss_sign)"></span>
@@ -62,12 +63,19 @@
             <span>{{ snp.output1.ovrs_nmix_prdy_vrss }})</span>
           </div>
         </div>
-        <apexchart type="candlestick" :options="chartOptions" :series="snpSeries"></apexchart>
+        <Suspense>
+          <template #default>
+            <LazyApex type="candlestick" :options="chartOptions" :series="snpSeries"/>
+          </template>
+          <template #fallback>
+            <v-skeleton-loader type="image"/>
+          </template>
+        </Suspense>
       </div>
       <div style="min-width: 165px; width: 40%" v-if="nasdaq">
-        <div class="flex" style="justify-content: flex-start; align-items: center">
+        <div class="flex text-xs-mobile" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">NASDAQ</h4>
-          <div :class="UiService().setColorClass(nasdaq.output1.prdy_vrss_sign)"
+          <div :class="[UiService().setColorClass(nasdaq.output1.prdy_vrss_sign)]"
                :style="UiService().isMobileFont()">
             <span>{{ nasdaq.output1.ovrs_nmix_prpr }}</span>
             <span>
@@ -76,15 +84,22 @@
             <span>{{ nasdaq.output1.ovrs_nmix_prdy_vrss }})</span>
           </div>
         </div>
-        <apexchart type="candlestick" :options="chartOptions" :series="nasdaqSeries"></apexchart>
+        <Suspense>
+          <template #default>
+            <LazyApex type="candlestick" :options="chartOptions" :series="nasdaqSeries"/>
+          </template>
+          <template #fallback>
+            <v-skeleton-loader type="image"/>
+          </template>
+        </Suspense>
       </div>
     </div>
 
     <div class="flex" style="flex-wrap: wrap; max-width: 90%; margin: 0 auto; justify-content: space-around">
       <div style="min-width: 165px; width: 40%" v-if="daw">
-        <div class="flex" style="justify-content: flex-start; align-items: center">
+        <div class="flex text-xs-mobile" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">다우존스</h4>
-          <div :class="UiService().setColorClass(daw.output1.prdy_vrss_sign)" :style="UiService().isMobileFont()">
+          <div :class="[UiService().setColorClass(daw.output1.prdy_vrss_sign)]" :style="UiService().isMobileFont()">
             <span>{{ daw.output1.ovrs_nmix_prpr }}</span>
             <span>
               (<span :class="UiService().setUpDownArrowClass(daw.output1.prdy_vrss_sign)"></span>
@@ -92,12 +107,19 @@
             <span>{{ daw.output1.ovrs_nmix_prdy_vrss }})</span>
           </div>
         </div>
-        <apexchart type="candlestick" :options="chartOptions" :series="dawSeries"></apexchart>
+        <Suspense>
+          <template #default>
+            <LazyApex type="candlestick" :options="chartOptions" :series="dawSeries"/>
+          </template>
+          <template #fallback>
+            <v-skeleton-loader type="image"/>
+          </template>
+        </Suspense>
       </div>
       <div style="min-width: 165px; width: 40%" v-if="philadelphia">
         <div class="flex" style="justify-content: flex-start; align-items: center">
           <h4 class="t-a-c mg-r-15">필라델피아 <br/>반도체 지수</h4>
-          <div :class="UiService().setColorClass(philadelphia.output1.prdy_vrss_sign)"
+          <div :class="[UiService().setColorClass(philadelphia.output1.prdy_vrss_sign)]"
                :style="UiService().isMobileFont()">
             <span>{{ philadelphia.output1.ovrs_nmix_prpr }}</span>
             <span>
@@ -106,7 +128,14 @@
             <span>{{ philadelphia.output1.ovrs_nmix_prdy_vrss }})</span>
           </div>
         </div>
-        <apexchart type="candlestick" :options="chartOptions" :series="philadelphiaSeries"></apexchart>
+        <Suspense>
+          <template #default>
+            <LazyApex type="candlestick" :options="chartOptions" :series="philadelphiaSeries"/>
+          </template>
+          <template #fallback>
+            <v-skeleton-loader type="image"/>
+          </template>
+        </Suspense>
       </div>
     </div>
   </div>
@@ -116,9 +145,15 @@
 
 <script>
 import UiService from "@/service/UiService";
+import { defineAsyncComponent } from 'vue'
+import RangeToggle from '@/components/etc/RangeToggle.vue'
 
 export default {
   name: "IndexChartArea",
+  components: {
+    LazyApex: defineAsyncComponent(() => import('vue3-apexcharts')),
+    RangeToggle,
+  },
   data: function () {
     return {
       kospi: null,
@@ -177,6 +212,16 @@ export default {
         },
         tooltip: {
           enabled: true,
+          y: {
+            formatter: (val) => {
+              if (val == null) return ''
+              const n = Number(val)
+              if (!Number.isFinite(n)) return ''
+              if (n >= 1e8) return (n/1e8).toFixed(2) + '억'
+              if (n >= 1e4) return (n/1e4).toFixed(2) + '만'
+              return n.toLocaleString('ko-KR')
+            }
+          }
         },
         xaxis: {
           type: 'category',
@@ -189,6 +234,15 @@ export default {
         },
         yaxis: {
           show: !this.UiService().isMobile(),
+          labels: {
+            formatter: function (val) {
+              const n = Number(val)
+              if (!Number.isFinite(n)) return ''
+              if (n >= 1e8) return (n/1e8).toFixed(1) + '억'
+              if (n >= 1e4) return (n/1e4).toFixed(1) + '만'
+              return n.toLocaleString('ko-KR')
+            }
+          },
           tooltip: {
             enabled: false
           }
@@ -202,6 +256,10 @@ export default {
     }
   },
   created: async function () {
+    try {
+      const saved = localStorage.getItem('idx_chart_type')
+      if (saved === 'D' || saved === 'W' || saved === 'M' || saved === 'Y') this.chartType = saved
+    } catch (_) {}
     await this.getIndexChartData();
   },
   methods: {
@@ -209,7 +267,8 @@ export default {
       return UiService
     },
     async getIndexChartData() {
-      let res = await this.axios.get('/api/dashboard/index-chart/'.concat(this.chartType));
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getDashboardIndexChart(this.chartType)
       this.kospi = res.data.kospi;
       this.kosdaq = res.data.kosdaq;
       this.snp = res.data.snp;
@@ -252,6 +311,7 @@ export default {
     },
     changeChartType(val) {
       this.chartType = val;
+      try { localStorage.setItem('idx_chart_type', val) } catch(_) {}
     },
   }
 };

@@ -1,7 +1,9 @@
 <template>
   <div class="content">
-    <v-card class="mg-b-5" v-for="dividend in dividends" :key="dividend.id" @click="openDividendByStockDetailPop(dividend)">
-      <v-card-text>
+    <v-lazy v-for="dividend in dividends" :key="dividend.id" :options="{ rootMargin: '200px 0px', threshold: 0.1 }" min-height="80">
+      <template #default>
+      <v-card class="mg-b-5" @click="openDividendByStockDetailPop(dividend)">
+        <v-card-text>
         <div class="flex" style="justify-content: space-between">
           <div class="flex bold mg-b-10" style="justify-content: left; align-items: center; max-width: 60%;">
             <img
@@ -9,6 +11,7 @@
                 :style="UiService().isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
                 style="border: 1px solid white; border-radius: 5px;"
                 class="mg-r-5"
+                width="50" height="40"
                 @error="UiService().replaceStockImg($event)"
             >
             <p style="overflow: hidden;
@@ -22,12 +25,14 @@
             <p style="font-size: 12px;">{{Math.floor(dividend.totalKrDividend).toLocaleString('ko-KR')}} 원<span v-if="dividend.national !== 'KR'">(${{dividend.totalOverSeaDividend}})</span></p>
           </div>
         </div>
-      </v-card-text>
-    </v-card>
+        </v-card-text>
+      </v-card>
+      </template>
+    </v-lazy>
   </div>
 
   <Modal v-if="isShowDividendByStockDetailPop" @close-modal="isShowDividendByStockDetailPop = false">
-    <DividendByStockDetailPop msg=""/>
+    <DividendByStockDetailPop msg="" :stock="selectedStock"/>
   </Modal>
 </template>
 

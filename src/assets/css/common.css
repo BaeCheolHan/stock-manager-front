@@ -2,6 +2,12 @@
 
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
+:root {
+    --color-red: #e00000;
+    --color-blue: #0076ff;
+    --color-text: #222;
+}
+
 /* Reset */
 * {
     outline: 0 !important;
@@ -92,12 +98,14 @@ button {
 
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
+    appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
 }
 
 input[type=number] {
+    appearance: textfield;
     -moz-appearance: textfield;
 }
 
@@ -119,8 +127,10 @@ input[type=number] {
     background: url(/public/kakao-icons/ico_login_kakao.png) no-repeat center;
     background-size: contain;
     padding: 0;
-    width: 30px;
-    height: 30px;
+    width: 24px;
+    height: 24px;
+    min-width: 24px !important;
+    min-height: 24px !important;
     font-size: 0;
     background-color: transparent;
 }
@@ -129,8 +139,10 @@ input[type=number] {
     background: url(/public/google-icons/ico_login_google.png) no-repeat center;
     background-size: contain;
     padding: 0;
-    width: 30px;
-    height: 30px;
+    width: 24px;
+    height: 24px;
+    min-width: 24px !important;
+    min-height: 24px !important;
     font-size: 0;
     background-color: transparent;
 }
@@ -605,10 +617,11 @@ margin-bottom: 13px;
 
 .bd-bk {border: 1px solid #000;}
 
-.red {color: red !important;}
-.blue {color: rgb(0, 118, 255) !important;}
+.red {color: var(--color-red) !important;}
+.blue {color: var(--color-blue) !important;}
 
 select {
+    appearance: listbox !important;
     -moz-appearance: listbox !important;
     -webkit-appearance: listbox !important;
 }
@@ -766,22 +779,215 @@ select::-ms-expand {
 .overlay {
     opacity: 0.5;
     background-color: black;
+    /* Block background touch scrolling on mobile */
+    touch-action: none;
 }
+.fade-enter-active, .fade-leave-active { transition: opacity .2s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+.slide-up-enter-active, .slide-up-leave-active { transition: transform .25s ease, opacity .2s ease; }
+.slide-up-enter-from, .slide-up-leave-to { transform: translateY(20px); opacity: 0.98; }
 .modal-card {
     position: relative;
     width: 90%;
     max-width: 700px;
     margin: auto;
-    margin-top: 30px;
+    margin-top: 10px;
     padding: 20px;
     background-color: white;
     /*min-height: 500px;*/
     z-index: 9999;
     opacity: 1;
     overflow: hidden;
-    overflow-y: scroll;
+    overflow-y: auto;
     max-height: 95%;
+    -webkit-overflow-scrolling: touch; /* smooth internal scroll on iOS */
+    overscroll-behavior: contain; /* stop propagation to backdrop */
 
+}
+/* Modal header/content split */
+.modal-header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    z-index: 1;
+}
+.modal-close {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    font-size: 22px;
+    line-height: 1;
+}
+.modal-content {
+    padding-top: 4px;
+}
+
+/* Bottom sheet on mobile */
+@media (max-width: 600px) {
+    .modal-card {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        position: absolute;
+        bottom: 0;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+        max-height: 92%;
+        will-change: transform;
+    }
+}
+
+/* Hide bottom nav only when keyboard is actually open */
+body.keyboard-open .mobile-bottom-nav { transform: translateY(100%); }
+
+/* Swipe-to-close smooth animation */
+.modal-card.is-closing {
+    animation: modal-swipe-down .18s ease forwards;
+}
+.overlay.is-closing {
+    transition: opacity .18s ease;
+    opacity: 0.2 !important;
+}
+@keyframes modal-swipe-down {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(100px); opacity: .95; }
+}
+
+/* Desktop dialog sizing refinements */
+@media (min-width: 601px) {
+    .modal-card {
+        max-height: 85%;
+    }
+    .popup-wrap {
+        height: auto;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    .sticky-action-bottom {
+        position: static;
+        padding: 10px 0;
+    }
+}
+
+@media (min-width: 1440px) {
+    .modal-card { max-width: 840px; }
+}
+
+/* Modal drag handle (mobile cue) */
+.modal-drag-handle {
+    width: 44px;
+    height: 4px;
+    border-radius: 2px;
+    background: #d9d9d9;
+    margin: 4px auto 8px;
+}
+
+/* Prevent background scroll when modal open */
+body.modal-open { overflow: hidden; }
+
+/* Avoid rubber-banding while modal open (iOS Safari) */
+body.modal-open {
+    position: fixed;
+    width: 100%;
+    /* Prevent iOS pull-to-refresh when modal is open */
+    overscroll-behavior-y: contain;
+}
+
+/* Touch targets */
+button, .v-btn {
+    min-height: 44px;
+    min-width: 44px;
+}
+/* Compact form buttons (e.g., 등록/저장) */
+.form-compact .v-btn {
+    min-height: 32px !important;
+    height: 32px !important;
+    padding: 0 12px !important;
+    font-size: 12px !important;
+}
+@media (max-width: 600px) {
+    .form-compact .v-btn {
+        min-height: 30px !important;
+        height: 30px !important;
+        padding: 0 10px !important;
+        font-size: 11px !important;
+    }
+}
+/* Smaller controls for index range toggle */
+.range-toggle button {
+    min-height: 28px !important;
+    padding: 2px 8px !important;
+    font-size: 12px !important;
+}
+@media (max-width: 600px) {
+    .range-toggle button {
+        min-height: 26px !important;
+        padding: 2px 6px !important;
+        font-size: 11px !important;
+    }
+}
+
+.sticky-action-bottom {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+}
+.skip-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translateY(-100%);
+    background: #000;
+    color: #fff;
+    padding: 8px 12px;
+    z-index: 10000;
+}
+.skip-link:focus {
+    transform: translateY(0);
+}
+
+/* Keyboard focus visibility */
+:focus-visible {
+    outline: 2px solid #1976d2;
+    outline-offset: 2px;
+}
+
+/* Mobile form usability */
+@media (max-width: 600px) {
+    .form-control,
+    .dp__input_wrap input {
+        font-size: 16px; /* prevent iOS zoom */
+        min-height: 44px;
+    }
+    .searchSelectBox li {
+        padding: 12px 20px;
+    }
+    /* Ensure sticky bottom actions stay above iOS keyboard */
+    .sticky-action-bottom {
+        padding-bottom: calc(6px + env(safe-area-inset-bottom));
+    }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0s !important;
+        transition-duration: 0s !important;
+    }
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
 }
 
 .border {
@@ -842,8 +1048,8 @@ select::-ms-expand {
 }
 
 .redBtn {
-    background-color: #e00000;
-    border: 1px solid #e00000;
+    background-color: var(--color-red);
+    border: 1px solid var(--color-red);
     color: #fff;
     border-radius: 8px;
     font-weight: bold;
@@ -880,4 +1086,80 @@ select::-ms-expand {
     width: 50px;
     height: 100%;
     font-size: 0;
+}
+
+/* Mobile search FAB */
+@media (max-width: 600px) {
+    .search-fab {
+        position: fixed;
+        right: 16px;
+        bottom: calc(70px + env(safe-area-inset-bottom));
+        width: 52px;
+        height: 52px;
+        border-radius: 26px;
+        background-color: #1976d2;
+        color: #fff;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,.12);
+        z-index: 9998;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color .15s ease, color .15s ease, box-shadow .15s ease;
+    }
+    .search-fab.is-hidden { transform: translateY(120%); opacity: 0; transition: transform .2s ease, opacity .2s ease; }
+    .search-fab::after {
+        content: "검색";
+        position: absolute;
+        bottom: -22px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        font-size: 11px;
+        line-height: 1;
+        padding: 4px 6px;
+        border-radius: 10px;
+        white-space: nowrap;
+        pointer-events: none;
+    }
+    .search-fab:not(.show-label)::after { opacity: 0; }
+    .search-fab.tutorial::before {
+        content: "종목 검색";
+        position: absolute;
+        right: 62px;
+        bottom: 6px;
+        background: #fff;
+        color: #1976d2;
+        border: 1px solid #1976d2;
+        padding: 6px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+    .search-fab.longpress::after {
+        content: "종목 검색";
+        opacity: 1 !important;
+        background: rgba(0,0,0,.8);
+    }
+    .search-fab__icon {
+        width: 24px;
+        height: 24px;
+        display: block;
+        filter: brightness(0) invert(1);
+    }
+    .search-fab:hover {
+        background-color: #155fa0;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,.18);
+    }
+}
+
+/* subtle hover for cards */
+.hover-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+
+@media (max-width: 600px) {
+  .text-xs-mobile { font-size: 10px !important; }
 }

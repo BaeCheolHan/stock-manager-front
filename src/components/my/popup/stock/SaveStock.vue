@@ -8,12 +8,11 @@
 
       <div class="mg-t-10" v-if="!this.selectedBank">
         <div class="searchSelect searchBankSelect">
-          <input class="form-control" placeholder="계좌 별칭" @focus="bankSelectFocus"
-                 @keyup="searchBank($event)">
-          <i class="ti-angle-down"></i>
+          <input class="form-control" placeholder="계좌 별칭" @focus="isBankOpen = true" v-model="bankKeyword" @input="searchBank">
+          <i class="ti-angle-down" @click="isBankOpen = !isBankOpen"></i>
         </div>
-        <ul class="searchSelectBox searchBankSelectBox" @blur="closeBankDropDown" @focus="bankSelectFocus">
-          <li v-for="bank in copiedBankAccounts" :key="bank" @click="selectBank(bank)">
+        <ul class="searchSelectBox" v-show="isBankOpen">
+          <li v-for="bank in copiedBankAccounts" :key="bank.id" @click="selectBank(bank)">
             <img class="bank-icon" :src="'./bank-icons/'.concat(bank.bankInfo.bankCode).concat('.jpg')"
                  @error="replaceBankDefaultImg">
             <span>{{ bank.alias }}</span>
@@ -47,17 +46,7 @@
           </select>
         </div>
         <div class="mg-t-10" v-if="!this.selectedStock">
-          <div class="searchSelect searchStockSelect">
-            <input class="form-control" placeholder="종목명" @focus="stockSelectFocus"
-                   @keyup="searchStock($event)">
-            <i class="ti-angle-down"></i>
-          </div>
-          <ul class="searchSelectBox searchStockSelectBox" @blur="closeStockDropDown"
-              @focus="stockSelectFocus">
-            <li v-for="stock in copyStocks" :key="stock" @click="selectStock(stock)">
-              <span>{{ stock.name }} ({{ stock.symbol }})</span>
-            </li>
-          </ul>
+          <SearchSelect :items="copyStocks" :placeholder="'종목명'" :label="(s)=>s.name + ' ('+s.symbol+')'" :key-field="'symbol'" @select="selectStock" @input-change="onStockKeywordChange"/>
         </div>
         <div v-else class="mg-t-10">
           <div class="selected-bank-wrap" @click="cancelSelectStock">
@@ -69,13 +58,15 @@
           </div>
         </div>
         <div class="mg-t-10">
-          <input type="number" class="form-control" placeholder="구입 가격" v-model="price">
+          <input type="text" inputmode="decimal" enterkeyhint="next" autocomplete="off" autocapitalize="off" required aria-label="구입 가격" class="form-control" placeholder="구입 가격" v-model="priceText">
+          <p v-if="attempted && (!price || Number(price) === 0)" class="red" style="font-size: 11px; margin-top: 4px;">구입 가격을 입력해주세요.</p>
         </div>
         <div class="mg-t-10">
-          <input type="number" class="form-control" placeholder="수량" v-model="quantity">
+          <input type="text" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocapitalize="off" required aria-label="수량" class="form-control" placeholder="수량" v-model="quantityText">
+          <p v-if="attempted && (!quantity || Number(quantity) === 0)" class="red" style="font-size: 11px; margin-top: 4px;">수량을 입력해주세요.</p>
         </div>
-        <div class="mg-t-10 btnBox t-a-c">
-          <button type="button" :disabled="this.processing" @click="saveStock">등록</button>
+        <div class="mg-t-10 btnBox t-a-c sticky-action-bottom form-compact">
+          <v-btn color="primary" :loading="processing" :disabled="processing" @click="saveStock" block>등록</v-btn>
         </div>
       </div>
     </div>
@@ -83,15 +74,20 @@
 </template>
 
 <script>
+import { useNotify } from '@/composables/useNotify'
+import { useLoading } from '@/composables/useLoading'
+import SearchSelect from '@/components/etc/SearchSelect.vue'
 export default {
   name: "SaveStock",
   props: {
     msg: String,
   },
+  components: { SearchSelect },
   data: function () {
     return {
       checkSpin:false,
       processing: false,
+      attempted: false,
       userInfo: null,
       bankAccounts: null,
       copiedBankAccounts: null,
@@ -105,22 +101,47 @@ export default {
       selectedCode: "KOSPI",
       quantity: null,
       price: null,
+      quantityText: '',
+      priceText: '',
+      isBankOpen: false,
+      bankKeyword: '',
+      stockKeyword: '',
     }
   },
   watch: {
     'national': async function () {
       this.closeStockDropDown();
-      let res = await this.axios.get("/api/stocks/code/".concat(this.national));
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getCodesByNational(this.national)
       this.codes = res.data.codes;
     },
     'selectedCode': async function () {
-      let res = await this.axios.get("/api/stocks/".concat(this.selectedCode))
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getStocksByCode(this.selectedCode)
       this.stocks = res.data.stocksList;
       this.copyStocks = this.stocks.slice();
+    },
+    priceText(val) {
+      const raw = (val || '').toString().replace(/[^0-9.]/g, '')
+      const num = raw === '' ? null : Number(raw)
+      this.price = Number.isFinite(num) ? num : 0
+      const parts = raw.split('.')
+      let formatted = ''
+      if (parts[0]) formatted = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      if (parts.length > 1) formatted += '.' + parts[1]
+      if (formatted !== val) this.priceText = formatted
+    },
+    quantityText(val) {
+      const raw = (val || '').toString().replace(/[^0-9]/g, '')
+      const num = raw === '' ? null : Number(raw)
+      this.quantity = Number.isFinite(num) ? num : 0
+      const formatted = raw.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      if (formatted !== val) this.quantityText = formatted
     }
   },
   created: async function () {
-    this.userInfo = await JSON.parse(sessionStorage.getItem('userInfo'));
+    const { useAppStore } = await import('@/store')
+    this.userInfo = useAppStore().userInfo;
     this.bankAccounts = this.userInfo.bankAccounts;
     this.copiedBankAccounts = this.bankAccounts.slice();
 
@@ -133,11 +154,18 @@ export default {
 
     this.closeBankDropDown();
     this.closeStockDropDown();
-    let res = await this.axios.get("/api/stocks/".concat(this.selectedCode))
+    const { StocksService } = await import('@/service/stocks')
+    let res = await StocksService.getStocksByCode(this.selectedCode)
     this.stocks = res.data.stocksList;
     this.copyStocks = this.stocks.slice();
   },
   methods: {
+    formatNumber(val) {
+      if (val === null || val === undefined || val === '') return ''
+      const num = Number(val)
+      if (Number.isNaN(num)) return ''
+      return num.toLocaleString('ko-KR')
+    },
     startProcessing: function () {
       this.processing = true
     },
@@ -145,23 +173,26 @@ export default {
       this.processing = false
     },
     saveStock: async function () {
+      const { success, error } = useNotify()
+      const { start, stop } = useLoading()
+      this.attempted = true
       if (!this.selectedBank) {
-        alert("계좌를 선택해주세요")
+        error("계좌를 선택해주세요")
         return;
       }
 
       if (!this.selectedStock) {
-        alert("종목을 선택해주세요")
+        error("종목을 선택해주세요")
         return;
       }
 
       if (!this.price || this.price === 0) {
-        alert("구입 가격을 입력해주세요")
+        error("구입 가격을 입력해주세요")
         return;
       }
 
       if (!this.quantity || this.quantity === 0) {
-        alert("수량을 입력해주세요")
+        error("수량을 입력해주세요")
         return;
       }
 
@@ -173,49 +204,47 @@ export default {
       }
       this.checkSpin = true;
       this.startProcessing();
-      let res = await this.axios.post('/api/stock', param);
-      this.checkSpin = false;
-      if (res.data.code === 'SUCCESS') {
-        alert("등록되었습니다.");
+      start('주식 등록 중...')
+      try {
+        const { StocksService } = await import('@/service/stocks')
+        let res = await StocksService.saveStock(param);
+        if (res.data.code === 'SUCCESS') {
+          success('등록되었습니다.')
+          this.$emit('saved')
+        } else if (res.data.message) {
+          error(res.data.message)
+        }
+      } catch (e) {
+        error('등록 중 오류가 발생했습니다.')
+      } finally {
+        stop()
         this.endProcessing();
-        this.$parent.$parent.isShowRegStockPop = false;
-        await this.emitter.emit('reloadStock');
+        this.checkSpin = false;
       }
     },
-    searchBank: function (event) {
-      this.copiedBankAccounts = this.bankAccounts.filter(item => {
-        return item.alias.replace(' ', '').includes(event.target.value)
-      });
+    searchBank: function () {
+      const v = (this.bankKeyword || '').replace(' ', '')
+      this.copiedBankAccounts = this.bankAccounts.filter(item => item.alias.replace(' ', '').includes(v))
     },
-    searchStock: function (event) {
-      this.copyStocks = this.stocks.filter(item => {
-        return (item.name.toString().toLowerCase().replace(' ', '').includes(event.target.value.toLowerCase().replace(' ', '')) ||
-            item.symbol.toString().toLowerCase().replace(' ', '').includes(event.target.value.toLowerCase().replace(' ', '')))
-      });
+    onStockKeywordChange(v) {
+      this.stockKeyword = v
+      const q = (v || '').toLowerCase().replace(' ', '')
+      this.copyStocks = this.stocks.filter(item => (
+          item.name.toString().toLowerCase().replace(' ', '').includes(q) ||
+          item.symbol.toString().toLowerCase().replace(' ', '').includes(q)
+      ));
     },
     replaceBankDefaultImg(e) {
       e.target.src = './bank-icons/default-bank.png';
     },
-    closeBankDropDown: function () {
-      document.getElementsByClassName('searchBankSelectBox')[0].style.display = "none";
-    },
-    closeStockDropDown: function () {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "none";
-    },
-    bankSelectFocus: function () {
-      document.getElementsByClassName('searchBankSelectBox')[0].style.display = "";
-    },
-    stockSelectFocus: function () {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "";
-    },
     selectBank: function (bank) {
-      document.getElementsByClassName('searchBankSelectBox')[0].style.display = "none";
+      this.isBankOpen = false;
       this.selectedBank = bank;
       this.national = this.selectedBank.personalBankAccountSetting.defaultNational;
       this.selectedCode = this.selectedBank.personalBankAccountSetting.defaultCode;
     },
     selectStock: function (stock) {
-      document.getElementsByClassName('searchStockSelectBox')[0].style.display = "none";
+      this.isStockOpen = false;
       this.selectedStock = stock;
     },
     cancelSelectBank: function () {

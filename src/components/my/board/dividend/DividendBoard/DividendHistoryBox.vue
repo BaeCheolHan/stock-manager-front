@@ -7,7 +7,7 @@
             <div>
               <div class="flex mg-b-5" style="justify-content: space-between">
                 <p class="mg-r-10">{{dividend.year}}년 {{dividend.month}}월 {{dividend.day}}일</p>
-                <i class="ti-trash" @click="removeHistory(dividend.id)"></i>
+                <button class="ti-trash" @click="removeHistory(dividend.id)" aria-label="삭제"></button>
               </div>
               <div class="flex" style="justify-content: space-between">
                 <div>
@@ -32,6 +32,7 @@
 
 
 <script>
+import { useNotify } from '@/composables/useNotify'
 
 export default {
   name: "DividendBox",
@@ -41,9 +42,16 @@ export default {
   },
   methods: {
     async removeHistory(id) {
+      const { success, error } = useNotify()
       if(confirm('삭제 하시겠습니까?')) {
-        await this.axios.delete('/api/dividend/'.concat(id));
-        this.emitter.emit('reloadDividend');
+        const { DividendsService } = await import('@/service/dividends')
+        try {
+          await DividendsService.removeDividend(id)
+          success('삭제되었습니다.')
+          this.$emit('reload');
+        } catch (e) {
+          error('삭제 중 오류가 발생했습니다.')
+        }
       }
     }
   }

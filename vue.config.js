@@ -41,22 +41,26 @@ module.exports = defineConfig({
       static: {
         directory: path.join(__dirname, 'public')
       },
-      // clientLogLevel: 'warning',
       historyApiFallback: true,
-      // inline: true,
-      // overlay: true,
-      host: 'test.hws.pe.kr',
-      port: 80,
-      https: false,
+      host: process.env.VUE_APP_DEVSERVER_HOST || 'localhost',
+      port: Number(process.env.VUE_APP_DEVSERVER_PORT || 8080),
+      https: (process.env.VUE_APP_DEVSERVER_HTTPS || 'false') === 'true',
       proxy: {
         '/api': {
-          target: 'http://localhost:18081'
+          target: process.env.VUE_APP_API_PROXY_TARGET || 'http://localhost:18081'
+        },
+        // WebSocket → yfin(로컬 8080)
+        '/ws': {
+          target: process.env.VUE_APP_WS_PROXY_TARGET || 'http://127.0.0.1:8080',
+          changeOrigin: true,
+          ws: true,
+          pathRewrite: { '^/ws': '/ws' }
         },
         '/login': {
-          target: 'http://localhost:18081'
+          target: process.env.VUE_APP_API_PROXY_TARGET || 'http://localhost:18081'
         },
         '/sns': {
-          target: 'http://localhost:18081'
+          target: process.env.VUE_APP_API_PROXY_TARGET || 'http://localhost:18081'
         }
       }
     }

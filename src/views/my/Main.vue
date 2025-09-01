@@ -2,7 +2,7 @@
   <v-window>
     <v-container>
       <div v-if="userInfo && userInfo.bankAccounts && userInfo.bankAccounts.length > 0" class="account-wrap">
-        <UpperMenu/>
+        <UpperMenu @select="selectTabMenu"/>
         <StockBoard v-if="tabMenu === 'stock'"/>
         <DividendBoard v-if="tabMenu === 'dividend'"/>
         <AssetBoard v-if="tabMenu === 'asset'"/>
@@ -20,6 +20,7 @@ import UpperMenu from "@/components/my/tabs/UpperMenu.vue";
 import StockBoard from "@/components/my/board/stock/StockBoard.vue";
 import DividendBoard from "@/components/my/board/dividend/DividendBoard/DividendBoard.vue";
 import AssetBoard from "@/components/my/board/asset/AssetBoard.vue";
+import { useAppStore } from '@/store'
 
 export default {
   name: 'Main',
@@ -39,18 +40,15 @@ export default {
   },
   computed: {},
   watch: {},
-  mounted() {
-    this.emitter.on('selectTabMenu', (tabMenu) => {
-      this.selectTabMenu(tabMenu)
-    })
-  },
+  mounted() {},
   created() {
     this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
     if (this.userInfo) {
-      this.$store.commit('setUserInfo', this.userInfo)
+      const appStore = useAppStore()
+      appStore.setUserInfo(this.userInfo)
       this.accounts = this.userInfo.bankAccounts;
     } else {
-      location.replace("/");
+      this.$router.replace("/");
     }
   },
   methods: {

@@ -2,18 +2,15 @@
   <div class="content" v-if="detail">
     <div class="flex" style="justify-content: left; align-items: center">
       <img
-          :src="'https://financialmodelingprep.com/image-stock/'.concat(UiService().getStockLogo($parent.$parent.selectedStock)).concat('.png')"
+          :src="'https://financialmodelingprep.com/image-stock/'.concat(UiService().getStockLogo(stock)).concat('.png')"
           :style="UiService().isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
           style="border: 1px solid white; border-radius: 5px;"
           class="mg-r-5"
           @error="UiService().replaceStockImg($event)"
       >
-      <h2>{{ $parent.$parent.selectedStock.name }}
+      <h2>{{ stock.name }}
         <span>(</span>
-        <span :class="UiService().setUpDownArrowClass(detail.compareToYesterdaySign)"
-              :style="UiService().setColorStyle(detail.compareToYesterdaySign)">
-          {{ Math.floor(((detail.compareToYesterday / detail.nowPrice) * 100) * 100) / 100 }}%
-        </span>
+        <span :class="[rtArrowClass(), rtSignClass()]">{{ rtChangePercentText() }}</span>
         <span>)</span>
       </h2>
     </div>
@@ -31,27 +28,27 @@
       <div class="price-chart" v-if="mainChartType == 'stock'">
         <div v-if="series" id="chart">
           <div class="flex mg-l-5">
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}"
-                    @click="changeChartType('D')">일별
-            </button>
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'W', 'border-radius-8' : chartType !== 'W'}"
-                    @click="changeChartType('W')">주별
-            </button>
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}"
-                    @click="changeChartType('M')">월별
-            </button>
-            <button v-if="$parent.$parent.selectedStock.national == 'KR'"
-                    :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}"
-                    @click="changeChartType('Y')">년별
-            </button>
+            <RangeToggle :model-value="chartType" :show-year="stock.national == 'KR'" @update:modelValue="changeChartType"/>
           </div>
-          <apexchart :height="UiService().isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions"
-                     :series="series"></apexchart>
+          <Suspense>
+            <template #default>
+              <LazyApex :height="UiService().isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions" :series="series"/>
+            </template>
+            <template #fallback>
+              <v-skeleton-loader type="image"/>
+            </template>
+          </Suspense>
         </div>
       </div>
       <div class="dividend-history-chart" v-if="mainChartType == 'history'">
-        <apexchart :height="UiService().isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions"
-                   :series="dividendSeries"></apexchart>
+        <Suspense>
+          <template #default>
+            <LazyApex :height="UiService().isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions" :series="dividendSeries"/>
+          </template>
+          <template #fallback>
+            <v-skeleton-loader type="image"/>
+          </template>
+        </Suspense>
       </div>
       <div>
 
@@ -61,21 +58,16 @@
           <div>
             <p class="bold">시가 : {{ detail.startPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">최고가 : {{ detail.highPrice.toLocaleString("ko-KR") }}</p>
-            <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{
+            <p class="bold">배당금 : <span v-if="stock.national !== 'KR'">$</span>{{
                 annualDividend.toLocaleString("ko-KR")
-              }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
+              }}<span v-if="stock.national == 'KR'">원</span></p>
             <p>PER : {{ detail.per }}</p>
             <p>EPS : {{ detail.eps }}</p>
           </div>
           <div>
             <div>
-              <span class="bold" :style="UiService().setColorStyle(detail.compareToYesterdaySign)">현재가 : {{
-                  detail.nowPrice.toLocaleString("ko-KR")
-                }}(</span>
-              <span class="bold" :style="UiService().setColorStyle(detail.compareToYesterdaySign)"
-                    :class="UiService().setUpDownArrowClass(detail.compareToYesterdaySign)">{{
-                  detail.compareToYesterday.toLocaleString("ko-KR")
-                }})</span>
+              <span class="bold" :class="[rtSignClass()]">현재가 : {{ currentPriceText() }}</span>
+              <span class="bold mg-l-10" :class="[rtSignClass(), rtArrowClass()]">{{ absChangeText() }} ({{ rtChangePercentText() }})</span>
             </div>
             <p class="bold">최저가 : {{ detail.lowPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">배당율 : {{ dividendRate }}%</p>
@@ -87,7 +79,7 @@
         <div class="flex" style="justify-content: space-between">
           <div>
             <p class="bold" :style="setPlusMinusColor(detail.nowPrice - Math.floor(totalPrice / totalQuantity))"
-               v-if="$parent.$parent.selectedStock.national == 'KR'">
+               v-if="stock.national == 'KR'">
               평균가 : {{ Math.floor(totalPrice / totalQuantity).toLocaleString("ko-KR") }}원
             </p>
             <p class="bold" v-else>평균가 : ${{ Math.floor(totalPrice / totalQuantity).toLocaleString("ko-KR") }}</p>
@@ -97,16 +89,16 @@
           </div>
           <div class="t-a-r">
             <p class="bold">수량 : {{ totalQuantity }} 주</p>
-            <p class="bold" v-if="$parent.$parent.selectedStock.national == 'KR'">
+            <p class="bold" v-if="stock.national == 'KR'">
               {{ totalPrice.toLocaleString("ko-KR") }}원
             </p>
             <p class="bold" v-else>$ {{ Math.floor(totalPrice).toLocaleString("ko-KR") }}</p>
 
-            <p class="bold red" v-if="$parent.$parent.selectedStock.national == 'KR'">
+            <p class="bold red" v-if="stock.national == 'KR'">
               {{ detail.totalDividend.toLocaleString('ko-KR') }}원</p>
             <p class="bold red" v-else> ${{ detail.totalDividend.toLocaleString('ko-KR') }}</p>
 
-            <p class="bold" v-if="$parent.$parent.selectedStock.national == 'KR'"
+            <p class="bold" v-if="stock.national == 'KR'"
                :style="setPlusMinusColor(rateOfReturn)">
               {{ Math.floor((this.detail.nowPrice * this.totalQuantity)).toLocaleString('ko-KR') }}원
               ({{ rateOfReturn.toLocaleString("ko-KR") }}원)
@@ -130,7 +122,7 @@
                 <i class="ti-trash" @click="removeHistory(stock.id)"></i>
               </div>
               <div class="flex" style="justify-content: space-between">
-                <p v-if="$parent.$parent.selectedStock.national == 'KR'">구매가: {{ stock.price.toLocaleString("ko-KR") }}
+                <p v-if="stock.national == 'KR'">구매가: {{ stock.price.toLocaleString("ko-KR") }}
                   원</p>
                 <p v-else>구매가: $ {{ stock.price.toLocaleString("ko-KR") }}</p>
                 <p>수량: {{ stock.quantity }}</p>
@@ -149,19 +141,29 @@
 import DividendByStockBox from "@/components/my/board/dividend/DividendBoard/DividendByStockBox.vue";
 import DividendHistoryBox from "@/components/my/board/dividend/DividendBoard/DividendHistoryBox.vue";
 import UiService from "@/service/UiService";
+import { defineAsyncComponent } from 'vue'
+import RangeToggle from '@/components/etc/RangeToggle.vue'
+import { StocksService } from '@/service/stocks'
 
 export default {
   name: "MyDetailStock",
   components: {
-    DividendHistoryBox, DividendByStockBox
+    DividendHistoryBox, DividendByStockBox, RangeToggle,
+    LazyApex: defineAsyncComponent(() => import('vue3-apexcharts')),
   },
   props: {
     msg: String,
+    stock: {
+      type: Object,
+      required: true,
+    }
   },
   data() {
     return {
       mainChartType: 'stock',
       detail: null,
+      ws: null,
+      rt: null,
       totalPrice: 0,
       totalQuantity: 0,
       rateOfReturn: 0,
@@ -252,9 +254,7 @@ export default {
   },
   watch: {
     async chartType() {
-      let res = await this.axios.get('/api/stock/chart/'.concat(this.chartType)
-          .concat('/').concat(this.$parent.$parent.selectedStock.national)
-          .concat('/').concat(this.$parent.$parent.selectedStock.symbol));
+      let res = await StocksService.getStockChart(this.chartType, this.stock.national, this.stock.symbol)
       this.series[0].data = [];
       res.data.chartData.forEach(item => this.series[0].data.push({
         x: item.date,
@@ -265,23 +265,28 @@ export default {
   async created() {
     await this.init();
   },
+  beforeUnmount() {
+    try { this.ws && this.ws.close() } catch(_) {}
+  },
   methods: {
     UiService() {
       return UiService
     },
     async init() {
-      let res = await this.axios.get("/api/stock/"
-          .concat(JSON.parse(sessionStorage.getItem('userInfo')).memberId)
-          .concat("/").concat(this.$parent.$parent.selectedStock.national)
-          .concat("/").concat(this.$parent.$parent.selectedStock.code)
-          .concat("?symbol=").concat(this.$parent.$parent.selectedStock.symbol))
+      const { useAppStore } = await import('@/store')
+      let res = await StocksService.getStockDetail(
+          useAppStore().userInfo.memberId,
+          this.stock.national,
+          this.stock.code,
+          this.stock.symbol
+      )
       this.detail = res.data.detail;
       this.dividendRate = this.detail.dividendInfo != null ? this.detail.dividendInfo.dividendRate : 0
       this.annualDividend = this.detail.dividendInfo != null ? this.detail.dividendInfo.annualDividend: 0
       this.detail.stocks.forEach(item => this.totalPrice += (item.quantity * item.price))
       this.detail.stocks.forEach(item => this.totalQuantity += item.quantity)
       this.rateOfReturn = Math.floor((this.detail.nowPrice * this.totalQuantity) - this.totalPrice);
-      this.series[0].name = this.$parent.$parent.selectedStock.name
+      this.series[0].name = this.stock.name
       res.data.detail.chartData.forEach(item => this.series[0].data.push({
         x: item.date,
         y: [item.open, item.high, item.low, item.close]
@@ -293,6 +298,19 @@ export default {
           this.dividendSeries[0].data.push(data.dividend)
         }
       }
+      // 실시간 WS 시작
+      try {
+        const { createQuoteWS } = await import('@/services/quoteWsClient')
+        this.ws = createQuoteWS([this.stock.symbol], { intervalSec: 1 })
+          .onMessage((list) => {
+            const q = Array.isArray(list) && list.length ? list[0] : null
+            if (!q) return
+            const price = q.regularMarketPrice ?? q.price
+            const dp = q.regularMarketChangePercent ?? q.dp
+            this.rt = { price, dp }
+          })
+        this.ws.connect()
+      } catch(_) {}
 
     },
     yyyyMMdd(value) {
@@ -302,10 +320,16 @@ export default {
       return jsDate.toISOString().replace('T', ' ').substring(0, 10);
     },
     async removeHistory(id) {
+      const { success, error } = await import('@/composables/useNotify').then(m => m.useNotify())
       if (confirm("삭제하시겠습니까?")) {
-        await this.axios.delete("/api/stock/".concat(id));
-        await this.init();
-        await this.emitter.emit('reloadStock');
+        try {
+          await StocksService.removeStockHistory(id)
+          await this.init();
+          success('삭제되었습니다.')
+          this.$emit('deleted')
+        } catch (e) {
+          error('삭제 중 오류가 발생했습니다.')
+        }
       }
     },
     setPlusMinusColor(amount) {
@@ -313,6 +337,48 @@ export default {
     },
     changeChartType(chartType) {
       this.chartType = chartType;
+    },
+    rtSignClass() {
+      const dp = this.rt && this.rt.dp != null ? Number(this.rt.dp) : null
+      if (dp == null) return this.UiService().setColorClass(this.detail?.compareToYesterdaySign)
+      return dp >= 0 ? 'red' : 'blue'
+    },
+    rtArrowClass() {
+      const dp = this.rt && this.rt.dp != null ? Number(this.rt.dp) : null
+      if (dp == null) return this.UiService().setUpDownArrowClass(this.detail?.compareToYesterdaySign)
+      return dp >= 0 ? 'icon-up' : 'icon-down'
+    },
+    currentPriceText() {
+      const price = this.rt && this.rt.price != null ? this.rt.price : this.detail?.nowPrice
+      try { return Number(price).toLocaleString('ko-KR') } catch(_) { return String(price ?? '-') }
+    },
+    rtChangePercentText() {
+      const dp = this.rt && this.rt.dp != null ? Number(this.rt.dp) : null
+      if (dp == null) {
+        const base = Number(this.detail?.nowPrice) && Number(this.detail?.compareToYesterday)
+          ? (Number(this.detail.compareToYesterday) / Number(this.detail.nowPrice - this.detail.compareToYesterday)) * 100
+          : 0
+        const s = base >= 0 ? '+' : ''
+        return s + base.toFixed(2) + '%'
+      }
+      const pct = dp > 1 ? dp : dp * 100
+      const s = pct >= 0 ? '+' : ''
+      return s + pct.toFixed(2) + '%'
+    },
+    absChangeText() {
+      if (this.rt && this.rt.price != null && this.rt.dp != null) {
+        const price = Number(this.rt.price)
+        const dp = Number(this.rt.dp)
+        if (Number.isFinite(price) && Number.isFinite(dp)) {
+          const frac = dp > 1 ? dp / 100 : dp
+          const denom = 1 + frac
+          if (Math.abs(denom) >= 1e-6) {
+            const abs = Math.abs(price * (frac / denom))
+            try { return abs.toLocaleString('ko-KR') } catch(_) { return String(abs) }
+          }
+        }
+      }
+      try { return this.detail?.compareToYesterday?.toLocaleString('ko-KR') ?? '-' } catch(_) { return String(this.detail?.compareToYesterday ?? '-') }
     },
   }
 };

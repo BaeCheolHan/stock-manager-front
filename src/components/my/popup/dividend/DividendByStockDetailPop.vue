@@ -1,19 +1,27 @@
 <template>
   <div class="flex" style="align-items: center">
     <img
-        :src="'https://financialmodelingprep.com/image-stock/'.concat(UiService().getStockLogo($parent.$parent.selectedStock)).concat('.png')"
+        :src="'https://financialmodelingprep.com/image-stock/'.concat(UiService().getStockLogo(stock)).concat('.png')"
         :style="UiService().isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
         style="border: 1px solid white; border-radius: 5px;"
         class="mg-r-5"
+        width="50" height="40"
         @error="UiService().replaceStockImg($event)"
     >
-    <h2>{{ $parent.$parent.selectedStock.name }}({{ $parent.$parent.selectedStock.symbol }})</h2>
+    <h2>{{ stock.name }}({{ stock.symbol }})</h2>
   </div>
   <div>
     <h2>배당 수령 내역</h2>
   </div>
   <div>
-    <apexchart height="350" type="bar" :options="chartOptions" :series="series" />
+    <Suspense>
+      <template #default>
+        <LazyApex height="350" type="bar" :options="chartOptions" :series="series"/>
+      </template>
+      <template #fallback>
+        <v-skeleton-loader type="image"/>
+      </template>
+    </Suspense>
   </div>
 
   <v-card class="mg-b-5" v-for="dividend in dividends" :key="dividend.id">
@@ -32,10 +40,10 @@
                         text-overflow: ellipsis;
                         white-space: nowrap;
                         word-break: break-all;
-                            ">{{ $parent.$parent.selectedStock.name }}({{ dividend.symbol }})</p>
+                            ">{{ stock.name }}({{ dividend.symbol }})</p>
               </div>
               <div>
-                <p class="t-a-r">{{$parent.$parent.selectedStock.national !== 'KR' ? '$' : ''}}{{ dividend.dividend.toLocaleString('ko-KR')}} {{$parent.$parent.selectedStock.national == 'KR' ? '원' : ''}}</p>
+                <p class="t-a-r">{{stock.national !== 'KR' ? '$' : ''}}{{ dividend.dividend.toLocaleString('ko-KR')}} {{stock.national == 'KR' ? '원' : ''}}</p>
               </div>
             </div>
           </div>
@@ -46,10 +54,17 @@
 </template>
 <script>
 import UiService from "@/service/UiService";
+import { defineAsyncComponent } from 'vue'
 
 export default {
   name: "DividendByStockDetailPop",
-  props: {},
+  components: { LazyApex: defineAsyncComponent(() => import('vue3-apexcharts')) },
+  props: {
+    stock: {
+      type: Object,
+      required: true,
+    }
+  },
   data() {
     return {
       userInfo: null,
@@ -82,26 +97,25 @@ export default {
       return UiService
     },
     async init() {
-      this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
-      if (this.userInfo) {
-        this.$store.commit('setUserInfo', this.userInfo)
-        this.accounts = this.userInfo.bankAccounts;
-        this.bankAccountTab = 'all';
+      const appStore = (await import('@/store')).useAppStore()
+      this.userInfo = appStore.userInfo
+      if (!this.userInfo) return this.$router.replace('/')
+      this.accounts = this.userInfo.bankAccounts;
+      this.bankAccountTab = 'all';
 
-        let res = await this.axios.get('/api/dividend/by-item/'.concat(this.userInfo.memberId).concat('/').concat(this.$parent.$parent.selectedStock.symbol));
+      const { DividendsService } = await import('@/service/dividends')
+      let res = await DividendsService.getDividendsBySymbol(this.userInfo.memberId, this.stock.symbol)
 
-        for (let data of res.data.data) {
-          this.chartOptions.xaxis.categories.push(data.year.toString().concat('-').concat(data.month.toString()))
-          this.series[0].data.push(data.dividend)
-        }
-        this.dividends = res.data.data;
-      } else {
-        location.replace("/");
+      for (let data of res.data.data) {
+        this.chartOptions.xaxis.categories.push(data.year.toString().concat('-').concat(data.month.toString()))
+        this.series[0].data.push(data.dividend)
       }
+      this.dividends = res.data.data;
     },
     async removeHistory(id) {
       if(confirm('삭제 하시겠습니까?')) {
-        await this.axios.delete('/api/dividend/'.concat(id));
+        const { DividendsService } = await import('@/service/dividends')
+        await DividendsService.removeDividend(id)
         this.emitter.emit('reloadDividend');
         await this.init();
       }

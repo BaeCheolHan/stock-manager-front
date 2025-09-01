@@ -1,10 +1,13 @@
 <template>
+  <a href="#main-content" class="skip-link">본문 바로가기</a>
   <TheHeader/>
   <v-app>
-    <v-main>
+    <v-main id="main-content" tabindex="-1" role="main">
       <router-view/>
     </v-main>
   </v-app>
+  <GlobalSnackbar/>
+  <MobileBottomNav v-if="isMobile && isLoggedIn" :icon-size="22" active-color="primary"/>
   <TheFooter/>
 </template>
 
@@ -12,13 +15,40 @@
 
 import TheHeader from "@/components/header/TheHeader.vue";
 import TheFooter from "@/components/footer/TheFooter.vue";
+import GlobalSnackbar from '@/components/GlobalSnackbar.vue'
+import MobileBottomNav from '@/components/navigation/MobileBottomNav.vue'
+import UiService from '@/service/UiService'
+import { useAppStore } from '@/store'
 
 export default {
   name: 'App',
   components: {
     TheHeader,
     TheFooter,
+    GlobalSnackbar,
+    MobileBottomNav,
   },
+  data() {
+    return { isMobile: false, isLoggedIn: false, _mql: null }
+  },
+  created() {
+    const appStore = useAppStore()
+    this.isLoggedIn = !!(appStore.userInfo && appStore.userInfo.memberId)
+    appStore.$subscribe((_mutation, state) => {
+      this.isLoggedIn = !!(state.userInfo && state.userInfo.memberId)
+    })
+  },
+  mounted() {
+    // Viewport 기반 모바일 감지로 iPad/UA 이슈 대비
+    try {
+      this._mql = window.matchMedia('(max-width: 600px)')
+      const update = () => { this.isMobile = this._mql.matches || UiService.isMobile() }
+      this._mql.addEventListener ? this._mql.addEventListener('change', update) : this._mql.addListener(update)
+      update()
+    } catch(_) {
+      this.isMobile = UiService.isMobile()
+    }
+  }
 }
 </script>
 <style>

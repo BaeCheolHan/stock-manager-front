@@ -1,27 +1,23 @@
-import { createStore } from 'vuex'
+import { defineStore } from 'pinia'
 
-export default createStore({
-  state: {
+export const useAppStore = defineStore('app', {
+  state: () => ({
     info: {
-      isMobile:  true,
-      subDomain: undefined
+      isMobile: true,
+      subDomain: undefined,
     },
-    userInfo: null
-  },
-  getters : {
-    info:       function(state) { return state.info; },
-    userInfo:   function(state) { return state.userInfo; },
-  },
-  mutations: {
-    setUserInfo(state, userInfo) {
-      state.userInfo = userInfo;
-    },
-    removeUserInfo(state) {
-      state.userInfo = null;
-    }
+    userInfo: null,
+  }),
+  getters: {
+    getInfo: (state) => state.info,
+    getUserInfo: (state) => state.userInfo,
   },
   actions: {
+    setUserInfo(userInfo) {
+      this.userInfo = userInfo
+    },
+    removeUserInfo() {
+      this.userInfo = null
+    },
   },
-  modules: {
-  }
 })

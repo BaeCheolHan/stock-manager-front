@@ -6,6 +6,7 @@
 <script>
 import AssetChart from "@/components/my/chart/AssetChart.vue";
 import AssetBox from "@/components/my/board/asset/AssetBox.vue";
+import { useAppStore } from '@/store'
 
 export default {
   name: "AssetBoard",
@@ -16,15 +17,11 @@ export default {
   mounted() {
   },
   async created() {
-    this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
-    if (this.userInfo) {
-      this.$store.commit('setUserInfo', this.userInfo)
-      this.accounts = this.userInfo.bankAccounts;
-      this.bankAccountTab = 'all'
-    } else {
-      location.replace("/");
-    }
-
+    const appStore = useAppStore()
+    this.userInfo = appStore.userInfo
+    if (!this.userInfo) return this.$router.replace("/")
+    this.accounts = this.userInfo.bankAccounts;
+    this.bankAccountTab = 'all'
     await this.getAssetChartData();
   },
   data() {
@@ -37,7 +34,8 @@ export default {
   },
   methods: {
     async getAssetChartData() {
-      let res = await this.axios.get("/api/asset/member/".concat(this.userInfo.memberId).concat("/chart"));
+      const { AccountsService } = await import('@/service/accounts')
+      let res = await AccountsService.getMemberAssetCharts(this.userInfo.memberId)
       this.assetData = [];
       res.data.assetCharts.xaxisCategories.forEach((item, idx) => {
         this.assetData.push({

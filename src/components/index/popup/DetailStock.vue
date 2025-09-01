@@ -2,13 +2,13 @@
   <div class="content" v-if="detail">
     <div class="flex" style="align-items: center">
       <img
-          :src="'https://financialmodelingprep.com/image-stock/'.concat(UiService().getStockLogo($parent.$parent.selectedStock)).concat('.png')"
+          :src="'https://financialmodelingprep.com/image-stock/'.concat(UiService().getStockLogo(stock)).concat('.png')"
           :style="UiService().isMobile() ? 'max-width: 40px; max-height: 30px;': 'max-width: 50px;: max-height: 40px;'"
           style="border: 1px solid white; border-radius: 5px;"
           class="mg-r-5"
           @error="UiService().replaceStockImg($event)"
       >
-      <h2>{{ $parent.$parent.selectedStock.hts_kor_isnm ? $parent.$parent.selectedStock.hts_kor_isnm : $parent.$parent.selectedStock.name}}
+      <h2>{{ stock.hts_kor_isnm ? stock.hts_kor_isnm : stock.name}}
         ({{ symbol }})</h2>
     </div>
 
@@ -27,42 +27,30 @@
       <div class="price-chart" v-if="mainChartType === 'stock'">
         <div v-if="series" id="chart">
           <div class="flex mg-l-5">
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'D', 'border-radius-8' : chartType !== 'D'}"
-                    @click="changeChartType('D')">일별
-            </button>
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'W', 'border-radius-8' : chartType !== 'W'}"
-                    @click="changeChartType('W')">주별
-            </button>
-            <button class="mg-r-10" :class="{'redBtn' : chartType === 'M', 'border-radius-8' : chartType !== 'M'}"
-                    @click="changeChartType('M')">월별
-            </button>
-            <button v-if="$parent.$parent.selectedStock.national === 'KR'"
-                    :class="{'redBtn' : chartType === 'Y', 'border-radius-8' : chartType !== 'Y'}"
-                    @click="changeChartType('Y')">년별
-            </button>
+            <RangeToggle :model-value="chartType" :show-year="stock.national === 'KR'" @update:modelValue="changeChartType"/>
           </div>
-          <apexchart :height="UiService().isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions" :series="series"></apexchart>
+          <ApexChart :key="'price-' + chartType" :height="UiService().isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions" :series="series" />
         </div>
       </div>
       <div class="dividend-history-chart" v-if="mainChartType === 'history'">
-        <apexchart :height="UiService().isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions" :series="dividendSeries"></apexchart>
+        <ApexChart :key="'dividend-' + mainChartType" :height="UiService().isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions" :series="dividendSeries" />
       </div>
       <div class="pd-10 border">
         <div class="flex" style="justify-content: space-between;">
           <div>
             <p class="bold">시가 : {{ detail.startPrice.toLocaleString("ko-KR") }}</p>
             <p class="bold">최고가 : {{ detail.highPrice.toLocaleString("ko-KR") }}</p>
-            <p class="bold">배당금 : <span v-if="$parent.$parent.selectedStock.national !== 'KR'">$</span>{{ detail.dividendInfo.dividendRate.toLocaleString("ko-KR") }}<span v-if="$parent.$parent.selectedStock.national == 'KR'">원</span></p>
+            <p class="bold">배당금 : <span v-if="stock.national !== 'KR'">$</span>{{ detail.dividendInfo.annualDividend }}<span v-if="stock.national == 'KR'">원</span></p>
             <p>PER : {{ detail.per }}</p>
             <p>EPS : {{ detail.eps }}</p>
           </div>
           <div>
             <div>
-              <span class="bold" :style="UiService().setColorStyle(detail.compareToYesterdaySign)">현재가 : {{ detail.nowPrice.toLocaleString("ko-KR") }}(</span>
-              <span class="bold" :style="UiService().setColorStyle(detail.compareToYesterdaySign)" :class="UiService().setUpDownArrowClass(detail.compareToYesterdaySign)">{{ detail.compareToYesterday.toLocaleString("ko-KR") }})</span>
+              <span class="bold" :class="[rtSignClass()]">현재가 : {{ currentPriceText() }}</span>
+              <span class="bold mg-l-10" :class="[rtSignClass(), rtArrowClass()]">{{ absChangeText() }} ({{ rtChangePercentText() }})</span>
             </div>
             <p class="bold">최저가 : {{ detail.lowPrice.toLocaleString("ko-KR") }}</p>
-            <p class="bold">배당율 : {{ detail.dividendInfo.annualDividend }}%</p>
+            <p class="bold">배당율 : {{ detail.dividendInfo.dividendRate.toLocaleString("ko-KR") }}%</p>
             <p>PBR : {{ detail.pbr }}</p>
             <p>BPS : {{ detail.bps }}</p>
           </div>
@@ -75,18 +63,26 @@
 <script>
 
 import UiService from "@/service/UiService";
+import RangeToggle from '@/components/etc/RangeToggle.vue'
+import { defineAsyncComponent } from 'vue'
 
 export default {
   name: "DetailStock",
-  components: {},
+  components: { RangeToggle, ApexChart: defineAsyncComponent(() => import('vue3-apexcharts')) },
   props: {
     msg: String,
+    stock: {
+      type: Object,
+      required: true,
+    }
   },
   data: function () {
     return {
       symbol: null,
       mainChartType: 'stock',
       detail: null,
+      ws: null,
+      rt: null,
       totalPrice: 0,
       totalQuantity: 0,
       rateOfReturn: 0,
@@ -116,6 +112,16 @@ export default {
         },
         tooltip: {
           enabled: true,
+          y: {
+            formatter: (val) => {
+              if (val == null) return ''
+              const n = Number(val)
+              if (!Number.isFinite(n)) return ''
+              if (n >= 1e8) return (n/1e8).toFixed(2) + '억'
+              if (n >= 1e4) return (n/1e4).toFixed(2) + '만'
+              return n.toLocaleString('ko-KR')
+            }
+          }
         },
         xaxis: {
           type: 'category',
@@ -176,60 +182,110 @@ export default {
   watch: {
     chartType: async function () {
       let symbol;
-      if(this.$parent.$parent.selectedStock.symbol) {
-        symbol = this.$parent.$parent.selectedStock.symbol;
+      if(this.stock.symbol) {
+        symbol = this.stock.symbol;
       }
-
-      if(this.$parent.$parent.selectedStock.mksc_shrn_iscd) {
-        symbol = this.$parent.$parent.selectedStock.mksc_shrn_iscd;
+      if(this.stock.mksc_shrn_iscd) {
+        symbol = this.stock.mksc_shrn_iscd;
       }
-
-      console.log(this.$parent.$parent.selectedStock)
 
       let national = 'KR';
-      if(this.$parent.$parent.selectedStock.national && this.$parent.$parent.selectedStock.national !== 'KR') {
-        national = this.$parent.$parent.selectedStock.national;
+      if(this.stock.national && this.stock.national !== 'KR') {
+        national = this.stock.national;
       }
 
 
-      let res = await this.axios.get('/api/stock/chart/'.concat(this.chartType)
-          .concat('/')
-          .concat(national)
-          .concat('/').concat(symbol));
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getStockChart(this.chartType, national, symbol)
 
-      this.series[0].data = [];
-
-      res.data.chartData.forEach(item => this.series[0].data.push({
+      const nextData = res.data.chartData.map(item => ({
         x: item.date,
         y: [item.open, item.high, item.low, item.close]
       }))
+      this.series = [{ name: this.series[0]?.name || this.stock.name, data: nextData }]
     }
   },
   async created() {
+    try {
+      const saved = localStorage.getItem('detail_chart_type')
+      if (saved === 'D' || saved === 'W' || saved === 'M' || saved === 'Y') this.chartType = saved
+    } catch(_) {}
     await this.init();
+  },
+  beforeUnmount() {
+    try { this.ws && this.ws.close() } catch(_) {}
   },
   methods: {
     UiService() {
       return UiService
     },
     async init() {
-      this.symbol = this.$parent.$parent.selectedStock.mksc_shrn_iscd ? this.$parent.$parent.selectedStock.mksc_shrn_iscd : this.$parent.$parent.selectedStock.symbol;
-      let res = await this.axios.get("/api/stock"
-          .concat("?symbol=").concat(this.symbol))
+      this.symbol = this.stock.mksc_shrn_iscd ? this.stock.mksc_shrn_iscd : this.stock.symbol;
+      const { StocksService } = await import('@/service/stocks')
+      let res = await StocksService.getStockBySymbol(this.symbol)
       this.detail = res.data.detail;
-      this.series[0].name = this.$parent.$parent.selectedStock.name
-      res.data.chartData.forEach(item => this.series[0].data.push({
+      const initData = res.data.chartData.map(item => ({
         x: item.date,
         y: [item.open, item.high, item.low, item.close]
       }))
+      this.series = [{ name: this.stock.name, data: initData }]
 
       for (let data of res.data.detail.dividendInfo.dividendHistories) {
         this.dividendChartOptions.xaxis.categories.push(data.date);
         this.dividendSeries[0].data.push(data.dividend)
       }
+
+      try {
+        const { createQuoteWS } = await import('@/services/quoteWsClient')
+        this.ws = createQuoteWS([this.symbol], { intervalSec: 1 })
+          .onMessage((list) => {
+            const q = Array.isArray(list) && list.length ? list[0] : null
+            if (!q) return
+            const price = q.regularMarketPrice ?? q.price
+            const dp = q.regularMarketChangePercent ?? q.dp
+            this.rt = { price, dp }
+          })
+        this.ws.connect()
+      } catch(_) {}
     },
     changeChartType(chartType) {
       this.chartType = chartType;
+      try { localStorage.setItem('detail_chart_type', chartType) } catch(_) {}
+    },
+    rtSignClass() {
+      const dp = this.rt && this.rt.dp != null ? Number(this.rt.dp) : null
+      if (dp == null) return this.UiService().setColorClass(this.detail?.compareToYesterdaySign)
+      return dp >= 0 ? 'red' : 'blue'
+    },
+    rtArrowClass() {
+      const dp = this.rt && this.rt.dp != null ? Number(this.rt.dp) : null
+      if (dp == null) return this.UiService().setUpDownArrowClass(this.detail?.compareToYesterdaySign)
+      return dp >= 0 ? 'icon-up' : 'icon-down'
+    },
+    currentPriceText() {
+      const price = this.rt && this.rt.price != null ? this.rt.price : this.detail?.nowPrice
+      try { return Number(price).toLocaleString('ko-KR') } catch(_) { return String(price ?? '-') }
+    },
+    rtChangePercentText() {
+      const dp = this.rt && this.rt.dp != null ? Number(this.rt.dp) : null
+      if (dp == null) return `${this.detail?.compareToYesterday?.toLocaleString('ko-KR') ?? '-'}%`
+      const v = dp > 1 ? dp : dp * 100
+      const s = v >= 0 ? '+' : ''
+      return `${s}${v.toFixed(2)}%`
+    },
+    absChangeText() {
+      if (this.rt && this.rt.price != null && this.rt.dp != null) {
+        const price = Number(this.rt.price)
+        const dp = Number(this.rt.dp)
+        if (Number.isFinite(price) && Number.isFinite(dp)) {
+          const denom = 1 + (dp > 1 ? dp / 100 : dp)
+          if (Math.abs(denom) >= 1e-6) {
+            const abs = price * ((dp > 1 ? dp/100 : dp) / denom)
+            try { return Math.abs(abs).toLocaleString('ko-KR') } catch(_) { return String(Math.abs(abs)) }
+          }
+        }
+      }
+      try { return this.detail?.compareToYesterday?.toLocaleString('ko-KR') ?? '-' } catch(_) { return String(this.detail?.compareToYesterday ?? '-') }
     },
   }
 };
