@@ -1,11 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 const Index = () => import(/* webpackChunkName: "view-index", webpackPreload: true */ '@/views/index/Index.vue')
+const Screener = () => import(/* webpackChunkName: "view-screener" */ '@/views/index/Screener.vue')
 const SocialRedirect = () => import(/* webpackChunkName: "view-redirect" */ '@/components/social/redirect/SocialRedirect.vue')
 const PersonalSetting = () => import(/* webpackChunkName: "view-settings", webpackPrefetch: true */ '@/views/setting/PersonalSetting.vue')
 const Main = () => import(/* webpackChunkName: "view-my", webpackPrefetch: true */ '@/views/my/Main.vue')
 
 const routes = [
   { path: '/', name: 'Index', component: Index, meta: { showSearchFab: true } },
+  { path: '/screener', name: 'Screener', component: Screener, meta: { showSearchFab: false } },
   { path: '/:snsType/redirect', name: 'SocialRedirect', component: SocialRedirect },
   { path: '/settings', name: 'PersonalSetting', component: PersonalSetting, meta: { requiresAuth: true, showSearchFab: false } },
   { path: '/my', name: 'Main', component: Main, meta: { requiresAuth: true, showSearchFab: false } },

@@ -5,13 +5,20 @@
       <i class="ti-angle-down" @click="open = !open"></i>
     </div>
     <ul class="searchSelectBox" v-show="open" role="listbox" :id="listId">
-      <li v-for="(item, idx) in filtered" :key="itemKey(item, idx)" :class="{active: idx === activeIndex}" @mousedown.prevent="select(item)" role="option" tabindex="0">
+      <li v-if="loading" v-for="n in 6" :key="'sk-'+n" class="skeleton">
+        <v-skeleton-loader type="list-item-two-line"/>
+      </li>
+      <li v-else v-for="(item, idx) in filtered" :key="itemKey(item, idx)" :class="['result-item', {active: idx === activeIndex}]" @mousedown.prevent="select(item)" role="option" tabindex="0">
         <slot name="item" :item="item">
-          <span v-html="highlight(itemLabel(item))"/>
+          <div class="item">
+            <div class="text">
+              <strong class="name" v-html="highlight(itemLabel(item))"/>
+              <span class="meta"><span class="symbol">{{ (item.symbol || '') }}</span><span class="badge" v-if="item.code || item.national">{{ item.code || item.national }}</span></span>
+            </div>
+          </div>
         </slot>
       </li>
-      <li v-if="!loading && filtered.length === 0" class="t-a-c pd-10">검색 결과가 없습니다</li>
-      <li v-if="loading" class="t-a-c pd-10">로딩중...</li>
+      <li v-if="!loading && filtered.length === 0" class="empty">검색 결과가 없습니다</li>
     </ul>
   </div>
 </template>
@@ -98,4 +105,13 @@ export default {
 .active {
   background-color: #f1f1f1;
 }
+.searchSelectBox { max-height: 360px; overflow-y: auto; }
+.result-item { padding: 8px 12px; cursor: pointer; }
+.result-item:hover { background: #fafafa; }
+.item { display: flex; align-items: center; gap: 8px; }
+.text { display: flex; flex-direction: column; line-height: 1.2; }
+.name { font-weight: 600; }
+.meta { color: #888; font-size: 12px; margin-top: 2px; display: flex; gap: 6px; align-items: center; }
+.badge { background: #f3f4f6; color: #666; padding: 1px 6px; border-radius: 10px; font-size: 11px; }
+.empty { text-align: center; color: #888; padding: 10px; }
 </style>

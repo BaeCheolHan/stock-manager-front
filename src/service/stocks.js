@@ -12,6 +12,12 @@ export const StocksService = {
   removeStockHistory: (id) => api.delete(`/api/stock/${id}`),
   getStocksByCode: (code) => swr(`stocks:${code}`, () => api.get(`/api/stocks/${code}`)),
   getCodesByNational: (national) => swr(`codes:${national}`, () => api.get(`/api/stocks/code/${national}`)),
+  // New unified list API (backend required). Falls back to per-market APIs if unavailable.
+  getAllStocks: () => swr('stocks:all', () => api.get('/api/stocks/all')),
+  // Server-side search (substring match on name or symbol)
+  searchStocks: (q, limit = 50) => api.get('/api/stocks/search', { params: { q, limit } }),
+  // Increase search hit count for symbol
+  increaseSearchHit: (symbol) => api.post('/api/stocks/search/hit', null, { params: { symbol } }),
 }
 
 export default StocksService

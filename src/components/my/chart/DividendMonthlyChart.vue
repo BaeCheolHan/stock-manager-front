@@ -2,7 +2,12 @@
   <div>
     <Suspense>
       <template #default>
-        <LazyApex type="bar" height="350" :options="dividendChartOption" :series="chartData"/>
+        <div class="grid">
+          <div class="chart-block">
+            <div class="chart-title-sm">연도별 & 월별 세후 배당금 합계</div>
+            <LazyApex type="bar" height="350" :options="dividendChartOption" :series="chartData"/>
+          </div>
+        </div>
       </template>
       <template #fallback>
         <v-skeleton-loader type="image"/>
@@ -85,12 +90,12 @@ export default {
           }
         },
         fill: {
-          opacity: 1
+          opacity: 0.9
         },
         tooltip: {
           y: {
             formatter: function (val) {
-              return "" + Number(val).toLocaleString('ko-KR') + " 원"
+              return Number(val).toLocaleString('ko-KR') + ' 원'
             }
           }
         }
@@ -103,3 +108,18 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.chart-title-sm { font-weight: 700; font-size: 14px; margin: 6px 6px 4px; }
+.chart-block { background: #fff; }
+</style>

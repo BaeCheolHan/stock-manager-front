@@ -66,16 +66,18 @@ export default {
   display: flex;
 }
 .mobile-bottom-nav li { flex: 1; }
-.mobile-bottom-nav button {
-  width: 100%;
-  padding: 8px 8px 10px;
-  font-weight: 600;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+    .mobile-bottom-nav button {
+      width: 100%;
+      padding: 8px 8px 10px;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #8a8a8a;
+    }
 .mobile-bottom-nav button span { font-size: 11px; margin-top: 2px; }
-.mobile-bottom-nav button.active { color: #e00000; }
+    .mobile-bottom-nav button.active { color: #e00000; }
+    .mobile-bottom-nav { box-shadow: 0 -2px 8px rgba(0,0,0,.04); }
 @media (max-width: 360px) {
   .mobile-bottom-nav button span { display: none; }
 }

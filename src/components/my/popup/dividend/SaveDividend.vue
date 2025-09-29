@@ -18,6 +18,7 @@
       <div class="datepicker mg-t-10">
         <div class="calendar">
           <Datepicker v-model="date" autoApply :locale="locale" :enableTimePicker="false" format="yyyy-MM-dd"
+                      :model-type="'format'" :teleport="true" menu-class-name="dp-in-modal"
                       :clearable="false" placeholder="배당 지급일" hideInputIcon/>
         </div>
       </div>
@@ -72,16 +73,7 @@ export default {
       attempted: false,
     }
   },
-  watch: {},
-  async created() {
-    const { useAppStore } = await import('@/store')
-    this.userInfo = useAppStore().userInfo;
-    let res = await this.axios.get('/api/stock/'.concat(this.userInfo.memberId));
-    this.stocks = res.data.stocks;
-    this.copyStocks = this.stocks.slice();
-    this.closeStockDropDown();
-  },
-  methods: {
+  watch: {
     dividendText(val) {
       const raw = (val || '').toString().replace(/[^0-9.]/g, '')
       const num = raw === '' ? null : Number(raw)
@@ -92,6 +84,16 @@ export default {
       if (parts.length > 1) formatted += '.' + parts[1]
       if (formatted !== val) this.dividendText = formatted
     },
+  },
+  async created() {
+    const { useAppStore } = await import('@/store')
+    this.userInfo = useAppStore().userInfo;
+    const { StocksService } = await import('@/service/stocks')
+    let res = await StocksService.getMemberStocks(this.userInfo.memberId)
+    this.stocks = res.data.stocks;
+    this.copyStocks = this.stocks.slice();
+  },
+  methods: {
     startProcessing() {
       this.processing = true
     },

@@ -836,11 +836,17 @@ select::-ms-expand {
         border-top-right-radius: 16px;
         max-height: 92%;
         will-change: transform;
+        /* Keep content above mobile bottom nav */
+        padding-bottom: calc(64px + env(safe-area-inset-bottom));
+        padding-left: 20px;
+        padding-right: 20px;
     }
 }
 
 /* Hide bottom nav only when keyboard is actually open */
 body.keyboard-open .mobile-bottom-nav { transform: translateY(100%); }
+/* Hide bottom nav while modal is open to avoid covering modal content */
+body.modal-open .mobile-bottom-nav { transform: translateY(100%); }
 
 /* Swipe-to-close smooth animation */
 .modal-card.is-closing {
@@ -881,7 +887,7 @@ body.keyboard-open .mobile-bottom-nav { transform: translateY(100%); }
     height: 4px;
     border-radius: 2px;
     background: #d9d9d9;
-    margin: 4px auto 8px;
+    margin: 8px auto 12px;
 }
 
 /* Prevent background scroll when modal open */
@@ -893,6 +899,11 @@ body.modal-open {
     width: 100%;
     /* Prevent iOS pull-to-refresh when modal is open */
     overscroll-behavior-y: contain;
+}
+
+/* Datepicker dropdown inside modal (vue-datepicker @vuepic) */
+.dp-in-modal {
+    z-index: 10001; /* above .modal-card (9999) and .skip-link (10000) */
 }
 
 /* Touch targets */
@@ -933,8 +944,12 @@ button, .v-btn {
     position: sticky;
     bottom: 0;
     background: #fff;
-    padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+    border-top: 1px solid #eee;
+    box-shadow: 0 -2px 8px rgba(0,0,0,.04);
 }
+.ma-toggle { margin-left: 6px; }
+.ma-toggle .v-btn { min-width: 44px; }
 .skip-link {
     position: absolute;
     top: 0;

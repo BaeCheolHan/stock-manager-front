@@ -1,5 +1,6 @@
 <template>
   <AssetChart class="pd-r-20" :chartData="assetChartSeries" :chartOptions="assetChartOptions" v-if="assetChartSeries"/>
+  <PortfolioSummary />
   <AssetBox :table-data="assetData" />
 </template>
 
@@ -7,12 +8,14 @@
 import AssetChart from "@/components/my/chart/AssetChart.vue";
 import AssetBox from "@/components/my/board/asset/AssetBox.vue";
 import { useAppStore } from '@/store'
+import PortfolioSummary from '@/components/my/board/asset/PortfolioSummary.vue'
 
 export default {
   name: "AssetBoard",
   components: {
     AssetBox,
     AssetChart,
+    PortfolioSummary,
   },
   mounted() {
   },

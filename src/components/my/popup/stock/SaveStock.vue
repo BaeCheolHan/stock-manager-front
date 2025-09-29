@@ -31,22 +31,8 @@
       </div>
 
       <div class="col-1 mg-t-10">
-        <div class="flex">
-          <select required class="form-control mg-r-5" v-model="national">
-            <option value="KR" selected>국내</option>
-            <option value="US">미국</option>
-            <option value="JP">일본</option>
-            <option value="CN">중국</option>
-            <option value="HK">홍콩</option>
-            <option value="VN">베트남</option>
-          </select>
-
-          <select required class="form-control" v-model="selectedCode">
-            <option v-for="code in codes" :key="code" :value="code">{{ code }}</option>
-          </select>
-        </div>
         <div class="mg-t-10" v-if="!this.selectedStock">
-          <SearchSelect :items="copyStocks" :placeholder="'종목명'" :label="(s)=>s.name + ' ('+s.symbol+')'" :key-field="'symbol'" @select="selectStock" @input-change="onStockKeywordChange"/>
+          <SearchSelect :items="copyStocks" :placeholder="'종목명 또는 코드'" :label="(s)=>s.name + ' ('+s.symbol+')'" :key-field="'symbol'" :debounce="300" @select="selectStock" @input-change="onStockKeywordChange"/>
         </div>
         <div v-else class="mg-t-10">
           <div class="selected-bank-wrap" @click="cancelSelectStock">
@@ -93,8 +79,8 @@ export default {
       copiedBankAccounts: null,
       selectedBank: null,
       national: '',
-      stocks: null,
-      copyStocks: null,
+      stocks: [],
+      copyStocks: [],
       selectedStock: null,
       copiedBanks: null,
       codes: [],
@@ -104,23 +90,15 @@ export default {
       quantityText: '',
       priceText: '',
       isBankOpen: false,
+      isStockOpen: false,
       bankKeyword: '',
       stockKeyword: '',
+      _searchToken: 0,
     }
   },
   watch: {
-    'national': async function () {
-      this.closeStockDropDown();
-      const { StocksService } = await import('@/service/stocks')
-      let res = await StocksService.getCodesByNational(this.national)
-      this.codes = res.data.codes;
-    },
-    'selectedCode': async function () {
-      const { StocksService } = await import('@/service/stocks')
-      let res = await StocksService.getStocksByCode(this.selectedCode)
-      this.stocks = res.data.stocksList;
-      this.copyStocks = this.stocks.slice();
-    },
+    'national': async function () {},
+    'selectedCode': async function () {},
     priceText(val) {
       const raw = (val || '').toString().replace(/[^0-9.]/g, '')
       const num = raw === '' ? null : Number(raw)
@@ -152,14 +130,19 @@ export default {
       this.selectedCode = this.selectedBank.personalBankAccountSetting.defaultCode;
     }
 
-    this.closeBankDropDown();
-    this.closeStockDropDown();
-    const { StocksService } = await import('@/service/stocks')
-    let res = await StocksService.getStocksByCode(this.selectedCode)
-    this.stocks = res.data.stocksList;
-    this.copyStocks = this.stocks.slice();
+    this.isBankOpen = false;
+    this.isStockOpen = false;
+    // 초기 대용량 선로딩 제거: 입력 시 서버 검색으로만 동작
+    this.stocks = []
+    this.copyStocks = []
   },
   methods: {
+    closeBankDropDown() {
+      this.isBankOpen = false
+    },
+    closeStockDropDown() {
+      this.isStockOpen = false
+    },
     formatNumber(val) {
       if (val === null || val === undefined || val === '') return ''
       const num = Number(val)
@@ -226,13 +209,29 @@ export default {
       const v = (this.bankKeyword || '').replace(' ', '')
       this.copiedBankAccounts = this.bankAccounts.filter(item => item.alias.replace(' ', '').includes(v))
     },
-    onStockKeywordChange(v) {
+    async onStockKeywordChange(v) {
       this.stockKeyword = v
-      const q = (v || '').toLowerCase().replace(' ', '')
-      this.copyStocks = this.stocks.filter(item => (
-          item.name.toString().toLowerCase().replace(' ', '').includes(q) ||
-          item.symbol.toString().toLowerCase().replace(' ', '').includes(q)
-      ));
+      const q = (v || '').trim()
+      if (!q) {
+        this.copyStocks = (this.stocks || []).slice(0, 50)
+        return
+      }
+      const token = ++this._searchToken
+      try {
+        const { StocksService } = await import('@/service/stocks')
+        const limit = q.length <= 1 ? 20 : 50
+        const res = await StocksService.searchStocks(q, limit)
+        if (token === this._searchToken) {
+          this.copyStocks = res.data.stocksList || []
+        }
+      } catch (_) {
+        const key = q.toLowerCase().replace(/\s+/g, '')
+        this.copyStocks = (this.stocks || []).filter(item => (
+          (item.name || '').toString().toLowerCase().replace(/\s+/g, '').includes(key) ||
+          (item.symbol || '').toString().toLowerCase().replace(/\s+/g, '').includes(key) ||
+          (item.code || '').toString().toLowerCase().replace(/\s+/g, '').includes(key)
+        )).slice(0, 50)
+      }
     },
     replaceBankDefaultImg(e) {
       e.target.src = './bank-icons/default-bank.png';
@@ -246,6 +245,9 @@ export default {
     selectStock: function (stock) {
       this.isStockOpen = false;
       this.selectedStock = stock;
+      import('@/service/stocks').then(({ StocksService }) => {
+        try { StocksService.increaseSearchHit(stock.symbol) } catch(_) {}
+      })
     },
     cancelSelectBank: function () {
       this.selectedBank = null;

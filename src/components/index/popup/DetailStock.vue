@@ -12,7 +12,7 @@
         ({{ symbol }})</h2>
     </div>
 
-    <div class="popup-wrap" style="padding: 10px 0 0;!important;">
+    <div class="popup-wrap" style="padding: 10px 0 0 !important;">
       <div class="mg-b-20">
         <v-tabs v-model="mainChartType" color="#e00000" align-tabs="end">
           <v-tab :key="'stock'" :value="'stock'">
@@ -21,20 +21,51 @@
           <v-tab :key="'history'" :value="'history'">
             배당 차트
           </v-tab>
+          <v-tab :key="'news'" :value="'news'">
+            뉴스
+          </v-tab>
+          <v-tab :key="'calendar'" :value="'calendar'">
+            캘린더
+          </v-tab>
         </v-tabs>
       </div>
 
-      <div class="price-chart" v-if="mainChartType === 'stock'">
-        <div v-if="series" id="chart">
-          <div class="flex mg-l-5">
-            <RangeToggle :model-value="chartType" :show-year="stock.national === 'KR'" @update:modelValue="changeChartType"/>
+      <v-window v-model="mainChartType" class="mg-t-5">
+        <v-window-item value="stock">
+          <div class="price-chart">
+            <div v-if="series" id="chart">
+              <div class="flex mg-l-5" style="gap: 8px; align-items: center;">
+                <RangeToggle :model-value="chartType" :show-year="stock.national === 'KR'" @update:modelValue="changeChartType"/>
+                <v-btn-toggle v-model="overlaySelected" multiple density="compact" class="ma-toggle">
+                  <v-btn value="ma20" size="x-small">MA20</v-btn>
+                  <v-btn value="ma60" size="x-small">MA60</v-btn>
+                  <v-btn value="rsi" size="x-small">RSI</v-btn>
+                </v-btn-toggle>
+                <v-btn size="x-small" variant="outlined" color="primary" class="mg-l-5" @click="openCompare">비교</v-btn>
+              </div>
+              <ApexChart :key="'price-' + chartType" :height="UiService().isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions" :series="series" />
+            </div>
           </div>
-          <ApexChart :key="'price-' + chartType" :height="UiService().isMobile() ? '200' : '350'" type="candlestick" :options="chartOptions" :series="series" />
-        </div>
-      </div>
-      <div class="dividend-history-chart" v-if="mainChartType === 'history'">
-        <ApexChart :key="'dividend-' + mainChartType" :height="UiService().isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions" :series="dividendSeries" />
-      </div>
+        </v-window-item>
+        <v-window-item value="history">
+          <div class="dividend-history-chart">
+            <ApexChart :key="'dividend-' + mainChartType" :height="UiService().isMobile() ? '200' : '350'" type="bar" :options="dividendChartOptions" :series="dividendSeries" />
+          </div>
+        </v-window-item>
+        <v-window-item value="news">
+          <div class="mg-t-10">
+            <NewsList :q="symbol || stock.symbol" />
+          </div>
+        </v-window-item>
+        <v-window-item value="calendar">
+          <div class="mg-t-10">
+            <EarningsCalendar :symbol="symbol || stock.symbol" />
+          </div>
+        </v-window-item>
+      </v-window>
+  <Modal v-if="showCompare" @close-modal="showCompare = false">
+    <CompareChart :initial-symbols="compareSymbols" />
+  </Modal>
       <div class="pd-10 border">
         <div class="flex" style="justify-content: space-between;">
           <div>
@@ -64,11 +95,14 @@
 
 import UiService from "@/service/UiService";
 import RangeToggle from '@/components/etc/RangeToggle.vue'
+import NewsList from '@/components/index/NewsList.vue'
+import EarningsCalendar from '@/components/index/popup/EarningsCalendar.vue'
+import CompareChart from '@/components/index/popup/CompareChart.vue'
 import { defineAsyncComponent } from 'vue'
 
 export default {
   name: "DetailStock",
-  components: { RangeToggle, ApexChart: defineAsyncComponent(() => import('vue3-apexcharts')) },
+  components: { RangeToggle, NewsList, EarningsCalendar, CompareChart, ApexChart: defineAsyncComponent(() => import('vue3-apexcharts')) },
   props: {
     msg: String,
     stock: {
@@ -90,6 +124,8 @@ export default {
       series: [{
         data: []
       }],
+      overlay: { ma20: false, ma60: false, rsi: false },
+      overlaySelected: [],
       chartOptions: {
         chart: {
           height: 350,
@@ -174,7 +210,9 @@ export default {
       dividendSeries: [{
         name: '',
         data: []
-      }]
+      }],
+      showCompare: false,
+      compareSymbols: [],
 
 
     }
@@ -202,7 +240,8 @@ export default {
         x: item.date,
         y: [item.open, item.high, item.low, item.close]
       }))
-      this.series = [{ name: this.series[0]?.name || this.stock.name, data: nextData }]
+      await this.applyOverlays(symbol)
+      this.series = [{ name: this.series[0]?.name || this.stock.name, data: nextData }, ...this.overlaySeries]
     }
   },
   async created() {
@@ -248,9 +287,42 @@ export default {
         this.ws.connect()
       } catch(_) {}
     },
-    changeChartType(chartType) {
+    async changeChartType(chartType) {
       this.chartType = chartType;
       try { localStorage.setItem('detail_chart_type', chartType) } catch(_) {}
+      // 심볼 기준으로 오버레이 재계산
+      const sym = this.symbol || (this.stock.mksc_shrn_iscd ? this.stock.mksc_shrn_iscd : this.stock.symbol)
+      await this.applyOverlays(sym)
+    },
+    async applyOverlays(symbol) {
+      try {
+        // 동기화: 버튼 토글 상태를 overlay 객체에 반영
+        this.overlay.ma20 = this.overlaySelected.includes('ma20')
+        this.overlay.ma60 = this.overlaySelected.includes('ma60')
+        this.overlay.rsi  = this.overlaySelected.includes('rsi')
+
+        const overlays = []
+        this.overlaySeries = []
+        if (this.overlay.ma20) overlays.push({ type: 'ma', window: 20 })
+        if (this.overlay.ma60) overlays.push({ type: 'ma', window: 60 })
+        if (overlays.length) {
+          const { default: api } = await import('@/service/apiClient')
+          for (const ov of overlays) {
+            const res = await api.get('/yfin/indicators/ma', { params: { ticker: symbol, window: ov.window } }).catch(() => null)
+            const rows = res?.data?.rows || []
+            const data = rows.map(r => [r.time, r.value])
+            this.overlaySeries.push({ name: `MA${ov.window}`, type: 'line', data })
+          }
+        }
+        if (this.overlay.rsi) {
+          // RSI는 보조 지표 축이 이상적이나, 우선 툴팁 표시용 보조 라인으로 제공
+          const { default: api } = await import('@/service/apiClient')
+          const res = await api.get('/yfin/indicators/rsi', { params: { ticker: symbol, window: 14 } }).catch(() => null)
+          const rows = res?.data?.rows || []
+          const data = rows.map(r => [r.time, r.value])
+          this.overlaySeries.push({ name: 'RSI', type: 'line', data })
+        }
+      } catch(_) { this.overlaySeries = [] }
     },
     rtSignClass() {
       const dp = this.rt && this.rt.dp != null ? Number(this.rt.dp) : null
@@ -286,6 +358,11 @@ export default {
         }
       }
       try { return this.detail?.compareToYesterday?.toLocaleString('ko-KR') ?? '-' } catch(_) { return String(this.detail?.compareToYesterday ?? '-') }
+    },
+    openCompare() {
+      const base = this.symbol || this.stock.symbol
+      this.compareSymbols = [base]
+      this.showCompare = true
     },
   }
 };

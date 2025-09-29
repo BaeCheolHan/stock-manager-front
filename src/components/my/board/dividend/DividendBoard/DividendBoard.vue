@@ -1,6 +1,13 @@
 <template>
   <DividendMonthlyChart :chart-data="dividendChartSeries" v-if="dividendChartSeries"/>
 
+  <DividendTimeSeries
+      v-if="timeSeries.labels && timeSeries.labels.length"
+      :labels="timeSeries.labels"
+      :monthly="timeSeries.monthly"
+      :cumulative="timeSeries.cumulative"
+  />
+
   <v-card>
     <v-window>
       <v-window-item>
@@ -55,6 +62,7 @@
 
 <script>
 import DividendMonthlyChart from "@/components/my/chart/DividendMonthlyChart.vue";
+import DividendTimeSeries from "@/components/my/chart/DividendTimeSeries.vue";
 import DividendIcon from "@/components/etc/button/DividendIcon.vue";
 import DividendHistoryBox from "@/components/my/board/dividend/DividendBoard/DividendHistoryBox.vue";
 import SaveDividend from "@/components/my/popup/dividend/SaveDividend.vue";
@@ -72,6 +80,7 @@ export default {
     DividendIcon,
     DividendMonthlyChart,
     SaveDividend,
+    DividendTimeSeries,
   },
   mounted() {},
   watch: {
@@ -102,6 +111,7 @@ export default {
     return {
       userInfo: null,
       dividendChartSeries: null,
+      timeSeries: { labels: [], monthly: [], cumulative: [] },
       isSnowDividendRegPop: false,
       headers: [
         {title: '년도', align: 'start', key: 'name', sortable: false, width: "100px"},
@@ -128,10 +138,88 @@ export default {
     }
   },
   methods: {
+    toMonthKey(v) {
+      if (!v) return ''
+      const s = v.toString()
+      // Expect formats like YYYY-MM-DD or YYYY.MM.DD
+      const m = s.match(/\d{4}[-/.]?\d{2}/)
+      return m ? m[0].replace(/[/.]/g, '-').slice(0, 7) : s.slice(0, 7)
+    },
+    toNumberSafe(v) {
+      if (v === null || v === undefined) return 0
+      if (typeof v === 'number') return Number.isFinite(v) ? v : 0
+      const n = parseFloat(v.toString().replace(/[^0-9.-]/g, ''))
+      return Number.isFinite(n) ? n : 0
+    },
     async getDividendChartData() {
       this.desserts = [];
       let res = await DividendsService.getMonthlyChart(this.userInfo.memberId)
       this.dividendChartSeries = res.data.series;
+      // Build time-series dataset (labels: yyyy.MM, monthly: amount, cumulative: running sum)
+      const tryFromSeries = () => {
+        const series = res?.data?.series
+        if (!Array.isArray(series) || series.length === 0) return false
+        const labels = []
+        const monthly = []
+        const cumulative = []
+        let run = 0
+        for (const s of series) {
+          const year = (s?.name ?? s?.year ?? '').toString().match(/\d{4}/)?.[0]
+          const data = Array.isArray(s?.data) ? s.data : []
+          if (!year || data.length === 0) continue
+          for (let i = 0; i < data.length; i++) {
+            const val = this.toNumberSafe(data[i])
+            const mm = String(i + 1).padStart(2, '0')
+            const label = `${year}.${mm}`
+            labels.push(label)
+            monthly.push(val)
+            run += val
+            cumulative.push(run)
+          }
+        }
+        if (labels.length === 0) return false
+        this.timeSeries = { labels, monthly, cumulative }
+        return true
+      }
+      const tryFromResponse = () => {
+        const pairs = res.data.monthly || res.data.timeline
+        if (!pairs || !Array.isArray(pairs) || pairs.length === 0) return false
+        const labels = []
+        const monthly = []
+        const cumulative = []
+        let run = 0
+        for (const p of pairs) {
+          const label = (p.date || p.label || '').toString().slice(0, 7).replace('-', '.')
+          const amt = Number(p.amount ?? p.value ?? 0)
+          labels.push(label)
+          monthly.push(amt)
+          run += amt
+          cumulative.push(run)
+        }
+        this.timeSeries = { labels, monthly, cumulative }
+        return true
+      }
+
+      if (!tryFromResponse() && !tryFromSeries()) {
+        try {
+          const r = await DividendsService.getMemberDividends(this.userInfo.memberId)
+          const list = Array.isArray(r.data.data) ? r.data.data : []
+          const map = new Map()
+          for (const d of list) {
+            const key = this.toMonthKey(d.date || d.payDate)
+            const val = this.toNumberSafe(d.dividend ?? d.afterTaxDividend ?? d.amount)
+            map.set(key, (map.get(key) || 0) + val)
+          }
+          const labels = Array.from(map.keys()).filter(Boolean).sort()
+          const monthly = labels.map(l => map.get(l))
+          const cumulative = []
+          let run = 0
+          for (const v of monthly) { run += v; cumulative.push(run) }
+          this.timeSeries = { labels: labels.map(l => l.replace('-', '.')), monthly, cumulative }
+        } catch (_) {
+          this.timeSeries = { labels: [], monthly: [], cumulative: [] }
+        }
+      }
       for (let i = 0; i < res.data.series.length; i++) {
         let data = {
           name: res.data.series[i].name,
@@ -184,4 +272,5 @@ export default {
   width: 1700px !important;
   overflow-x: scroll;
 }
+.chart-title { font-weight: 700; font-size: 16px; margin: 10px 10px 6px; }
 </style>

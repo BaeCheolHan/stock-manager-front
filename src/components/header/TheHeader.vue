@@ -10,7 +10,8 @@
       <button class="kakao-login-small mg-l-15" v-on:click="snsLoginBtn('kakao')" aria-label="카카오 로그인"></button>
       <button class="google-login-small mg-l-15" v-on:click="snsLoginBtn('google')" aria-label="구글 로그인"></button>
     </div>
-    <div class="flex">
+    <div class="flex" style="align-items: center; gap: 10px; width: 100%;">
+      <TickerBar v-if="userInfo" />
       <div v-if="!UiService().isMobile()">
         <button class="search-btn" @click="searchStockPop">검색</button>
       </div>
@@ -72,6 +73,7 @@
 <script>
 import refferencesArea from "@/components/etc/refferencesArea.vue";
 import ExchangeRate from "@/components/header/ExchangeRate.vue";
+import TickerBar from "@/components/header/TickerBar.vue";
 import Modal from "@/components/modal/Modal.vue";
 import SearchStock from "@/components/header/popup/SearchStock.vue";
 import DetailStock from "@/components/index/popup/DetailStock.vue";
@@ -85,6 +87,7 @@ export default {
     Modal,
     refferencesArea,
     ExchangeRate,
+    TickerBar,
   },
   data() {
     return {
